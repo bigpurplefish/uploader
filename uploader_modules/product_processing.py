@@ -26,7 +26,7 @@ from .utils import (
     key_to_label, validate_image_urls, validate_image_alt_tags_for_filtering,
     generate_image_filter_hashtags
 )
-from .claude_api import batch_enhance_products, generate_collection_description
+from .ai_provider import batch_enhance_products, generate_collection_description
 
 
 def process_collections(products, cfg, status_fn):
@@ -43,8 +43,8 @@ def process_collections(products, cfg, status_fn):
         Tuple of (success, created_count, existing_count, failed_count)
     """
     try:
-        # Check if Claude AI is enabled for collection descriptions
-        use_claude = cfg.get("USE_CLAUDE_AI", False)
+        # Check if AI enhancement is enabled for collection descriptions
+        use_claude = cfg.get("USE_AI_ENHANCEMENT", False)
         voice_tone_doc = None
 
         if use_claude:
@@ -282,8 +282,7 @@ def process_collections(products, cfg, status_fn):
                                 department,
                                 product_samples,
                                 voice_tone_doc,
-                                cfg.get("CLAUDE_API_KEY", ""),
-                                cfg.get("CLAUDE_MODEL", "claude-sonnet-4-5-20250929"),
+                                cfg,
                                 status_fn
                             )
                         else:
@@ -553,10 +552,11 @@ def process_products(cfg, status_fn, execution_mode="resume"):
         
         log_and_status(status_fn, f"✅ Loaded {len(products)} products\n")
 
-        # ========== CLAUDE AI ENHANCEMENT (if enabled) ==========
-        if cfg.get("USE_CLAUDE_AI", False):
+        # ========== AI ENHANCEMENT (if enabled) ==========
+        if cfg.get("USE_AI_ENHANCEMENT", False):
+            provider = cfg.get("AI_PROVIDER", "claude").upper()
             log_and_status(status_fn, "=" * 80)
-            log_and_status(status_fn, "CLAUDE AI ENHANCEMENT")
+            log_and_status(status_fn, f"AI ENHANCEMENT ({provider})")
             log_and_status(status_fn, "=" * 80)
 
             try:
@@ -571,14 +571,15 @@ def process_products(cfg, status_fn, execution_mode="resume"):
                 log_and_status(status_fn, "=" * 80 + "\n")
 
             except Exception as e:
+                provider_name = cfg.get("AI_PROVIDER", "claude").title()
                 log_and_status(status_fn, "", "error")
                 log_and_status(status_fn, "=" * 80, "error")
-                log_and_status(status_fn, "❌ PROCESSING STOPPED DUE TO CLAUDE API FAILURE", "error")
+                log_and_status(status_fn, f"❌ PROCESSING STOPPED DUE TO {provider_name.upper()} API FAILURE", "error")
                 log_and_status(status_fn, "=" * 80, "error")
                 log_and_status(status_fn, f"Error: {str(e)}", "error")
                 log_and_status(status_fn, "", "error")
                 log_and_status(status_fn, "What happened:", "error")
-                log_and_status(status_fn, "- Claude AI failed to enhance a product", "error")
+                log_and_status(status_fn, f"- {provider_name} AI failed to enhance a product", "error")
                 log_and_status(status_fn, "- Processing was stopped to prevent partial/incomplete data", "error")
                 log_and_status(status_fn, "- No products were uploaded to Shopify", "error")
                 log_and_status(status_fn, "", "error")
@@ -592,11 +593,11 @@ def process_products(cfg, status_fn, execution_mode="resume"):
                 log_and_status(status_fn, "3. Fix the issue and restart processing", "error")
                 log_and_status(status_fn, "4. Already-processed products are cached and won't be re-processed", "error")
                 log_and_status(status_fn, "=" * 80, "error")
-                logging.exception("Full traceback for Claude API failure:")
+                logging.exception(f"Full traceback for {provider_name} API failure:")
                 return  # Stop processing
 
         else:
-            log_and_status(status_fn, "ℹ️  Claude AI enhancement disabled (enable in main window)\n")
+            log_and_status(status_fn, "ℹ️  AI enhancement disabled (enable in main window)\n")
 
         # ========== PRE-UPLOAD VALIDATION ==========
         log_and_status(status_fn, "=" * 80)
@@ -904,21 +905,27 @@ def process_products(cfg, status_fn, execution_mode="resume"):
                 # Extract category/subcategory for collections (from tags)
                 category, subcategory = extract_category_subcategory(product)
 
-                # Get Shopify product category from product_category field (Google taxonomy format)
-                # This is separate from collection categories
-                product_category_field = product.get('product_category', '').strip()
-                taxonomy_id = None
+                # Get Shopify product category
+                # If AI enhancement added shopify_category_id, use that
+                # Otherwise, try to look up from product_category field
+                taxonomy_id = product.get('shopify_category_id')
 
-                if product_category_field:
-                    log_and_status(status_fn, f"  Looking up Shopify taxonomy for: {product_category_field}")
-                    taxonomy_id, taxonomy_cache = get_taxonomy_id(product_category_field, taxonomy_cache, api_url, headers, status_fn)
-
-                    if taxonomy_id:
-                        log_and_status(status_fn, f"  ✅ Found taxonomy ID: {taxonomy_id}")
-                    else:
-                        log_and_status(status_fn, f"  ⚠️  No taxonomy match found for: {product_category_field}", "warning")
+                if taxonomy_id:
+                    log_and_status(status_fn, f"  Using AI-matched Shopify category ID: {taxonomy_id}")
                 else:
-                    log_and_status(status_fn, "  No product_category field found in input data", "warning")
+                    # Fallback: Try product_category field (for non-AI enhanced products)
+                    product_category_field = product.get('product_category', '').strip()
+
+                    if product_category_field:
+                        log_and_status(status_fn, f"  Looking up Shopify taxonomy for: {product_category_field}")
+                        taxonomy_id, taxonomy_cache = get_taxonomy_id(product_category_field, taxonomy_cache, api_url, headers, status_fn)
+
+                        if taxonomy_id:
+                            log_and_status(status_fn, f"  ✅ Found taxonomy ID: {taxonomy_id}")
+                        else:
+                            log_and_status(status_fn, f"  ⚠️  No taxonomy match found for: {product_category_field}", "warning")
+                    else:
+                        log_and_status(status_fn, "  No Shopify category available", "warning")
                 
                 # Prepare product input (API 2025-10 format)
                 product_input = {

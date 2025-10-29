@@ -99,7 +99,7 @@ Return ONLY a valid JSON object in this exact format (no markdown, no code block
     return prompt
 
 
-def build_description_prompt(title: str, body_html: str, department: str, voice_tone_doc: str) -> str:
+def build_description_prompt(title: str, body_html: str, department: str, voice_tone_doc: str, audience_name: str = None) -> str:
     """
     Build the prompt for Claude to rewrite product description.
 
@@ -108,10 +108,13 @@ def build_description_prompt(title: str, body_html: str, department: str, voice_
         body_html: Current product description (HTML)
         department: Assigned department (for tone selection)
         voice_tone_doc: Full voice and tone guidelines document
+        audience_name: Optional target audience name for tailored descriptions
 
     Returns:
         Formatted prompt string
     """
+    audience_context = f"\nTarget Audience: {audience_name}" if audience_name else ""
+
     prompt = f"""You are a professional product copywriter. Rewrite this product description following our voice and tone guidelines.
 
 {voice_tone_doc}
@@ -119,7 +122,9 @@ def build_description_prompt(title: str, body_html: str, department: str, voice_
 Product information:
 - Title: {title}
 - Department: {department}
-- Current Description: {body_html}
+- Current Description: {body_html}{audience_context}
+
+{"AUDIENCE: Tailor this description specifically for " + audience_name + ". Use language, benefits, and examples that resonate with this audience.\n" if audience_name else ""}
 
 Your task:
 1. Read the current description to understand the product's features and benefits
@@ -206,7 +211,8 @@ def enhance_product_with_claude(
     voice_tone_doc: str,
     api_key: str,
     model: str,
-    status_fn=None
+    status_fn=None,
+    audience_config: Dict = None
 ) -> Dict:
     """
     Enhance a single product using Claude API.
@@ -322,60 +328,172 @@ def enhance_product_with_claude(
         # ========== STEP 2: DESCRIPTION REWRITING ==========
         time.sleep(0.5)  # Brief delay between API calls
 
-        if status_fn:
-            log_and_status(status_fn, f"  ✍️  Rewriting description...")
+        # Determine number of audiences from config
+        audience_count = 1
+        audience_1_name = None
+        audience_2_name = None
+        if audience_config:
+            audience_count = audience_config.get("count", 1)
+            audience_1_name = audience_config.get("audience_1_name", "").strip()
+            audience_2_name = audience_config.get("audience_2_name", "").strip()
 
-        logging.info("=" * 80)
-        logging.info(f"CLAUDE API CALL #2: DESCRIPTION REWRITING")
-        logging.info(f"Product: {title}")
-        logging.info(f"Department: {department}")
-        logging.info(f"Model: {model}")
-        logging.info("=" * 80)
+        # Generate description(s) based on audience count
+        enhanced_description = None  # Primary description (goes in body_html)
+        description_audience_1 = None  # Audience 1 metafield
+        description_audience_2 = None  # Audience 2 metafield
+        total_description_cost = 0
 
-        description_prompt = build_description_prompt(title, body_html, department, voice_tone_doc)
+        # Only generate multiple descriptions if both audience names are provided
+        if audience_count == 2 and audience_1_name and audience_2_name:
+            # Generate TWO descriptions for different audiences
 
-        # Log prompt preview
-        logging.debug(f"Description prompt (first 500 chars):\n{description_prompt[:500]}...")
-        logging.debug(f"Full prompt length: {len(description_prompt)} characters")
+            # Description for Audience 1
+            if status_fn:
+                log_and_status(status_fn, f"  ✍️  Generating description for {audience_1_name}...")
 
-        # Make API call
-        logging.info("Sending description rewriting request to Claude API...")
-        description_response = client.messages.create(
-            model=model,
-            max_tokens=2048,
-            messages=[{
-                "role": "user",
-                "content": description_prompt
-            }]
-        )
+            logging.info("=" * 80)
+            logging.info(f"CLAUDE API CALL #2A: DESCRIPTION FOR AUDIENCE 1 ({audience_1_name})")
+            logging.info(f"Product: {title}")
+            logging.info(f"Department: {department}")
+            logging.info(f"Model: {model}")
+            logging.info("=" * 80)
 
-        # Log response details
-        logging.info(f"✅ Description API call successful")
-        logging.info(f"Response ID: {description_response.id}")
-        logging.info(f"Model used: {description_response.model}")
-        logging.info(f"Stop reason: {description_response.stop_reason}")
-        logging.info(f"Token usage - Input: {description_response.usage.input_tokens}, Output: {description_response.usage.output_tokens}")
+            description_prompt_1 = build_description_prompt(title, body_html, department, voice_tone_doc, audience_1_name)
 
-        description_cost = (description_response.usage.input_tokens * 0.003 / 1000) + (description_response.usage.output_tokens * 0.015 / 1000)
-        logging.info(f"Cost: ${description_cost:.6f}")
+            logging.debug(f"Description prompt for Audience 1 (first 500 chars):\n{description_prompt_1[:500]}...")
+            logging.debug(f"Full prompt length: {len(description_prompt_1)} characters")
+            logging.info(f"Sending description rewriting request for {audience_1_name}...")
 
-        total_cost = taxonomy_cost + description_cost
+            description_response_1 = client.messages.create(
+                model=model,
+                max_tokens=2048,
+                messages=[{"role": "user", "content": description_prompt_1}]
+            )
+
+            logging.info(f"✅ Audience 1 description API call successful")
+            logging.info(f"Token usage - Input: {description_response_1.usage.input_tokens}, Output: {description_response_1.usage.output_tokens}")
+
+            description_1_cost = (description_response_1.usage.input_tokens * 0.003 / 1000) + (description_response_1.usage.output_tokens * 0.015 / 1000)
+            logging.info(f"Cost: ${description_1_cost:.6f}")
+            total_description_cost += description_1_cost
+
+            description_audience_1 = description_response_1.content[0].text.strip()
+            if description_audience_1.startswith("```"):
+                lines = description_audience_1.split('\n')
+                description_audience_1 = '\n'.join(lines[1:-1])
+
+            if not description_audience_1 or len(description_audience_1.strip()) == 0:
+                logging.warning(f"⚠️  Claude returned empty description for {audience_1_name}! Using original body_html")
+                description_audience_1 = body_html
+
+            logging.info(f"✅ Description for {audience_1_name} complete ({len(description_audience_1)} characters)")
+
+            # Description for Audience 2
+            time.sleep(0.5)  # Brief delay between API calls
+
+            if status_fn:
+                log_and_status(status_fn, f"  ✍️  Generating description for {audience_2_name}...")
+
+            logging.info("=" * 80)
+            logging.info(f"CLAUDE API CALL #2B: DESCRIPTION FOR AUDIENCE 2 ({audience_2_name})")
+            logging.info(f"Product: {title}")
+            logging.info(f"Department: {department}")
+            logging.info(f"Model: {model}")
+            logging.info("=" * 80)
+
+            description_prompt_2 = build_description_prompt(title, body_html, department, voice_tone_doc, audience_2_name)
+
+            logging.debug(f"Description prompt for Audience 2 (first 500 chars):\n{description_prompt_2[:500]}...")
+            logging.debug(f"Full prompt length: {len(description_prompt_2)} characters")
+            logging.info(f"Sending description rewriting request for {audience_2_name}...")
+
+            description_response_2 = client.messages.create(
+                model=model,
+                max_tokens=2048,
+                messages=[{"role": "user", "content": description_prompt_2}]
+            )
+
+            logging.info(f"✅ Audience 2 description API call successful")
+            logging.info(f"Token usage - Input: {description_response_2.usage.input_tokens}, Output: {description_response_2.usage.output_tokens}")
+
+            description_2_cost = (description_response_2.usage.input_tokens * 0.003 / 1000) + (description_response_2.usage.output_tokens * 0.015 / 1000)
+            logging.info(f"Cost: ${description_2_cost:.6f}")
+            total_description_cost += description_2_cost
+
+            description_audience_2 = description_response_2.content[0].text.strip()
+            if description_audience_2.startswith("```"):
+                lines = description_audience_2.split('\n')
+                description_audience_2 = '\n'.join(lines[1:-1])
+
+            if not description_audience_2 or len(description_audience_2.strip()) == 0:
+                logging.warning(f"⚠️  Claude returned empty description for {audience_2_name}! Using original body_html")
+                description_audience_2 = body_html
+
+            logging.info(f"✅ Description for {audience_2_name} complete ({len(description_audience_2)} characters)")
+
+            # Use Audience 1 description as primary body_html
+            enhanced_description = description_audience_1
+
+            if status_fn:
+                log_and_status(status_fn, f"    ✅ Generated 2 audience descriptions ({len(description_audience_1)} + {len(description_audience_2)} chars)")
+
+        else:
+            # Single audience mode (default behavior)
+            if status_fn:
+                audience_label = f" for {audience_1_name}" if audience_1_name else ""
+                log_and_status(status_fn, f"  ✍️  Rewriting description{audience_label}...")
+
+            logging.info("=" * 80)
+            logging.info(f"CLAUDE API CALL #2: DESCRIPTION REWRITING")
+            logging.info(f"Product: {title}")
+            logging.info(f"Department: {department}")
+            if audience_1_name:
+                logging.info(f"Audience: {audience_1_name}")
+            logging.info(f"Model: {model}")
+            logging.info("=" * 80)
+
+            description_prompt = build_description_prompt(title, body_html, department, voice_tone_doc, audience_1_name if audience_1_name else None)
+
+            logging.debug(f"Description prompt (first 500 chars):\n{description_prompt[:500]}...")
+            logging.debug(f"Full prompt length: {len(description_prompt)} characters")
+            logging.info("Sending description rewriting request to Claude API...")
+
+            description_response = client.messages.create(
+                model=model,
+                max_tokens=2048,
+                messages=[{"role": "user", "content": description_prompt}]
+            )
+
+            logging.info(f"✅ Description API call successful")
+            logging.info(f"Response ID: {description_response.id}")
+            logging.info(f"Model used: {description_response.model}")
+            logging.info(f"Stop reason: {description_response.stop_reason}")
+            logging.info(f"Token usage - Input: {description_response.usage.input_tokens}, Output: {description_response.usage.output_tokens}")
+
+            total_description_cost = (description_response.usage.input_tokens * 0.003 / 1000) + (description_response.usage.output_tokens * 0.015 / 1000)
+            logging.info(f"Cost: ${total_description_cost:.6f}")
+
+            enhanced_description = description_response.content[0].text.strip()
+            logging.debug(f"Enhanced description (first 500 chars):\n{enhanced_description[:500]}...")
+
+            if enhanced_description.startswith("```"):
+                logging.debug("Removing markdown code block wrapper from description response")
+                lines = enhanced_description.split('\n')
+                enhanced_description = '\n'.join(lines[1:-1])
+
+            if not enhanced_description or len(enhanced_description.strip()) == 0:
+                logging.warning("⚠️  Claude returned empty description! Using original body_html")
+                logging.warning(f"Original body_html length: {len(body_html)} characters")
+                enhanced_description = body_html
+
+            logging.info(f"✅ Description rewritten ({len(enhanced_description)} characters)")
+
+            if status_fn:
+                log_and_status(status_fn, f"    ✅ Description rewritten ({len(enhanced_description)} characters)")
+
+        # Calculate total cost
+        total_cost = taxonomy_cost + total_description_cost
         logging.info(f"Total cost for this product: ${total_cost:.6f}")
-
-        # Extract enhanced description
-        enhanced_description = description_response.content[0].text.strip()
-        logging.debug(f"Enhanced description (first 500 chars):\n{enhanced_description[:500]}...")
-
-        # Remove markdown code blocks if present
-        if enhanced_description.startswith("```"):
-            logging.debug("Removing markdown code block wrapper from description response")
-            lines = enhanced_description.split('\n')
-            enhanced_description = '\n'.join(lines[1:-1])
-
-        logging.info(f"✅ Description rewritten ({len(enhanced_description)} characters)")
-
-        if status_fn:
-            log_and_status(status_fn, f"    ✅ Description rewritten ({len(enhanced_description)} characters)")
 
         # Create enhanced product with new taxonomy and description
         enhanced_product = product.copy()
@@ -398,6 +516,49 @@ def enhance_product_with_claude(
 
         enhanced_product['tags'] = tags
         enhanced_product['body_html'] = enhanced_description
+
+        # Add audience descriptions as metafields if multiple audiences
+        if audience_count == 2 and description_audience_1 and description_audience_2:
+            # Initialize metafields array if it doesn't exist
+            if 'metafields' not in enhanced_product:
+                enhanced_product['metafields'] = []
+
+            # Add audience configuration metafield (for Liquid template)
+            audience_metadata = {
+                "count": 2,
+                "audience_1_name": audience_1_name,
+                "audience_2_name": audience_2_name,
+                "tab_1_label": audience_config.get("tab_1_label", audience_1_name),
+                "tab_2_label": audience_config.get("tab_2_label", audience_2_name)
+            }
+
+            enhanced_product['metafields'].append({
+                "namespace": "custom",
+                "key": "audience_config",
+                "value": json.dumps(audience_metadata),
+                "type": "json"
+            })
+
+            # Add audience 1 description metafield
+            enhanced_product['metafields'].append({
+                "namespace": "custom",
+                "key": "description_audience_1",
+                "value": description_audience_1,
+                "type": "multi_line_text_field"
+            })
+
+            # Add audience 2 description metafield
+            enhanced_product['metafields'].append({
+                "namespace": "custom",
+                "key": "description_audience_2",
+                "value": description_audience_2,
+                "type": "multi_line_text_field"
+            })
+
+            logging.info(f"Added audience metafields to product:")
+            logging.info(f"  - audience_config: {audience_metadata}")
+            logging.info(f"  - description_audience_1: {len(description_audience_1)} chars")
+            logging.info(f"  - description_audience_2: {len(description_audience_2)} chars")
 
         logging.info("=" * 80)
         logging.info(f"✅ PRODUCT ENHANCEMENT COMPLETE: {title}")

@@ -17,6 +17,12 @@ from .config import load_config, save_config, SCRIPT_VERSION
 from .product_processing import process_products
 
 
+# AI Provider options
+AI_PROVIDERS = [
+    ("Claude (Anthropic)", "claude"),
+    ("ChatGPT (OpenAI)", "openai")
+]
+
 # Claude model options
 CLAUDE_MODELS = [
     ("Claude Sonnet 4.5 (Recommended)", "claude-sonnet-4-5-20250929"),
@@ -25,28 +31,59 @@ CLAUDE_MODELS = [
     ("Claude Haiku 3.5", "claude-3-5-haiku-20241022")
 ]
 
+# OpenAI model options
+OPENAI_MODELS = [
+    ("GPT-5 (Latest, Recommended)", "gpt-5"),
+    ("GPT-5 Mini", "gpt-5-mini"),
+    ("GPT-5 Nano", "gpt-5-nano"),
+    ("GPT-4o", "gpt-4o"),
+    ("GPT-4o Mini", "gpt-4o-mini"),
+    ("GPT-4 Turbo", "gpt-4-turbo"),
+    ("GPT-4", "gpt-4")
+]
 
-def get_model_id_from_display(display_name):
+
+def get_provider_display_from_id(provider_id):
+    """Convert provider ID to display name."""
+    for display, pid in AI_PROVIDERS:
+        if pid == provider_id:
+            return display
+    return "Claude (Anthropic)"  # fallback to default
+
+
+def get_provider_id_from_display(display_name):
+    """Convert display name to provider ID."""
+    for display, provider_id in AI_PROVIDERS:
+        if display == display_name:
+            return provider_id
+    return "claude"  # fallback to default
+
+
+def get_model_id_from_display(display_name, provider="claude"):
     """Convert display name to model ID."""
-    for display, model_id in CLAUDE_MODELS:
+    models = CLAUDE_MODELS if provider == "claude" else OPENAI_MODELS
+    for display, model_id in models:
         if display == display_name:
             return model_id
-    return "claude-sonnet-4-5-20250929"  # fallback to default
+    # Return default based on provider
+    return "claude-sonnet-4-5-20250929" if provider == "claude" else "gpt-5"
 
 
-def get_display_from_model_id(model_id):
+def get_display_from_model_id(model_id, provider="claude"):
     """Convert model ID to display name."""
-    for display, mid in CLAUDE_MODELS:
+    models = CLAUDE_MODELS if provider == "claude" else OPENAI_MODELS
+    for display, mid in models:
         if mid == model_id:
             return display
-    return "Claude Sonnet 4.5 (Recommended)"  # fallback to default
+    # Return default based on provider
+    return "Claude Sonnet 4.5 (Recommended)" if provider == "claude" else "GPT-5 (Latest, Recommended)"
 
 
 def open_system_settings(cfg, parent):
     """Open the system settings dialog."""
     settings_window = tb.Toplevel(parent)
     settings_window.title("System Settings")
-    settings_window.geometry("700x550")
+    settings_window.geometry("700x450")
     settings_window.transient(parent)
     settings_window.grab_set()
 
@@ -90,10 +127,10 @@ def open_system_settings(cfg, parent):
     access_token_entry.grid(row=4, column=1, sticky="ew", padx=5, pady=5)
     ToolTip(access_token_entry, text="Your Shopify Admin API access token")
 
-    # Claude AI Settings Section
+    # AI Settings Section
     tb.Label(
         main_frame,
-        text="Claude AI Configuration",
+        text="AI API Keys",
         font=("Arial", 11, "bold")
     ).grid(row=5, column=0, columnspan=2, sticky="w", pady=(20, 5))
 
@@ -113,39 +150,26 @@ def open_system_settings(cfg, parent):
         text="Your Anthropic Claude API key\n(Get one at: console.anthropic.com)"
     )
 
-    # Claude Model Selection
-    tb.Label(main_frame, text="Claude Model:").grid(
+    # OpenAI API Key
+    tb.Label(main_frame, text="OpenAI API Key:").grid(
         row=8, column=0, sticky="w", padx=5, pady=5
     )
-
-    current_model_id = cfg.get("CLAUDE_MODEL", "claude-sonnet-4-5-20250929")
-    current_display = get_display_from_model_id(current_model_id)
-
-    model_var = tb.StringVar(value=current_display)
-    model_dropdown = tb.Combobox(
-        main_frame,
-        textvariable=model_var,
-        values=[display for display, _ in CLAUDE_MODELS],
-        state="readonly",
-        width=47
-    )
-    model_dropdown.grid(row=8, column=1, sticky="ew", padx=5, pady=5)
+    openai_api_key_var = tb.StringVar(value=cfg.get("OPENAI_API_KEY", ""))
+    openai_api_key_entry = tb.Entry(main_frame, textvariable=openai_api_key_var, width=50, show="*")
+    openai_api_key_entry.grid(row=8, column=1, sticky="ew", padx=5, pady=5)
     ToolTip(
-        model_dropdown,
-        text="Sonnet 4.5: Best for this task (Recommended)\n"
-             "Opus 3.5: Maximum intelligence, higher cost\n"
-             "Sonnet 3.5: Previous generation, good balance\n"
-             "Haiku 3.5: Fast and cheap, may miss nuances"
+        openai_api_key_entry,
+        text="Your OpenAI API key\n(Get one at: platform.openai.com)"
     )
 
-    # Info label about Claude AI
+    # Info label about AI
     info_frame = tb.Frame(main_frame)
     info_frame.grid(row=9, column=0, columnspan=2, sticky="ew", pady=10)
 
     info_label = tb.Label(
         info_frame,
-        text="ℹ️  Claude AI automatically assigns products to your internal taxonomy\n"
-             "and rewrites descriptions following voice and tone guidelines.",
+        text="ℹ️  Configure AI provider and model selection in the main window.\n"
+             "API keys are required for AI enhancement features.",
         font=("Arial", 9),
         foreground="#5BC0DE",
         justify="left"
@@ -164,7 +188,7 @@ def open_system_settings(cfg, parent):
         cfg["SHOPIFY_STORE_URL"] = store_url_var.get().strip()
         cfg["SHOPIFY_ACCESS_TOKEN"] = access_token_var.get().strip()
         cfg["CLAUDE_API_KEY"] = claude_api_key_var.get().strip()
-        cfg["CLAUDE_MODEL"] = get_model_id_from_display(model_var.get())
+        cfg["OPENAI_API_KEY"] = openai_api_key_var.get().strip()
 
         save_config(cfg)
         messagebox.showinfo("Settings Saved", "System settings have been saved successfully.")
@@ -482,37 +506,368 @@ def build_gui():
     tb.Label(label_frame, text=":", anchor="w").pack(side="left")
 
     tooltip_text = (
-        "Use Claude AI to enhance products before uploading:\n\n"
+        "Use AI to enhance products before uploading:\n\n"
         "• Assigns products to your internal taxonomy\n"
         "  (Department → product_type, Category/Subcategory → tags)\n\n"
         "• Rewrites descriptions following voice and tone guidelines\n"
         "  (Professional, brand-consistent copy for each department)\n\n"
         "Requirements:\n"
-        "• Claude API key configured in Settings\n"
-        "• anthropic package installed (pip install anthropic)\n\n"
+        "• AI provider configured in Settings (Claude or OpenAI)\n"
+        "• API key for selected provider\n"
+        "• Required package installed (anthropic or openai)\n\n"
         "Tip: This processes ~5 products per minute due to AI processing time."
     )
     ToolTip(help_icon, text=tooltip_text, bootstyle="info")
 
-    use_claude_var = tb.BooleanVar(value=cfg.get("USE_CLAUDE_AI", False))
+    use_ai_var = tb.BooleanVar(value=cfg.get("USE_AI_ENHANCEMENT", False))
 
-    claude_checkbox = tb.Checkbutton(
+    ai_checkbox = tb.Checkbutton(
         container,
-        text="🤖 Use Claude AI for taxonomy assignment and description rewriting",
-        variable=use_claude_var,
+        text="🤖 Use AI for taxonomy assignment and description rewriting",
+        variable=use_ai_var,
         bootstyle="info-round-toggle"
     )
-    claude_checkbox.grid(row=row, column=1, columnspan=2, sticky="w", padx=5, pady=5)
+    ai_checkbox.grid(row=row, column=1, columnspan=2, sticky="w", padx=5, pady=5)
 
-    def on_claude_toggle(*args):
-        """Auto-save Claude AI setting to config."""
+    def on_ai_toggle(*args):
+        """Auto-save AI enhancement setting to config."""
         try:
-            cfg["USE_CLAUDE_AI"] = use_claude_var.get()
+            cfg["USE_AI_ENHANCEMENT"] = use_ai_var.get()
             save_config(cfg)
         except Exception:
             pass
 
-    use_claude_var.trace_add("write", on_claude_toggle)
+    use_ai_var.trace_add("write", on_ai_toggle)
+
+    # AI Provider selector
+    row = container.grid_size()[1]
+    tb.Label(container, text="AI Provider:", anchor="w").grid(
+        row=row, column=0, sticky="w", padx=5, pady=5
+    )
+
+    current_provider = cfg.get("AI_PROVIDER", "claude")
+    current_provider_display = get_provider_display_from_id(current_provider)
+    provider_var = tb.StringVar(value=current_provider_display)
+
+    provider_dropdown = tb.Combobox(
+        container,
+        textvariable=provider_var,
+        values=[display for display, _ in AI_PROVIDERS],
+        state="readonly" if use_ai_var.get() else "disabled",
+        width=50
+    )
+    provider_dropdown.grid(row=row, column=1, columnspan=2, sticky="ew", padx=5, pady=5)
+    ToolTip(provider_dropdown, text="Select AI provider: Claude (Anthropic) or ChatGPT (OpenAI)")
+
+    def on_provider_change(*args):
+        """Auto-save AI provider setting and update model dropdown."""
+        try:
+            provider_id = get_provider_id_from_display(provider_var.get())
+            cfg["AI_PROVIDER"] = provider_id
+            save_config(cfg)
+
+            # Update model dropdown options based on provider
+            update_model_dropdown_options(provider_id)
+        except Exception:
+            pass
+
+    provider_var.trace_add("write", on_provider_change)
+
+    # AI Model selector
+    row = container.grid_size()[1]
+    tb.Label(container, text="AI Model:", anchor="w").grid(
+        row=row, column=0, sticky="w", padx=5, pady=5
+    )
+
+    # Get current model based on current provider
+    if current_provider == "claude":
+        current_model_id = cfg.get("CLAUDE_MODEL", "claude-sonnet-4-5-20250929")
+    else:
+        current_model_id = cfg.get("OPENAI_MODEL", "gpt-5")
+
+    current_model_display = get_display_from_model_id(current_model_id, current_provider)
+    model_var = tb.StringVar(value=current_model_display)
+
+    model_dropdown = tb.Combobox(
+        container,
+        textvariable=model_var,
+        values=[display for display, _ in (CLAUDE_MODELS if current_provider == "claude" else OPENAI_MODELS)],
+        state="readonly" if use_ai_var.get() else "disabled",
+        width=50
+    )
+    model_dropdown.grid(row=row, column=1, columnspan=2, sticky="ew", padx=5, pady=5)
+
+    # Create tooltip based on current provider
+    if current_provider == "claude":
+        model_tooltip = (
+            "Sonnet 4.5: Best for this task (Recommended)\n"
+            "Opus 3.5: Maximum intelligence, higher cost\n"
+            "Sonnet 3.5: Previous generation, good balance\n"
+            "Haiku 3.5: Fast and cheap, may miss nuances"
+        )
+    else:
+        model_tooltip = (
+            "GPT-5: Latest model with best reasoning (Recommended)\n"
+            "GPT-5 Mini: Faster and cheaper than GPT-5\n"
+            "GPT-5 Nano: Fastest and cheapest GPT-5 variant\n"
+            "GPT-4o: Previous generation, good balance\n"
+            "GPT-4o Mini: Fast and economical"
+        )
+
+    model_tooltip_widget = ToolTip(model_dropdown, text=model_tooltip)
+
+    def on_model_change(*args):
+        """Auto-save AI model setting to appropriate config field."""
+        try:
+            provider_id = cfg.get("AI_PROVIDER", "claude")
+            model_id = get_model_id_from_display(model_var.get(), provider_id)
+
+            if provider_id == "claude":
+                cfg["CLAUDE_MODEL"] = model_id
+            else:
+                cfg["OPENAI_MODEL"] = model_id
+
+            save_config(cfg)
+        except Exception:
+            pass
+
+    model_var.trace_add("write", on_model_change)
+
+    def update_model_dropdown_options(provider_id):
+        """Update model dropdown options based on selected provider."""
+        if provider_id == "claude":
+            models = CLAUDE_MODELS
+            current_model = cfg.get("CLAUDE_MODEL", "claude-sonnet-4-5-20250929")
+            tooltip_text = (
+                "Sonnet 4.5: Best for this task (Recommended)\n"
+                "Opus 3.5: Maximum intelligence, higher cost\n"
+                "Sonnet 3.5: Previous generation, good balance\n"
+                "Haiku 3.5: Fast and cheap, may miss nuances"
+            )
+        else:
+            models = OPENAI_MODELS
+            current_model = cfg.get("OPENAI_MODEL", "gpt-5")
+            tooltip_text = (
+                "GPT-5: Latest model with best reasoning (Recommended)\n"
+                "GPT-5 Mini: Faster and cheaper than GPT-5\n"
+                "GPT-5 Nano: Fastest and cheapest GPT-5 variant\n"
+                "GPT-4o: Previous generation, good balance\n"
+                "GPT-4o Mini: Fast and economical"
+            )
+
+        # Update dropdown values
+        model_dropdown['values'] = [display for display, _ in models]
+
+        # Update selected value
+        current_display = get_display_from_model_id(current_model, provider_id)
+        model_var.set(current_display)
+
+        # Update tooltip
+        model_tooltip_widget.text = tooltip_text
+
+    def update_ai_fields_state(*args):
+        """Enable/disable AI provider and model fields based on AI Enhancement toggle."""
+        enabled = use_ai_var.get()
+        state = "readonly" if enabled else "disabled"
+
+        provider_dropdown.configure(state=state)
+        model_dropdown.configure(state=state)
+
+    # Bind AI Enhancement toggle to update field states
+    use_ai_var.trace_add("write", update_ai_fields_state)
+
+    # Audience Configuration
+    row = container.grid_size()[1]
+
+    label_frame = tb.Frame(container)
+    label_frame.grid(row=row, column=0, sticky="w", padx=5, pady=5)
+
+    tb.Label(label_frame, text="Audience Configuration", anchor="w").pack(side="left")
+    help_icon = tb.Label(label_frame, text=" ⓘ ", font=("Arial", 9),
+                         foreground="#5BC0DE", cursor="hand2")
+    help_icon.pack(side="left")
+    tb.Label(label_frame, text=":", anchor="w").pack(side="left")
+
+    tooltip_text = (
+        "Configure product descriptions for different audiences:\n\n"
+        "• Single Audience:\n"
+        "  One description optimized for your target customer.\n\n"
+        "• Multiple Audiences (2):\n"
+        "  Two description variants displayed in tabs.\n"
+        "  Example: Homeowners vs. Contractors\n\n"
+        "Requirements:\n"
+        "• AI Enhancement must be enabled\n"
+        "• Requires custom Liquid theme code for tab display\n\n"
+        "Tip: Use 2 audiences when products serve different customer needs."
+    )
+    ToolTip(help_icon, text=tooltip_text, bootstyle="info")
+
+    # Create frame for radio buttons
+    audience_frame = tb.Frame(container)
+    audience_frame.grid(row=row, column=1, columnspan=2, sticky="w", padx=5, pady=5)
+
+    audience_count_var = tb.IntVar(value=cfg.get("AUDIENCE_COUNT", 1))
+
+    single_audience_radio = tb.Radiobutton(
+        audience_frame,
+        text="Single Audience",
+        variable=audience_count_var,
+        value=1,
+        bootstyle="primary"
+    )
+    single_audience_radio.pack(side="left", padx=(0, 20))
+
+    multiple_audience_radio = tb.Radiobutton(
+        audience_frame,
+        text="Multiple Audiences (2)",
+        variable=audience_count_var,
+        value=2,
+        bootstyle="primary"
+    )
+    multiple_audience_radio.pack(side="left")
+
+    def on_audience_count_change(*args):
+        """Auto-save audience count and update field visibility."""
+        try:
+            cfg["AUDIENCE_COUNT"] = audience_count_var.get()
+            save_config(cfg)
+            update_audience_fields_visibility()
+        except Exception:
+            pass
+
+    audience_count_var.trace_add("write", on_audience_count_change)
+
+    # Audience 1 Name (always visible)
+    row = container.grid_size()[1]
+    tb.Label(container, text="Audience 1 Name:", anchor="w").grid(
+        row=row, column=0, sticky="w", padx=5, pady=5
+    )
+
+    audience_1_name_var = tb.StringVar(value=cfg.get("AUDIENCE_1_NAME", ""))
+    audience_1_name_entry = tb.Entry(container, textvariable=audience_1_name_var, width=50)
+    audience_1_name_entry.grid(row=row, column=1, columnspan=2, sticky="ew", padx=5, pady=5)
+    ToolTip(
+        audience_1_name_entry,
+        text="Name of primary audience (e.g., 'Homeowners', 'Professionals')\n"
+             "Used for AI context and display labels."
+    )
+
+    def on_audience_1_name_change(*args):
+        """Auto-save audience 1 name."""
+        try:
+            cfg["AUDIENCE_1_NAME"] = audience_1_name_var.get().strip()
+            save_config(cfg)
+        except Exception:
+            pass
+
+    audience_1_name_var.trace_add("write", on_audience_1_name_change)
+
+    # Tab 1 Label (always visible)
+    row = container.grid_size()[1]
+    tb.Label(container, text="Tab 1 Label:", anchor="w").grid(
+        row=row, column=0, sticky="w", padx=5, pady=5
+    )
+
+    tab_1_label_var = tb.StringVar(value=cfg.get("AUDIENCE_TAB_1_LABEL", ""))
+    tab_1_label_entry = tb.Entry(container, textvariable=tab_1_label_var, width=50)
+    tab_1_label_entry.grid(row=row, column=1, columnspan=2, sticky="ew", padx=5, pady=5)
+    ToolTip(
+        tab_1_label_entry,
+        text="Display label for first tab (e.g., 'For Your Home')\n"
+             "Short, customer-facing text shown on product page."
+    )
+
+    def on_tab_1_label_change(*args):
+        """Auto-save tab 1 label."""
+        try:
+            cfg["AUDIENCE_TAB_1_LABEL"] = tab_1_label_var.get().strip()
+            save_config(cfg)
+        except Exception:
+            pass
+
+    tab_1_label_var.trace_add("write", on_tab_1_label_change)
+
+    # Audience 2 Name (always visible)
+    row = container.grid_size()[1]
+    tb.Label(container, text="Audience 2 Name:", anchor="w").grid(
+        row=row, column=0, sticky="w", padx=5, pady=5
+    )
+
+    audience_2_name_var = tb.StringVar(value=cfg.get("AUDIENCE_2_NAME", ""))
+    audience_2_name_entry = tb.Entry(container, textvariable=audience_2_name_var, width=50)
+    audience_2_name_entry.grid(row=row, column=1, columnspan=2, sticky="ew", padx=5, pady=5)
+    ToolTip(
+        audience_2_name_entry,
+        text="Name of second audience (e.g., 'Contractors', 'DIY Enthusiasts')\n"
+             "Used for AI context and display labels."
+    )
+
+    def on_audience_2_name_change(*args):
+        """Auto-save audience 2 name."""
+        try:
+            cfg["AUDIENCE_2_NAME"] = audience_2_name_var.get().strip()
+            save_config(cfg)
+        except Exception:
+            pass
+
+    audience_2_name_var.trace_add("write", on_audience_2_name_change)
+
+    # Tab 2 Label (always visible)
+    row = container.grid_size()[1]
+    tb.Label(container, text="Tab 2 Label:", anchor="w").grid(
+        row=row, column=0, sticky="w", padx=5, pady=5
+    )
+
+    tab_2_label_var = tb.StringVar(value=cfg.get("AUDIENCE_TAB_2_LABEL", ""))
+    tab_2_label_entry = tb.Entry(container, textvariable=tab_2_label_var, width=50)
+    tab_2_label_entry.grid(row=row, column=1, columnspan=2, sticky="ew", padx=5, pady=5)
+    ToolTip(
+        tab_2_label_entry,
+        text="Display label for second tab (e.g., 'For Professionals')\n"
+             "Short, customer-facing text shown on product page."
+    )
+
+    def on_tab_2_label_change(*args):
+        """Auto-save tab 2 label."""
+        try:
+            cfg["AUDIENCE_TAB_2_LABEL"] = tab_2_label_var.get().strip()
+            save_config(cfg)
+        except Exception:
+            pass
+
+    tab_2_label_var.trace_add("write", on_tab_2_label_change)
+
+    def update_audience_fields_state():
+        """Enable/disable audience fields based on configuration."""
+        is_multiple = audience_count_var.get() == 2
+        is_ai_enabled = use_ai_var.get()
+
+        # Enable/disable based on AI Enhancement toggle and audience count
+        if is_ai_enabled:
+            # Audience 1 Name always enabled when AI is on
+            audience_1_name_entry.configure(state="normal")
+
+            # Audience 2, Tab 1, and Tab 2 fields only enabled for multiple audiences
+            if is_multiple:
+                tab_1_label_entry.configure(state="normal")
+                audience_2_name_entry.configure(state="normal")
+                tab_2_label_entry.configure(state="normal")
+            else:
+                tab_1_label_entry.configure(state="disabled")
+                audience_2_name_entry.configure(state="disabled")
+                tab_2_label_entry.configure(state="disabled")
+        else:
+            # All disabled when AI Enhancement is off
+            audience_1_name_entry.configure(state="disabled")
+            tab_1_label_entry.configure(state="disabled")
+            audience_2_name_entry.configure(state="disabled")
+            tab_2_label_entry.configure(state="disabled")
+
+    # Bind AI Enhancement toggle to update audience field states
+    use_ai_var.trace_add("write", lambda *args: update_audience_fields_state())
+
+    # Initialize field states
+    update_audience_fields_state()
 
     # Execution Mode toggle
     row = container.grid_size()[1]

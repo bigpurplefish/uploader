@@ -25,6 +25,8 @@ pip install -r requirements.txt
 Required packages:
 - `ttkbootstrap>=1.10.0` - Modern themed tkinter GUI
 - `requests>=2.28.0` - HTTP library for API calls
+- `anthropic>=0.18.0` - Claude AI API client (optional, for AI enhancement)
+- `openai>=1.0.0` - OpenAI API client (optional, for AI enhancement)
 
 ### Setup Script (First Time)
 ```bash
@@ -32,6 +34,34 @@ chmod +x setup.sh
 ./setup.sh
 ```
 Creates directory structure, installs dependencies, moves docs to proper locations.
+
+## Git Workflow Preference
+
+**Commit Strategy:** Proactive (Option 2)
+
+When making changes to this project:
+1. ✅ Make the code changes and test them
+2. ✅ After completing a significant feature or set of changes, **ASK THE USER**: "Would you like me to commit and push these changes to GitHub?"
+3. ⏸️ Wait for user approval before committing
+4. ✅ If approved, create a meaningful commit with:
+   - Descriptive commit message explaining what was changed and why
+   - Group related changes together (don't commit every tiny change separately)
+   - Include "🤖 Generated with Claude Code" footer and Co-Authored-By line
+5. ✅ Push to GitHub remote: `git@github.com:bigpurplefish/uploader.git`
+
+**What counts as "significant":**
+- New feature added (e.g., collection descriptions, new API integration)
+- Bug fix completed
+- Documentation updates (major changes)
+- Refactoring completed
+- Multiple related changes that form a cohesive update
+
+**Do NOT auto-commit:**
+- Work in progress
+- Experimental changes
+- Small typo fixes (unless user requests)
+
+**Repository:** https://github.com/bigpurplefish/uploader
 
 ## Architecture
 
@@ -199,9 +229,13 @@ Functions: `search_shopify_taxonomy()` (line 1186), `get_taxonomy_id()` (line 12
 - Caches results in `product_taxonomy.json` to reduce API calls
 - Falls back gracefully if no match found
 
-### Claude API Integration (AI-Powered Content Enhancement)
+### AI Integration (AI-Powered Content Enhancement)
 
-**Purpose**: Uses Claude API to automatically assign products to internal taxonomy and rewrite descriptions according to voice and tone guidelines.
+**Purpose**: Uses AI (Claude or OpenAI) to automatically assign products to internal taxonomy and rewrite descriptions according to voice and tone guidelines.
+
+**Supported Providers**:
+- **Claude (Anthropic)**: Models include Sonnet 4.5, Opus 3.5, Sonnet 3.5, Haiku 3.5
+- **OpenAI (ChatGPT)**: Models include GPT-5, GPT-5 Mini, GPT-5 Nano, GPT-4o, GPT-4o Mini, GPT-4 Turbo, GPT-4
 
 **Pre-Processing Steps** (before Shopify upload):
 
@@ -219,17 +253,33 @@ Functions: `search_shopify_taxonomy()` (line 1186), `get_taxonomy_id()` (line 12
    - Maintains uniqueness across similar products (no 7+ word repetitions)
    - Follows standards in `docs/VOICE_AND_TONE_GUIDELINES.md`
 
+3. **Collection Descriptions**:
+   - Generates SEO-optimized 100-word descriptions for collections
+   - Samples up to 5 products from each collection for context
+   - Applies appropriate department tone
+
 **Configuration**:
+- `AI_PROVIDER`: "claude" or "openai" (default: "claude")
 - `CLAUDE_API_KEY`: Stored in `config.json`
-- `CLAUDE_MODEL`: Model version (e.g., "claude-3-5-sonnet-20241022")
-- Enable/disable via GUI checkbox: "Use Claude AI for taxonomy and descriptions"
+- `CLAUDE_MODEL`: Model version (e.g., "claude-sonnet-4-5-20250929")
+- `OPENAI_API_KEY`: Stored in `config.json`
+- `OPENAI_MODEL`: Model version (e.g., "gpt-4o")
+- Enable/disable via GUI checkbox: "Use AI for taxonomy and descriptions"
 
 **API Flow**:
 ```
-Input Product → Claude API Call → Enhanced Product → Shopify Upload
-                     ↓
-              (taxonomy + rewritten description)
+Input Product → AI API Call (Claude/OpenAI) → Enhanced Product → Shopify Upload
+                         ↓
+                  (taxonomy + rewritten description)
 ```
+
+**Cost Comparison** (approximate per product):
+- OpenAI GPT-5 Nano: ~$0.002 per product (2 API calls) - cheapest
+- OpenAI GPT-5 Mini: ~$0.003 per product (2 API calls)
+- OpenAI GPT-5: ~$0.008 per product (2 API calls) - recommended
+- OpenAI GPT-4o: ~$0.015 per product (2 API calls)
+- Claude Sonnet 4.5: ~$0.022 per product (2 API calls)
+- Claude Opus 3.5: ~$0.040 per product (2 API calls) - highest quality
 
 **Benefits**:
 - Consistent taxonomy across all products

@@ -21,10 +21,15 @@ def load_config():
         "_SYSTEM SETTINGS": "These are system settings specified in the Settings dialog.",
         "SHOPIFY_STORE_URL": "",
         "SHOPIFY_ACCESS_TOKEN": "",
-        "_CLAUDE_AI_SETTINGS": "Claude AI settings for taxonomy and description enhancement.",
+        "_AI_SETTINGS": "AI settings for taxonomy and description enhancement.",
+        "AI_PROVIDER": "claude",
+        "USE_AI_ENHANCEMENT": False,
+        "_CLAUDE_AI_SETTINGS": "Claude AI specific settings.",
         "CLAUDE_API_KEY": "",
         "CLAUDE_MODEL": "claude-sonnet-4-5-20250929",
-        "USE_CLAUDE_AI": False,
+        "_OPENAI_SETTINGS": "OpenAI/ChatGPT specific settings.",
+        "OPENAI_API_KEY": "",
+        "OPENAI_MODEL": "gpt-5",
         "_USER SETTINGS": "These are user settings specified in the main UI.",
         "INPUT_FILE": "",
         "PRODUCT_OUTPUT_FILE": "",
@@ -41,15 +46,31 @@ def load_config():
         else:
             with open(CONFIG_FILE, "r", encoding="utf-8") as f:
                 loaded_config = json.load(f)
+
                 # Migrate old OUTPUT_FILE to PRODUCT_OUTPUT_FILE
                 if "OUTPUT_FILE" in loaded_config and "PRODUCT_OUTPUT_FILE" not in loaded_config:
                     loaded_config["PRODUCT_OUTPUT_FILE"] = loaded_config["OUTPUT_FILE"]
                     del loaded_config["OUTPUT_FILE"]
-                    save_config(loaded_config)
-                # Ensure new fields exist
-                for key in ["PRODUCT_OUTPUT_FILE", "COLLECTIONS_OUTPUT_FILE", "CLAUDE_API_KEY", "CLAUDE_MODEL", "USE_CLAUDE_AI"]:
+
+                # Migrate old USE_CLAUDE_AI to USE_AI_ENHANCEMENT
+                if "USE_CLAUDE_AI" in loaded_config and "USE_AI_ENHANCEMENT" not in loaded_config:
+                    loaded_config["USE_AI_ENHANCEMENT"] = loaded_config["USE_CLAUDE_AI"]
+                    loaded_config["AI_PROVIDER"] = "claude"  # Default to Claude for existing users
+                    del loaded_config["USE_CLAUDE_AI"]
+                    logging.info("Migrated USE_CLAUDE_AI to USE_AI_ENHANCEMENT with AI_PROVIDER=claude")
+
+                # Ensure all new fields exist
+                for key in ["PRODUCT_OUTPUT_FILE", "COLLECTIONS_OUTPUT_FILE", "AI_PROVIDER",
+                           "USE_AI_ENHANCEMENT", "CLAUDE_API_KEY", "CLAUDE_MODEL",
+                           "OPENAI_API_KEY", "OPENAI_MODEL"]:
                     if key not in loaded_config:
-                        loaded_config[key] = default[key]
+                        if key in default:
+                            loaded_config[key] = default[key]
+
+                # Save if we made any migrations
+                if "USE_CLAUDE_AI" in json.dumps(loaded_config) or "OUTPUT_FILE" in json.dumps(loaded_config):
+                    save_config(loaded_config)
+
                 return loaded_config
     except json.JSONDecodeError as e:
         logging.error(f"Failed to parse config.json: {e}. Using defaults.")

@@ -1,6 +1,6 @@
 # Shopify Product Uploader
 
-Version 1.0 - A comprehensive GUI application for uploading products to Shopify with full variant, image, and 3D model support.
+**Version 2.6.0** - A comprehensive GUI application for uploading products to Shopify with AI-powered product enhancement, audience-based descriptions, and full variant support.
 
 ## Overview
 
@@ -9,6 +9,8 @@ This script uploads product data from JSON files to Shopify using the Shopify Gr
 - Product images (already uploaded to Shopify CDN)
 - 3D model files (GLB/USDZ) - uploaded automatically
 - Product and variant metafields
+- **AI-powered product enhancement** with Claude or OpenAI
+- **Audience-based product descriptions** with tabbed display
 - Resume capability after interruptions
 - Comprehensive logging and status tracking
 
@@ -46,6 +48,33 @@ This script uploads product data from JSON files to Shopify using the Shopify Gr
    - Adds processing status to each product
    - Includes success/failure information and Shopify product IDs
 
+### 🤖 AI Enhancement Features (NEW in v2.6.0)
+
+**Audience-Based Product Descriptions:**
+- Generate different description variants for different customer audiences
+- **Single Audience Mode:** One optimized description per product
+- **Multiple Audience Mode:** Two descriptions with tabbed display on storefront
+- Example: "Homeowners" vs "Contractors" descriptions for same product
+
+**AI Providers:**
+- **OpenAI** (GPT-5, GPT-4o, GPT-4) - ✅ Full support with audience feature
+- **Claude** (Sonnet 4.5, Opus 3.5, Haiku 3.5) - ✅ Full support with audience feature
+
+**Features:**
+- Automatic taxonomy assignment (Department → Category → Subcategory)
+- Mobile-optimized description rewriting following voice/tone guidelines
+- Shopify category matching using AI
+- Caching to avoid re-processing unchanged products
+- Cost tracking and logging
+
+**Shopify Theme Integration:**
+- Liquid snippet for tabbed product descriptions
+- Mobile-responsive design (vertical tabs on small screens)
+- Keyboard navigation support
+- Polaris-style icons
+
+**See:** `docs/AUDIENCE_DESCRIPTIONS_FEATURE.md` for complete documentation
+
 ### 🎨 GUI Features (Following Design Standards)
 
 - **Modern Dark Theme**: Uses ttkbootstrap 'darkly' theme
@@ -55,6 +84,8 @@ This script uploads product data from JSON files to Shopify using the Shopify Gr
 - **Status Log**: 100-line status field with auto-scroll
 - **Threading**: Non-blocking UI during processing
 - **Validation**: Validates all inputs before processing
+- **Audience Configuration:** Radio buttons + 4 input fields for audience settings
+- **Smart Field Management:** Fields remain visible but disable when not needed
 
 ## Requirements
 
