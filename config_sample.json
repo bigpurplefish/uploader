@@ -1,0 +1,10 @@
+{
+    "_SYSTEM SETTINGS": "These are system settings specified in the Settings dialog.",
+    "SHOPIFY_STORE_URL": "yourstore.myshopify.com",
+    "SHOPIFY_ACCESS_TOKEN": "your-access-token-here",
+    "_USER SETTINGS": "These are user settings specified in the main UI.",
+    "INPUT_FILE": "",
+    "OUTPUT_FILE": "",
+    "LOG_FILE": "",
+    "WINDOW_GEOMETRY": "900x900"
+}
