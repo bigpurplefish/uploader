@@ -35,6 +35,7 @@
 
     <link rel="stylesheet" href="{{ 'theme.css' | asset_url }}" />
     <link rel="stylesheet" href="{{ 'custom-size-selector.css' | asset_url }}" />
+    <link rel="stylesheet" href="{{ 'audience-tabs.css' | asset_url }}" />
 
     {% render 'microdata-schema' %}
 
@@ -87,6 +88,7 @@
 
     <script src="{{ 'theme.js' | asset_url }}" defer></script>
     <script src="{{ 'custom.js' | asset_url }}" defer></script>
+    <script src="{{ 'audience-tabs.js' | asset_url }}" defer></script>
 
     {%- if request.page_type != 'cart' -%}
     <script>

@@ -110,6 +110,23 @@
               {%- when 'description' -%}
                 {%- if product.description != blank -%}
                   <div class="product-block-list__item product-block-list__item--description" {{ block.shopify_attributes }}>
+                    {%- comment -%}
+                    =====================================================================
+                    AUDIENCE-BASED DESCRIPTIONS
+                    Check for audience configuration metafield
+                    =====================================================================
+                    {%- endcomment -%}
+                    {%- assign audience_config = product.metafields.custom.audience_config -%}
+                    {%- assign description_1 = product.metafields.custom.description_audience_1 -%}
+                    {%- assign description_2 = product.metafields.custom.description_audience_2 -%}
+
+                    {%- if audience_config -%}
+                      {%- assign config = audience_config | parse_json -%}
+                      {%- assign audience_count = config.count -%}
+                    {%- else -%}
+                      {%- assign audience_count = 1 -%}
+                    {%- endif -%}
+
                     <div class="card">
                       {%- if block.settings.display_mode == 'collapse' -%}
                         <button class="card__collapsible-button" data-action="toggle-collapsible" aria-expanded="false" aria-controls="block-{{ section.id }}-{{ block.id }}">
@@ -119,9 +136,38 @@
 
                         <div id="block-{{ section.id }}-{{ block.id }}" class="card__collapsible">
                           <div class="card__collapsible-content">
-                            <div class="rte text--pull">
-                              {{ product.description | remove: 'data-section-type="product"' }}
-                            </div>
+                            {%- if audience_count == 2 and description_1 and description_2 -%}
+                              {%- comment -%} MULTIPLE AUDIENCES - Tabbed Display {%- endcomment -%}
+                              <div class="audience-tabs" data-audience-tabs>
+                                <div class="audience-tabs__buttons" role="tablist">
+                                  <button class="audience-tabs__button audience-tabs__button--active" data-tab="audience-1" role="tab" aria-selected="true" aria-controls="panel-audience-1" id="tab-audience-1">
+                                    <svg class="audience-tabs__icon" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M10.707 2.293a1 1 0 0 0-1.414 0l-7 7a1 1 0 0 0 1.414 1.414L4 10.414V17a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1v-2a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1v-6.586l.293.293a1 1 0 0 0 1.414-1.414l-7-7z"/></svg>
+                                    <span>{{ config.tab_1_label | default: "Audience 1" }}</span>
+                                  </button>
+                                  <button class="audience-tabs__button" data-tab="audience-2" role="tab" aria-selected="false" aria-controls="panel-audience-2" id="tab-audience-2">
+                                    <svg class="audience-tabs__icon" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M10.75 6.75a.75.75 0 0 0-1.5 0v2.5h-2.5a.75.75 0 0 0 0 1.5h2.5v2.5a.75.75 0 0 0 1.5 0v-2.5h2.5a.75.75 0 0 0 0-1.5h-2.5v-2.5z"/><path fill-rule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm0-1.5a6.5 6.5 0 1 0 0-13 6.5 6.5 0 0 0 0 13z"/></svg>
+                                    <span>{{ config.tab_2_label | default: "Audience 2" }}</span>
+                                  </button>
+                                </div>
+                                <div class="audience-tabs__panels">
+                                  <div class="audience-tabs__panel audience-tabs__panel--active rte text--pull" id="panel-audience-1" role="tabpanel" aria-labelledby="tab-audience-1" tabindex="0">
+                                    {{ description_1 }}
+                                  </div>
+                                  <div class="audience-tabs__panel rte text--pull" id="panel-audience-2" role="tabpanel" aria-labelledby="tab-audience-2" tabindex="0" hidden>
+                                    {{ description_2 }}
+                                  </div>
+                                </div>
+                              </div>
+                            {%- else -%}
+                              {%- comment -%} SINGLE AUDIENCE - Standard Display {%- endcomment -%}
+                              <div class="rte text--pull">
+                                {%- if description_1 -%}
+                                  {{ description_1 }}
+                                {%- else -%}
+                                  {{ product.description | remove: 'data-section-type="product"' }}
+                                {%- endif -%}
+                              </div>
+                            {%- endif -%}
                           </div>
                         </div>
                       {%- else -%}
@@ -130,9 +176,38 @@
                         </div>
 
                         <div class="card__section {% if block.settings.display_mode == 'view_more' %}expandable-content{% endif %}" {% if block.settings.display_mode == 'view_more' %}aria-expanded="false"{% endif %}>
-                          <div class="rte text--pull">
-                            {{ product.description | remove: 'data-section-type="product"' }}
-                          </div>
+                          {%- if audience_count == 2 and description_1 and description_2 -%}
+                            {%- comment -%} MULTIPLE AUDIENCES - Tabbed Display {%- endcomment -%}
+                            <div class="audience-tabs" data-audience-tabs>
+                              <div class="audience-tabs__buttons" role="tablist">
+                                <button class="audience-tabs__button audience-tabs__button--active" data-tab="audience-1" role="tab" aria-selected="true" aria-controls="panel-audience-1" id="tab-audience-1">
+                                  <svg class="audience-tabs__icon" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M10.707 2.293a1 1 0 0 0-1.414 0l-7 7a1 1 0 0 0 1.414 1.414L4 10.414V17a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1v-2a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1v-6.586l.293.293a1 1 0 0 0 1.414-1.414l-7-7z"/></svg>
+                                  <span>{{ config.tab_1_label | default: "Audience 1" }}</span>
+                                </button>
+                                <button class="audience-tabs__button" data-tab="audience-2" role="tab" aria-selected="false" aria-controls="panel-audience-2" id="tab-audience-2">
+                                  <svg class="audience-tabs__icon" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M10.75 6.75a.75.75 0 0 0-1.5 0v2.5h-2.5a.75.75 0 0 0 0 1.5h2.5v2.5a.75.75 0 0 0 1.5 0v-2.5h2.5a.75.75 0 0 0 0-1.5h-2.5v-2.5z"/><path fill-rule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm0-1.5a6.5 6.5 0 1 0 0-13 6.5 6.5 0 0 0 0 13z"/></svg>
+                                  <span>{{ config.tab_2_label | default: "Audience 2" }}</span>
+                                </button>
+                              </div>
+                              <div class="audience-tabs__panels">
+                                <div class="audience-tabs__panel audience-tabs__panel--active rte text--pull" id="panel-audience-1" role="tabpanel" aria-labelledby="tab-audience-1" tabindex="0">
+                                  {{ description_1 }}
+                                </div>
+                                <div class="audience-tabs__panel rte text--pull" id="panel-audience-2" role="tabpanel" aria-labelledby="tab-audience-2" tabindex="0" hidden>
+                                  {{ description_2 }}
+                                </div>
+                              </div>
+                            </div>
+                          {%- else -%}
+                            {%- comment -%} SINGLE AUDIENCE - Standard Display {%- endcomment -%}
+                            <div class="rte text--pull">
+                              {%- if description_1 -%}
+                                {{ description_1 }}
+                              {%- else -%}
+                                {{ product.description | remove: 'data-section-type="product"' }}
+                              {%- endif -%}
+                            </div>
+                          {%- endif -%}
 
                           {%- if block.settings.display_mode == 'view_more' -%}
                             <button class="expandable-content__toggle">
