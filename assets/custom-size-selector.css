@@ -1,0 +1,163 @@
+/* Custom Size Selector Styles - Techo-Bloc Style */
+
+.custom-size-selector {
+  margin: 20px 0;
+}
+
+.custom-size-selector__label {
+  display: block;
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.custom-size-selector__options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.custom-size-selector__option {
+  position: relative;
+}
+
+.custom-size-selector__input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.custom-size-selector__label-wrapper {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px;
+  border: 2px solid #e5e5e5;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: #fff;
+}
+
+.custom-size-selector__label-wrapper:hover {
+  border-color: #999;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.custom-size-selector__input:checked + .custom-size-selector__label-wrapper {
+  border-color: #000;
+  background: #f9f9f9;
+}
+
+.custom-size-selector__radio-circle {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  border: 2px solid #ccc;
+  border-radius: 50%;
+  position: relative;
+  margin-top: 2px;
+  transition: all 0.2s ease;
+}
+
+.custom-size-selector__input:checked + .custom-size-selector__label-wrapper .custom-size-selector__radio-circle {
+  border-color: #000;
+  background: #000;
+}
+
+.custom-size-selector__input:checked + .custom-size-selector__label-wrapper .custom-size-selector__radio-circle::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #fff;
+}
+
+.custom-size-selector__image-wrapper {
+  flex-shrink: 0;
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f5f5f5;
+  border-radius: 4px;
+  padding: 8px;
+}
+
+.custom-size-selector__image {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.custom-size-selector__info {
+  flex: 1;
+  min-width: 0;
+}
+
+.custom-size-selector__size-name {
+  display: block;
+  font-weight: 600;
+  font-size: 16px;
+  margin-bottom: 8px;
+  color: #000;
+}
+
+.custom-size-selector__dimensions {
+  margin-top: 8px;
+}
+
+.custom-size-selector__dimensions-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #666;
+  margin-bottom: 6px;
+  letter-spacing: 0.5px;
+}
+
+.custom-size-selector__dimensions-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.custom-size-selector__dimension-item {
+  font-size: 13px;
+  color: #555;
+  line-height: 1.5;
+  padding: 2px 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .custom-size-selector__label-wrapper {
+    padding: 12px;
+  }
+  
+  .custom-size-selector__image-wrapper {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .custom-size-selector__size-name {
+    font-size: 14px;
+  }
+  
+  .custom-size-selector__dimension-item {
+    font-size: 12px;
+  }
+}
+
+/* Hide standard Shopify variant select when custom selector is shown */
+.product-form__variant-select[style*="display: none"] {
+  display: none !important;
+}

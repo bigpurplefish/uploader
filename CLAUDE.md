@@ -389,6 +389,8 @@ When Shopify releases new API versions:
 
 The `shopify/` directory contains Shopify theme files (Liquid templates, JavaScript, CSS) for debugging and reference. This mirrors the structure found in Shopify Admin → Online Store → Themes → Edit Code.
 
+**Shopify Store URL:** c2280b-es.myshopify.com
+
 **Directory structure**:
 ```
 shopify/
