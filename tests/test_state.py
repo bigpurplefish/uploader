@@ -7,6 +7,7 @@ and taxonomy caching.
 
 import pytest
 import json
+import logging
 import sys
 from pathlib import Path
 from datetime import datetime
@@ -309,3 +310,222 @@ class TestStateErrorHandling:
 
         # Should log error but not crash
         assert "Failed to write" in caplog.text or "error" in caplog.text.lower()
+
+    def test_load_state_handles_generic_exception(self, mock_state_files, caplog, monkeypatch):
+        """Test that load_state handles unexpected exceptions."""
+        def mock_open_error(*args, **kwargs):
+            raise RuntimeError("Unexpected error")
+
+        # Make file exist so open() gets called
+        monkeypatch.setattr("os.path.exists", lambda x: True)
+        monkeypatch.setattr("builtins.open", mock_open_error)
+
+        with caplog.at_level(logging.WARNING):
+            result = state.load_state()
+
+        assert result == {}
+        assert "Unexpected error loading state" in caplog.text
+
+    def test_save_state_handles_generic_exception(self, mock_state_files, caplog, monkeypatch):
+        """Test that save_state handles unexpected exceptions."""
+        def mock_open_error(*args, **kwargs):
+            raise RuntimeError("Unexpected error")
+
+        monkeypatch.setattr("builtins.open", mock_open_error)
+
+        with caplog.at_level(logging.ERROR):
+            state.save_state({"test": "data"})
+
+        assert "Unexpected error saving state" in caplog.text
+
+    def test_load_collections_handles_json_decode_error(self, mock_state_files, caplog):
+        """Test that load_collections handles corrupted JSON."""
+        # Create corrupted JSON
+        with open(state.COLLECTIONS_FILE, 'w') as f:
+            f.write("{ invalid json }")
+
+        with caplog.at_level(logging.WARNING):
+            result = state.load_collections()
+
+        assert "collections" in result
+        assert "Failed to parse collections.json" in caplog.text
+
+    def test_load_collections_handles_io_error(self, mock_state_files, caplog, monkeypatch):
+        """Test that load_collections handles IO errors."""
+        def mock_open_error(*args, **kwargs):
+            raise IOError("Read error")
+
+        monkeypatch.setattr("os.path.exists", lambda x: True)
+        monkeypatch.setattr("builtins.open", mock_open_error)
+
+        with caplog.at_level(logging.WARNING):
+            result = state.load_collections()
+
+        assert "collections" in result
+        assert "Failed to read collections.json" in caplog.text
+
+    def test_load_collections_handles_generic_exception(self, mock_state_files, caplog, monkeypatch):
+        """Test that load_collections handles unexpected exceptions."""
+        def mock_open_error(*args, **kwargs):
+            raise RuntimeError("Unexpected error")
+
+        monkeypatch.setattr("os.path.exists", lambda x: True)
+        monkeypatch.setattr("builtins.open", mock_open_error)
+
+        with caplog.at_level(logging.WARNING):
+            result = state.load_collections()
+
+        assert "collections" in result
+        assert "Unexpected error loading collections" in caplog.text
+
+    def test_save_collections_handles_io_error(self, mock_state_files, caplog, monkeypatch):
+        """Test that save_collections handles IO errors."""
+        def mock_open_error(*args, **kwargs):
+            raise IOError("Write error")
+
+        monkeypatch.setattr("builtins.open", mock_open_error)
+
+        with caplog.at_level(logging.ERROR):
+            state.save_collections({"collections": []})
+
+        assert "Failed to write collections.json" in caplog.text
+
+    def test_save_collections_handles_generic_exception(self, mock_state_files, caplog, monkeypatch):
+        """Test that save_collections handles unexpected exceptions."""
+        def mock_open_error(*args, **kwargs):
+            raise RuntimeError("Unexpected error")
+
+        monkeypatch.setattr("builtins.open", mock_open_error)
+
+        with caplog.at_level(logging.ERROR):
+            state.save_collections({"collections": []})
+
+        assert "Unexpected error saving collections" in caplog.text
+
+    def test_load_products_handles_json_decode_error(self, mock_state_files, caplog):
+        """Test that load_products handles corrupted JSON."""
+        # Create corrupted JSON
+        with open(state.PRODUCTS_FILE, 'w') as f:
+            f.write("{ invalid json }")
+
+        with caplog.at_level(logging.WARNING):
+            result = state.load_products()
+
+        assert "products" in result
+        assert "Failed to parse products.json" in caplog.text
+
+    def test_load_products_handles_io_error(self, mock_state_files, caplog, monkeypatch):
+        """Test that load_products handles IO errors."""
+        def mock_open_error(*args, **kwargs):
+            raise IOError("Read error")
+
+        monkeypatch.setattr("os.path.exists", lambda x: True)
+        monkeypatch.setattr("builtins.open", mock_open_error)
+
+        with caplog.at_level(logging.WARNING):
+            result = state.load_products()
+
+        assert "products" in result
+        assert "Failed to read products.json" in caplog.text
+
+    def test_load_products_handles_generic_exception(self, mock_state_files, caplog, monkeypatch):
+        """Test that load_products handles unexpected exceptions."""
+        def mock_open_error(*args, **kwargs):
+            raise RuntimeError("Unexpected error")
+
+        monkeypatch.setattr("os.path.exists", lambda x: True)
+        monkeypatch.setattr("builtins.open", mock_open_error)
+
+        with caplog.at_level(logging.WARNING):
+            result = state.load_products()
+
+        assert "products" in result
+        assert "Unexpected error loading products" in caplog.text
+
+    def test_save_products_handles_io_error(self, mock_state_files, caplog, monkeypatch):
+        """Test that save_products handles IO errors."""
+        def mock_open_error(*args, **kwargs):
+            raise IOError("Write error")
+
+        monkeypatch.setattr("builtins.open", mock_open_error)
+
+        with caplog.at_level(logging.ERROR):
+            state.save_products({"products": []})
+
+        assert "Failed to write products.json" in caplog.text
+
+    def test_save_products_handles_generic_exception(self, mock_state_files, caplog, monkeypatch):
+        """Test that save_products handles unexpected exceptions."""
+        def mock_open_error(*args, **kwargs):
+            raise RuntimeError("Unexpected error")
+
+        monkeypatch.setattr("builtins.open", mock_open_error)
+
+        with caplog.at_level(logging.ERROR):
+            state.save_products({"products": []})
+
+        assert "Unexpected error saving products" in caplog.text
+
+    def test_load_taxonomy_cache_handles_json_decode_error(self, mock_state_files, caplog):
+        """Test that load_taxonomy_cache handles corrupted JSON."""
+        # Create corrupted JSON
+        with open(state.TAXONOMY_FILE, 'w') as f:
+            f.write("{ invalid json }")
+
+        with caplog.at_level(logging.WARNING):
+            result = state.load_taxonomy_cache()
+
+        assert result == {}
+        assert "Failed to parse taxonomy file" in caplog.text
+
+    def test_load_taxonomy_cache_handles_io_error(self, mock_state_files, caplog, monkeypatch):
+        """Test that load_taxonomy_cache handles IO errors."""
+        def mock_open_error(*args, **kwargs):
+            raise IOError("Read error")
+
+        monkeypatch.setattr("os.path.exists", lambda x: True)
+        monkeypatch.setattr("builtins.open", mock_open_error)
+
+        with caplog.at_level(logging.WARNING):
+            result = state.load_taxonomy_cache()
+
+        assert result == {}
+        assert "Failed to read taxonomy file" in caplog.text
+
+    def test_load_taxonomy_cache_handles_generic_exception(self, mock_state_files, caplog, monkeypatch):
+        """Test that load_taxonomy_cache handles unexpected exceptions."""
+        def mock_open_error(*args, **kwargs):
+            raise RuntimeError("Unexpected error")
+
+        monkeypatch.setattr("os.path.exists", lambda x: True)
+        monkeypatch.setattr("builtins.open", mock_open_error)
+
+        with caplog.at_level(logging.WARNING):
+            result = state.load_taxonomy_cache()
+
+        assert result == {}
+        assert "Unexpected error loading taxonomy" in caplog.text
+
+    def test_save_taxonomy_cache_handles_io_error(self, mock_state_files, caplog, monkeypatch):
+        """Test that save_taxonomy_cache handles IO errors."""
+        def mock_open_error(*args, **kwargs):
+            raise IOError("Write error")
+
+        monkeypatch.setattr("builtins.open", mock_open_error)
+
+        with caplog.at_level(logging.ERROR):
+            state.save_taxonomy_cache({})
+
+        assert "Failed to write taxonomy file" in caplog.text
+
+    def test_save_taxonomy_cache_handles_generic_exception(self, mock_state_files, caplog, monkeypatch):
+        """Test that save_taxonomy_cache handles unexpected exceptions."""
+        def mock_open_error(*args, **kwargs):
+            raise RuntimeError("Unexpected error")
+
+        monkeypatch.setattr("builtins.open", mock_open_error)
+
+        with caplog.at_level(logging.ERROR):
+            state.save_taxonomy_cache({})
+
+        assert "Unexpected error saving taxonomy" in caplog.text

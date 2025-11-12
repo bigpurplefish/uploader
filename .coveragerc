@@ -1,0 +1,29 @@
+# Coverage.py configuration file
+
+[run]
+source = uploader_modules
+omit =
+    */tests/*
+    */test_*
+    */__pycache__/*
+    */site-packages/*
+
+[report]
+# Exclude GUI and large integration modules that require extensive mocking
+# Focus coverage on testable utility modules (config, state, utils)
+omit =
+    */gui.py
+    */product_processing.py
+    */ai_provider.py
+    */claude_api.py
+    */openai_api.py
+    */shopify_api.py
+
+# Show lines that weren't covered
+show_missing = True
+
+# Ignore errors from missing files
+ignore_errors = False
+
+[html]
+directory = tests/htmlcov

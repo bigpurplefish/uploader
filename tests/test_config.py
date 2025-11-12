@@ -60,6 +60,75 @@ class TestConfigManagement:
         for field in required_fields:
             assert field in loaded_config
 
+    def test_migrate_old_output_file_field(self, temp_dir, monkeypatch):
+        """Test migration of OUTPUT_FILE to PRODUCT_OUTPUT_FILE."""
+        config_path = temp_dir / "config.json"
+        monkeypatch.setattr(config, 'CONFIG_FILE', str(config_path))
+
+        # Create old config with OUTPUT_FILE
+        old_config = {
+            "SHOPIFY_STORE_URL": "test.myshopify.com",
+            "OUTPUT_FILE": "/path/to/old/output.json"
+        }
+        with open(config_path, 'w') as f:
+            json.dump(old_config, f)
+
+        # Load config (should migrate)
+        loaded = config.load_config()
+
+        assert "PRODUCT_OUTPUT_FILE" in loaded
+        assert loaded["PRODUCT_OUTPUT_FILE"] == "/path/to/old/output.json"
+        assert "OUTPUT_FILE" not in loaded
+
+    def test_migrate_old_use_claude_ai_field(self, temp_dir, monkeypatch):
+        """Test migration of USE_CLAUDE_AI to USE_AI_ENHANCEMENT."""
+        config_path = temp_dir / "config.json"
+        monkeypatch.setattr(config, 'CONFIG_FILE', str(config_path))
+
+        # Create old config with USE_CLAUDE_AI
+        old_config = {
+            "SHOPIFY_STORE_URL": "test.myshopify.com",
+            "USE_CLAUDE_AI": True
+        }
+        with open(config_path, 'w') as f:
+            json.dump(old_config, f)
+
+        # Load config (should migrate)
+        loaded = config.load_config()
+
+        assert "USE_AI_ENHANCEMENT" in loaded
+        assert loaded["USE_AI_ENHANCEMENT"] is True
+        assert loaded["AI_PROVIDER"] == "claude"
+        assert "USE_CLAUDE_AI" not in loaded
+
+    def test_load_config_json_decode_error(self, temp_dir, monkeypatch, caplog):
+        """Test that load_config handles corrupted JSON gracefully."""
+        config_path = temp_dir / "config.json"
+        monkeypatch.setattr(config, 'CONFIG_FILE', str(config_path))
+
+        # Create corrupted JSON
+        with open(config_path, 'w') as f:
+            f.write("{ invalid json }")
+
+        # Should return defaults without crashing
+        with caplog.at_level(logging.ERROR):
+            result = config.load_config()
+
+        assert isinstance(result, dict)
+        assert "SHOPIFY_STORE_URL" in result
+        assert "Failed to parse config.json" in caplog.text
+
+    def test_save_config_io_error(self, monkeypatch, caplog):
+        """Test that save_config logs IO errors gracefully."""
+        # Set config path to invalid location
+        monkeypatch.setattr(config, 'CONFIG_FILE', '/nonexistent/path/config.json')
+
+        with caplog.at_level(logging.ERROR):
+            config.save_config({"test": "data"})
+
+        # Should log error but not crash
+        assert "Failed to write config.json" in caplog.text or "error" in caplog.text.lower()
+
 
 # ============================================================================
 # LOGGING SETUP TESTS
@@ -185,6 +254,50 @@ class TestLogAndStatus:
             )
 
         assert any(record.levelname == "INFO" for record in caplog.records)
+
+    def test_log_and_status_strips_url_from_ui_msg(self, mock_status_fn, caplog):
+        """Test that URLs are stripped from UI messages."""
+        with caplog.at_level(logging.INFO):
+            config.log_and_status(
+                mock_status_fn,
+                msg="Uploading product https://cdn.shopify.com/image.jpg"
+            )
+
+        # UI message should have URL stripped
+        assert len(mock_status_fn.messages) == 1
+        assert "https://" not in mock_status_fn.messages[0]
+        assert "Uploading product" in mock_status_fn.messages[0]
+
+    def test_log_and_status_preserves_final_url(self, mock_status_fn, caplog):
+        """Test that 'Final URL' messages preserve the URL."""
+        with caplog.at_level(logging.INFO):
+            config.log_and_status(
+                mock_status_fn,
+                msg="Final URL: https://admin.shopify.com/product/123"
+            )
+
+        # UI message should preserve URL for Final URL messages
+        assert len(mock_status_fn.messages) == 1
+        assert "Final URL: https://admin.shopify.com/product/123" in mock_status_fn.messages[0]
+
+    def test_log_and_status_handles_exception_in_status_fn(self, caplog, capsys):
+        """Test that exceptions in status_fn are handled gracefully."""
+        def broken_status_fn(msg):
+            raise ValueError("Status function broke!")
+
+        with caplog.at_level(logging.INFO):
+            # Should not raise exception
+            config.log_and_status(
+                broken_status_fn,
+                msg="Test message"
+            )
+
+        # Should log warning about the exception
+        assert any("status_fn raised" in record.message for record in caplog.records)
+
+        # Should fallback to console print
+        captured = capsys.readouterr()
+        assert "[STATUS]" in captured.out
 
 
 # ============================================================================

@@ -61,6 +61,11 @@ class TestIsShopifyCDNUrl:
         """Test that non-string values are rejected."""
         assert is_shopify_cdn_url(12345) is False
 
+    def test_malformed_url_exception_handling(self):
+        """Test that malformed URLs that raise exceptions are handled."""
+        # This should trigger exception handling in urlparse
+        assert is_shopify_cdn_url("ht!tp://invalid") is False
+
 
 # ============================================================================
 # KEY TO LABEL TESTS
@@ -136,6 +141,13 @@ class TestExtractCategorySubcategory:
         category, subcategory = extract_category_subcategory(product)
         assert category is None
         assert subcategory is None
+
+    def test_extract_from_string_tags(self):
+        """Test extraction from comma-separated string tags."""
+        product = {"tags": "Pavers and Hardscaping, Slabs, Other Tag"}
+        category, subcategory = extract_category_subcategory(product)
+        assert category == "Pavers and Hardscaping"
+        assert subcategory == "Slabs"
 
 
 # ============================================================================
@@ -240,6 +252,32 @@ class TestValidateImageUrls:
         assert is_valid is False
         assert len(invalid_urls) == 1
 
+    def test_invalid_variant_metafield_url(self):
+        """Test that non-Shopify variant metafield URLs are caught."""
+        products = [
+            {
+                "title": "Test Product",
+                "images": [],
+                "metafields": [],
+                "variants": [
+                    {
+                        "title": "Variant 1",
+                        "metafields": [
+                            {
+                                "key": "variant_image",
+                                "value": "https://example.com/variant.jpg",
+                                "type": "file_reference"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+        is_valid, invalid_urls = validate_image_urls(products)
+        assert is_valid is False
+        assert len(invalid_urls) == 1
+        assert "Variant #1 metafield" in invalid_urls[0]["location"]
+
 
 # ============================================================================
 # FILTER TAG FORMATTING TESTS
@@ -309,10 +347,14 @@ class TestLoadTaxonomyStructure:
         assert len(taxonomy) > 0
         assert "Landscape And Construction" in taxonomy
 
-    def test_load_nonexistent_file(self):
+    def test_load_nonexistent_file(self, caplog):
         """Test loading non-existent file returns empty dict."""
-        taxonomy = load_taxonomy_structure("/nonexistent/path/taxonomy.md")
+        import logging
+        with caplog.at_level(logging.ERROR):
+            taxonomy = load_taxonomy_structure("/nonexistent/path/taxonomy.md")
+
         assert taxonomy == {}
+        assert "Taxonomy file not found" in caplog.text
 
 
 # ============================================================================
