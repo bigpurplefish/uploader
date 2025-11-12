@@ -10,6 +10,74 @@ This is a Python GUI application for uploading products to Shopify using the Gra
 **Current Version:** 2.6.0
 **API Version:** Shopify GraphQL Admin API 2025-10
 
+## 🚨 CRITICAL: Development Standards
+
+**BEFORE writing or modifying ANY code, you MUST:**
+
+### 1. Follow Shared Documentation Standards
+
+This project follows organization-wide Python development standards located at:
+```
+/Users/moosemarketer/Code/shared-docs/python/
+```
+
+**Required Reading:**
+- `COMPLIANCE_CHECKLIST.md` - Complete standards checklist
+- `PROJECT_STRUCTURE_REQUIREMENTS.md` - Directory and file structure
+- `LOGGING_REQUIREMENTS.md` - Logging patterns and standards
+- `GRAPHQL_OUTPUT_REQUIREMENTS.md` - API output format requirements
+- `GUI_DESIGN_REQUIREMENTS.md` - GUI design patterns (if applicable)
+- `GIT_WORKFLOW.md` - Git commit and branching standards
+- `PRODUCT_TAXONOMY.md` - Product categorization structure
+- `PACKAGING_WEIGHT_REFERENCE.md` - Shipping weight calculation standards
+
+**Before ANY code changes:**
+1. Read relevant standards from shared-docs
+2. Verify compliance with existing patterns
+3. Update this CLAUDE.md if new patterns are established
+
+### 2. Use Context7 for Library Documentation
+
+When working with external libraries (Shopify API, requests, anthropic, openai, ttkbootstrap, etc.), you MUST use the Context7 MCP tools to fetch current documentation:
+
+**Available Context7 Tools:**
+- `mcp__context7__resolve-library-id` - Find the correct library ID
+- `mcp__context7__get-library-docs` - Fetch up-to-date docs
+
+**Example workflow:**
+```
+1. User asks to implement Shopify GraphQL mutation
+2. Use resolve-library-id to find Shopify library
+3. Use get-library-docs to fetch Shopify GraphQL docs
+4. Implement using current API patterns from docs
+5. Never guess API signatures or parameter names
+```
+
+**Why Context7 is mandatory:**
+- Ensures code uses current API versions
+- Prevents deprecated pattern usage
+- Reduces bugs from outdated assumptions
+- Provides accurate type signatures
+
+### 3. Project-Specific Requirements
+
+**Taxonomy Validation:**
+- All products MUST fit into defined taxonomy structure
+- Validation happens after AI assignment
+- Processing STOPS immediately if taxonomy is invalid
+- User must update `PRODUCT_TAXONOMY.md` or fix product data
+
+**Weight Calculation:**
+- Uses packaging reference table from shared-docs
+- AI estimates weights using 4-priority system
+- All weights include 10% safety margin
+- Low-confidence estimates flagged for review
+
+**Purchase Options:**
+- Product-level metafields (not variant-level)
+- Category-driven (from taxonomy)
+- 5 options: In-store, In-store+delivery, Pickup, Local delivery, Shipped
+
 ## Development Commands
 
 ### Running the Application

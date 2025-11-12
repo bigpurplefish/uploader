@@ -315,20 +315,34 @@ def enhance_product_with_openai(
     try:
         client = OpenAI(api_key=api_key)
 
-        # ========== STEP 1: TAXONOMY ASSIGNMENT ==========
+        # ========== STEP 1: TAXONOMY ASSIGNMENT + WEIGHT ESTIMATION + PURCHASE OPTIONS ==========
         if status_fn:
-            log_and_status(status_fn, f"  🤖 Assigning taxonomy for: {title[:50]}...")
+            log_and_status(status_fn, f"  🤖 Assigning taxonomy and calculating shipping weight for: {title[:50]}...")
 
         logging.info("=" * 80)
-        logging.info(f"OPENAI API CALL #1: TAXONOMY ASSIGNMENT")
+        logging.info(f"OPENAI API CALL #1: ENHANCED TAXONOMY (TAXONOMY + WEIGHT + PURCHASE OPTIONS)")
         logging.info(f"Product: {title}")
         logging.info(f"Model: {model}")
         logging.info("=" * 80)
 
-        taxonomy_prompt = _build_taxonomy_prompt(title, body_html, taxonomy_doc)
+        # Get first variant's weight for reference (if product has variants)
+        current_weight = 0
+        variant_data = None
+        if product.get('variants') and len(product['variants']) > 0:
+            first_variant = product['variants'][0]
+            current_weight = first_variant.get('weight', 0)
+
+            # Extract size_info metafield if exists
+            metafields = first_variant.get('metafields', [])
+            for mf in metafields:
+                if mf.get('key') == 'size_info':
+                    variant_data = {'size_info_metafield': mf.get('value', '')}
+                    break
+
+        taxonomy_prompt = _build_taxonomy_prompt(title, body_html, taxonomy_doc, current_weight, variant_data)
 
         # Log prompt preview (first 500 chars)
-        logging.debug(f"Taxonomy prompt (first 500 chars):\n{taxonomy_prompt[:500]}...")
+        logging.debug(f"Enhanced taxonomy prompt (first 500 chars):\n{taxonomy_prompt[:500]}...")
         logging.debug(f"Full prompt length: {len(taxonomy_prompt)} characters")
 
         # Make API call with correct parameters based on model
@@ -398,6 +412,9 @@ def enhance_product_with_openai(
         category = taxonomy_result.get('category', '')
         subcategory = taxonomy_result.get('subcategory', '')
         reasoning = taxonomy_result.get('reasoning', '')
+        weight_estimation = taxonomy_result.get('weight_estimation', {})
+        purchase_options = taxonomy_result.get('purchase_options', [])
+        needs_review = taxonomy_result.get('needs_review', False)
 
         if not department or not category:
             error_msg = f"Taxonomy response missing required fields. Department: '{department}', Category: '{category}'"
@@ -405,8 +422,115 @@ def enhance_product_with_openai(
             logging.error(f"Full taxonomy result: {taxonomy_result}")
             raise ValueError(error_msg)
 
+        # ========== CRITICAL: VALIDATE TAXONOMY AGAINST DEFINED STRUCTURE ==========
+        from .utils import validate_taxonomy_assignment
+
+        is_valid, error_msg, suggestions = validate_taxonomy_assignment(
+            department,
+            category,
+            subcategory,
+            taxonomy_path="/Users/moosemarketer/Code/shared-docs/python/PRODUCT_TAXONOMY.md"
+        )
+
+        if not is_valid:
+            # Log detailed error information
+            logging.error("=" * 80)
+            logging.error("❌ TAXONOMY VALIDATION FAILED")
+            logging.error("=" * 80)
+            logging.error(f"Product: {title}")
+            logging.error(f"AI assigned taxonomy:")
+            logging.error(f"  - Department: {department}")
+            logging.error(f"  - Category: {category}")
+            logging.error(f"  - Subcategory: {subcategory}")
+            logging.error(f"  - Reasoning: {reasoning}")
+            logging.error("")
+            logging.error(f"Error: {error_msg}")
+            logging.error("")
+
+            if "valid_departments" in suggestions:
+                logging.error(f"Valid departments:")
+                for dept in suggestions["valid_departments"]:
+                    logging.error(f"  - {dept}")
+
+            if "valid_categories" in suggestions:
+                logging.error(f"Valid categories for '{department}':")
+                for cat in suggestions["valid_categories"]:
+                    logging.error(f"  - {cat}")
+
+            if "valid_subcategories" in suggestions:
+                logging.error(f"Valid subcategories for '{department}' > '{category}':")
+                for subcat in suggestions["valid_subcategories"]:
+                    logging.error(f"  - {subcat}")
+
+            logging.error("")
+            logging.error(f"How to fix:")
+            logging.error(f"  {suggestions.get('suggestion', 'Update PRODUCT_TAXONOMY.md or correct product data')}")
+            logging.error("")
+            logging.error(f"Taxonomy file: /Users/moosemarketer/Code/shared-docs/python/PRODUCT_TAXONOMY.md")
+            logging.error("=" * 80)
+
+            # Display to user via status function
+            if status_fn:
+                log_and_status(status_fn, "", "error")
+                log_and_status(status_fn, "=" * 80, "error")
+                log_and_status(status_fn, "❌ TAXONOMY VALIDATION FAILED - PROCESSING STOPPED", "error")
+                log_and_status(status_fn, "=" * 80, "error")
+                log_and_status(status_fn, f"Product: {title}", "error")
+                log_and_status(status_fn, "", "error")
+                log_and_status(status_fn, f"AI tried to assign:", "error")
+                log_and_status(status_fn, f"  Department: {department}", "error")
+                log_and_status(status_fn, f"  Category: {category}", "error")
+                if subcategory:
+                    log_and_status(status_fn, f"  Subcategory: {subcategory}", "error")
+                log_and_status(status_fn, "", "error")
+                log_and_status(status_fn, f"❌ {error_msg}", "error")
+                log_and_status(status_fn, "", "error")
+
+                if "valid_departments" in suggestions:
+                    log_and_status(status_fn, f"Valid departments in taxonomy:", "error")
+                    for dept in suggestions["valid_departments"]:
+                        log_and_status(status_fn, f"  • {dept}", "error")
+
+                if "valid_categories" in suggestions:
+                    log_and_status(status_fn, f"Valid categories for '{department}':", "error")
+                    for cat in suggestions["valid_categories"]:
+                        log_and_status(status_fn, f"  • {cat}", "error")
+
+                if "valid_subcategories" in suggestions:
+                    log_and_status(status_fn, f"Valid subcategories for '{department}' > '{category}':", "error")
+                    for subcat in suggestions["valid_subcategories"]:
+                        log_and_status(status_fn, f"  • {subcat}", "error")
+
+                log_and_status(status_fn, "", "error")
+                log_and_status(status_fn, f"💡 How to fix:", "error")
+                log_and_status(status_fn, f"  {suggestions.get('suggestion', 'Update PRODUCT_TAXONOMY.md or correct product data')}", "error")
+                log_and_status(status_fn, "", "error")
+                log_and_status(status_fn, f"📁 Taxonomy file:", "error")
+                log_and_status(status_fn, f"  /Users/moosemarketer/Code/shared-docs/python/PRODUCT_TAXONOMY.md", "error")
+                log_and_status(status_fn, "", "error")
+                log_and_status(status_fn, "Processing stopped. Fix the taxonomy and try again.", "error")
+                log_and_status(status_fn, "=" * 80, "error")
+
+            # Raise exception to stop processing
+            raise ValueError(f"Taxonomy validation failed: {error_msg}. Product cannot be categorized with current taxonomy structure.")
+
+        if not weight_estimation or not isinstance(weight_estimation, dict):
+            error_msg = f"Taxonomy response missing or invalid weight_estimation field"
+            logging.error(error_msg)
+            logging.error(f"Full taxonomy result: {taxonomy_result}")
+            raise ValueError(error_msg)
+
         logging.info(f"✅ Taxonomy assigned: {department} > {category} > {subcategory}")
         logging.info(f"📝 Reasoning: {reasoning}")
+        logging.info(f"⚖️  Weight Estimation:")
+        logging.info(f"   - Original weight: {weight_estimation.get('original_weight', 0)} lbs")
+        logging.info(f"   - Final shipping weight: {weight_estimation.get('final_shipping_weight', 0)} lbs")
+        logging.info(f"   - Confidence: {weight_estimation.get('confidence', 'unknown')}")
+        logging.info(f"   - Source: {weight_estimation.get('source', 'unknown')}")
+        logging.info(f"   - Reasoning: {weight_estimation.get('reasoning', '')}")
+        logging.info(f"🛒 Purchase Options: {purchase_options}")
+        if needs_review:
+            logging.warning(f"⚠️  NEEDS REVIEW: This product requires manual verification")
 
         if status_fn:
             log_and_status(status_fn, f"    ✅ Department: {department}")
@@ -414,6 +538,9 @@ def enhance_product_with_openai(
             if subcategory:
                 log_and_status(status_fn, f"    ✅ Subcategory: {subcategory}")
             log_and_status(status_fn, f"    📝 Reasoning: {reasoning}")
+            log_and_status(status_fn, f"    ⚖️  Shipping Weight: {weight_estimation.get('final_shipping_weight', 0)} lbs (confidence: {weight_estimation.get('confidence', 'unknown')})")
+            if needs_review:
+                log_and_status(status_fn, f"    ⚠️  NEEDS REVIEW")
 
         # ========== STEP 2: DESCRIPTION REWRITING ==========
         # Determine number of audiences from config
@@ -607,7 +734,7 @@ def enhance_product_with_openai(
         total_cost = taxonomy_cost + total_description_cost
         logging.info(f"Total cost for this product: ${total_cost:.6f}")
 
-        # Create enhanced product with new taxonomy and description
+        # Create enhanced product with new taxonomy, description, weight, and purchase options
         enhanced_product = product.copy()
         enhanced_product['product_type'] = department
 
@@ -628,6 +755,45 @@ def enhance_product_with_openai(
 
         enhanced_product['tags'] = tags
         enhanced_product['body_html'] = enhanced_description
+
+        # Update ALL variants with shipping weight and weight_data
+        final_shipping_weight = weight_estimation.get('final_shipping_weight', 0)
+        final_shipping_weight_grams = int(final_shipping_weight * 453.592)  # Convert lbs to grams
+
+        if 'variants' in enhanced_product and enhanced_product['variants']:
+            for variant in enhanced_product['variants']:
+                # Store weight data for output file (NOT sent to Shopify)
+                variant['weight_data'] = {
+                    'original_weight': weight_estimation.get('original_weight', 0),
+                    'product_weight': weight_estimation.get('product_weight', 0),
+                    'product_packaging_weight': weight_estimation.get('product_packaging_weight', 0),
+                    'shipping_packaging_weight': weight_estimation.get('shipping_packaging_weight', 0),
+                    'calculated_shipping_weight': weight_estimation.get('calculated_shipping_weight', 0),
+                    'final_shipping_weight': final_shipping_weight,
+                    'confidence': weight_estimation.get('confidence', 'unknown'),
+                    'source': weight_estimation.get('source', 'unknown'),
+                    'reasoning': weight_estimation.get('reasoning', ''),
+                    'needs_review': needs_review
+                }
+
+                # Update Shopify weight fields
+                variant['weight'] = final_shipping_weight
+                variant['grams'] = final_shipping_weight_grams
+
+        logging.info(f"✅ Updated {len(enhanced_product.get('variants', []))} variants with shipping weight: {final_shipping_weight} lbs")
+
+        # Add purchase_options as product-level metafield
+        if 'metafields' not in enhanced_product:
+            enhanced_product['metafields'] = []
+
+        enhanced_product['metafields'].append({
+            'namespace': 'custom',
+            'key': 'purchase_options',
+            'value': json.dumps(purchase_options),
+            'type': 'json'
+        })
+
+        logging.info(f"✅ Added purchase_options metafield: {purchase_options}")
 
         # Add audience descriptions as metafields if multiple audiences
         if audience_count == 2 and description_audience_1 and description_audience_2:
@@ -878,24 +1044,201 @@ def generate_collection_description(
 
 # ========== PROMPT BUILDERS (MATCHING CLAUDE API PROMPTS) ==========
 
-def _build_taxonomy_prompt(title: str, body_html: str, taxonomy_doc: str) -> str:
-    """Build the prompt for taxonomy assignment (matches claude_api.py)."""
-    prompt = f"""You are a product categorization expert. Given the product information below, assign it to the appropriate category in our taxonomy.
+def _build_taxonomy_prompt(title: str, body_html: str, taxonomy_doc: str, current_weight: float = 0, variant_data: dict = None) -> str:
+    """
+    Build enhanced prompt for taxonomy assignment + weight estimation + purchase options.
+
+    Args:
+        title: Product title
+        body_html: Product description
+        taxonomy_doc: Full taxonomy document with purchase options
+        current_weight: Existing weight from variant.weight field (0 if none)
+        variant_data: Optional dict with variant info (dimensions, size_info metafield, etc.)
+
+    Returns:
+        Complete prompt string
+    """
+
+    # Extract dimensions from variant data if available
+    dimensions_info = ""
+    if variant_data:
+        size_info = variant_data.get('size_info_metafield', '')
+        if size_info:
+            dimensions_info = f"\n- Size/Dimensions: {size_info}"
+
+    current_weight_info = f"\n- Current Weight (variant.weight): {current_weight} lb" if current_weight > 0 else "\n- Current Weight (variant.weight): Not specified"
+
+    # Load packaging reference document
+    packaging_doc = """
+PACKAGING WEIGHT REFERENCE TABLE:
+Use these rules when calculating shipping weights:
+
+| Department | Category | Subcategory | Product Packaging | Shipping Packaging | Notes |
+|------------|----------|-------------|-------------------|-------------------|-------|
+| **Landscape and Construction** |
+| | Aggregates | Stone, Soil, Sand | Weight included in product | 2 lbs (pallet stabilization) | Sold in pre-weighted bags |
+| | Aggregates | Mulch | Weight included in product | 2 lbs | Usually bagged |
+| | Pavers and Hardscaping | All | 10% of product weight | 5 lbs (pallet wrap + protection) | Heavy concrete items |
+| | Paving Tools & Equipment | Hand Tools | 0.5 lbs | 2 lbs (box) | Metal tools |
+| | Paving Tools & Equipment | Compactors | 2 lbs | 5 lbs (crate) | Heavy machinery |
+| | Paving & Construction Supplies | All | 5% of product weight | 1.5 lbs | Bagged/bottled products |
+| **Lawn and Garden** |
+| | Garden Tools | All | 0.5 lbs | 2 lbs (box) | Standard tools |
+| | Garden Supplies | Fertilizers, Soil | Weight included | 2 lbs | Pre-bagged |
+| | Garden Supplies | Planters | 10% of product weight | 3 lbs (box + bubble wrap) | Fragile |
+| | Garden Decor | All | 0.3 lbs | 1.5 lbs (padded box) | Small decorative items |
+| **Home and Gift** |
+| | All | All | 0.3 lbs | 1.5 lbs (padded box) | Small items, fragile |
+| **Pet Supplies** |
+| | Dogs, Cats | Food | 5% of product weight (bag) | 3 lbs (box + padding) | Pre-weighted bags |
+| | Dogs, Cats | Toys, Accessories | 0.2 lbs | 1 lb (envelope/small box) | Small items |
+| | Dogs, Cats | Bedding, Crates, Carriers | 1 lb | 3 lbs (box) | Bulky items |
+| | Birds, Small Pets | All | 0.3 lbs | 1.5 lbs | Smaller items |
+| **Livestock and Farm** |
+| | All | Hay | Weight included | 0 lbs | Customer pickup only |
+| | All | Feed (not hay) | 2% of product weight | 4 lbs (box) | Large bags |
+| | All | Health, Accessories | 0.5 lbs | 2 lbs | Standard items |
+| **Hunting and Fishing** |
+| | Deer | Blinds | 5% of product weight | 8 lbs (crate + padding) | Large bulky items |
+| | Deer | All others | 0.5 lbs | 2 lbs | Standard hunting supplies |
+
+LIQUID TO WEIGHT CONVERSION TABLE:
+Use these conversions when extracting weight from liquid measures:
+
+| Material Type | Gallons to Pounds | Fluid Ounces to Pounds |
+|---------------|-------------------|------------------------|
+| Water, General Liquids | 8.34 lbs/gal | 0.0652 lbs/fl oz |
+| Fertilizer (liquid) | 10.5 lbs/gal | 0.0820 lbs/fl oz |
+| Sealers, Adhesives | 9.0 lbs/gal | 0.0703 lbs/fl oz |
+| Paint, Coatings | 11.0 lbs/gal | 0.0859 lbs/fl oz |
+| Oils, Petroleum Products | 7.5 lbs/gal | 0.0586 lbs/fl oz |
+
+When detecting material type:
+- Check product title and description for keywords
+- Fertilizer: "fertilizer", "plant food", "nutrient"
+- Sealer: "sealer", "adhesive", "glue", "bonder"
+- Paint: "paint", "stain", "coating", "finish"
+- Oil: "oil", "lubricant", "petroleum"
+- Default to "Water, General Liquids" if uncertain"""
+
+    prompt = f"""You are a product categorization and logistics expert. Given the product information below, you must:
+1. Assign it to the appropriate category in our taxonomy
+2. Estimate shipping weight (conservative estimate to avoid undercharging)
+3. Determine applicable purchase/fulfillment options based on category
 
 {taxonomy_doc}
 
-Product to categorize:
-- Title: {title}
-- Description: {body_html}
+{packaging_doc}
 
-Analyze the product title and description carefully, then assign it to the most appropriate Department, Category, and Subcategory from the taxonomy above.
+Product to analyze:
+- Title: {title}
+- Description: {body_html}{dimensions_info}{current_weight_info}
+
+INSTRUCTIONS:
+
+**STEP 1: TAXONOMY ASSIGNMENT**
+Analyze the product and assign to Department, Category, and Subcategory from taxonomy above.
+
+**STEP 2: WEIGHT ESTIMATION**
+Calculate conservative shipping weight using this EXACT PRIORITY ORDER:
+
+**PRIORITY A: Use existing variant.weight if available (HIGHEST PRIORITY)**
+   - If current weight > 0:
+     * product_weight = current weight
+     * Apply packaging rules from table above
+     * shipping_weight = product_weight + product_packaging + shipping_packaging
+     * confidence = "high"
+     * source = "variant_weight"
+
+**PRIORITY B: Extract from text (SECOND PRIORITY)**
+   - If weight is mentioned in title/description:
+     * Extract weight: "50 lb bag", "25 lbs", "3 oz can"
+     * Handle liquid conversions:
+       - "5 gallon sealer" → detect material type → convert to lbs
+       - "32 fl oz fertilizer" → detect material type → convert to lbs
+     * product_weight = extracted/converted weight
+     * Apply packaging rules from table above
+     * shipping_weight = product_weight + product_packaging + shipping_packaging
+     * confidence = "high"
+     * source = "extracted_from_text"
+
+**PRIORITY C: Calculate from dimensions (THIRD PRIORITY, for hardscape products only)**
+   - If dimensions are provided (for concrete/hardscape products):
+     * Calculate volume in cubic feet: (length_in × width_in × thickness_in) / 1728
+     * Estimate product_weight:
+       - Concrete/pavers: volume × 150 lbs/ft³
+       - Natural stone: volume × 165 lbs/ft³
+     * Apply packaging rules from table above
+     * shipping_weight = product_weight + product_packaging + shipping_packaging
+     * confidence = "high"
+     * source = "calculated_from_dimensions"
+
+**PRIORITY D: Estimate based on context (LOWEST PRIORITY, last resort)**
+   - If none of the above available:
+     * Estimate based on product type, description, and category context
+     * Use comparable products as reference
+     * Be CONSERVATIVE (round up)
+     * Apply packaging rules from table above
+     * shipping_weight = estimated_product_weight + product_packaging + shipping_packaging
+     * confidence = "medium" or "low" (use "low" if very uncertain)
+     * source = "estimated"
+
+**CRITICAL WEIGHT RULES:**
+- Always round UP to nearest 0.5 lb
+- Be conservative - underestimating costs us money
+- Apply 10% safety margin to final weight: final_shipping_weight = shipping_weight × 1.10
+- For hay products: weight estimation not required (pickup only)
+
+**STEP 3: PURCHASE OPTIONS**
+Based on the assigned taxonomy category/subcategory, determine which purchase options apply (see taxonomy document for mappings).
+Purchase options are CATEGORY-DRIVEN, not size or weight dependent.
+
+**STEP 4: NEEDS REVIEW FLAG**
+Set needs_review = true if:
+- Weight confidence is "low"
+- Product is unusual or doesn't fit standard categories
+- Insufficient information to make confident estimates
 
 Return ONLY a valid JSON object in this exact format (no markdown, no code blocks, no explanation):
 {{
   "department": "Exact department name from taxonomy",
   "category": "Exact category name from taxonomy",
-  "subcategory": "Exact subcategory name from taxonomy (or empty string if category has no subcategories)",
-  "reasoning": "Brief 1-sentence explanation of why you chose this categorization"
+  "subcategory": "Exact subcategory name from taxonomy (or empty string if none)",
+  "reasoning": "Brief explanation of categorization choice",
+  "weight_estimation": {{
+    "original_weight": {current_weight},
+    "product_weight": 39.0,
+    "product_packaging_weight": 3.9,
+    "shipping_packaging_weight": 5.0,
+    "calculated_shipping_weight": 47.9,
+    "final_shipping_weight": 52.7,
+    "confidence": "high|medium|low",
+    "source": "variant_weight|extracted_from_text|calculated_from_dimensions|estimated",
+    "reasoning": "Explain how you calculated/estimated the weight"
+  }},
+  "purchase_options": [1, 2, 3, 4, 5],
+  "needs_review": false
+}}
+
+EXAMPLE - Using existing variant.weight:
+{{
+  "department": "Pet Supplies",
+  "category": "Dogs",
+  "subcategory": "Food",
+  "reasoning": "Dog food product",
+  "weight_estimation": {{
+    "original_weight": 50.0,
+    "product_weight": 50.0,
+    "product_packaging_weight": 2.5,
+    "shipping_packaging_weight": 3.0,
+    "calculated_shipping_weight": 55.5,
+    "final_shipping_weight": 61.0,
+    "confidence": "high",
+    "source": "variant_weight",
+    "reasoning": "Used existing variant.weight of 50 lbs. Added 5% for bag weight (2.5 lbs) + 3 lbs shipping box. Applied 10% safety margin."
+  }},
+  "purchase_options": [1, 3, 5],
+  "needs_review": false
 }}"""
 
     return prompt

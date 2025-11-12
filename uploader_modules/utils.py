@@ -284,3 +284,140 @@ def validate_image_alt_tags_for_filtering(products):
 
     has_warnings = len(warnings) > 0
     return has_warnings, warnings
+
+
+def load_taxonomy_structure(taxonomy_path: str = None) -> dict:
+    """
+    Load and parse the product taxonomy structure from PRODUCT_TAXONOMY.md.
+
+    Args:
+        taxonomy_path: Path to PRODUCT_TAXONOMY.md file
+
+    Returns:
+        Dictionary with taxonomy structure:
+        {
+            "Landscape and Construction": {
+                "Aggregates": ["Stone", "Soil", "Mulch", "Sand"],
+                "Pavers and Hardscaping": ["Slabs", "Pavers", ...],
+                ...
+            },
+            ...
+        }
+    """
+    import os
+    import re
+    import logging
+
+    if not taxonomy_path:
+        # Default path
+        taxonomy_path = "/Users/moosemarketer/Code/shared-docs/python/PRODUCT_TAXONOMY.md"
+
+    if not os.path.exists(taxonomy_path):
+        logging.error(f"Taxonomy file not found: {taxonomy_path}")
+        return {}
+
+    try:
+        with open(taxonomy_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+
+        taxonomy = {}
+        current_department = None
+        current_category = None
+
+        lines = content.split('\n')
+
+        for line in lines:
+            # Match department headers: "### 1. LANDSCAPE AND CONSTRUCTION"
+            dept_match = re.match(r'^### \d+\.\s+(.+)$', line)
+            if dept_match:
+                dept_name_upper = dept_match.group(1).strip()
+                # Convert to title case to match our standard format
+                current_department = dept_name_upper.title()
+                if current_department not in taxonomy:
+                    taxonomy[current_department] = {}
+                current_category = None
+                continue
+
+            # Match category headers: "#### Aggregates"
+            cat_match = re.match(r'^####\s+(.+)$', line)
+            if cat_match and current_department:
+                current_category = cat_match.group(1).strip()
+                if current_category not in taxonomy[current_department]:
+                    taxonomy[current_department][current_category] = []
+                continue
+
+            # Match subcategory entries: "  1. **Stone** - Options: 1, 2"
+            subcat_match = re.match(r'^\s+\d+\.\s+\*\*(.+?)\*\*', line)
+            if subcat_match and current_department and current_category:
+                subcategory = subcat_match.group(1).strip()
+                if subcategory not in taxonomy[current_department][current_category]:
+                    taxonomy[current_department][current_category].append(subcategory)
+                continue
+
+        logging.info(f"Loaded taxonomy structure with {len(taxonomy)} departments")
+        return taxonomy
+
+    except Exception as e:
+        logging.error(f"Error loading taxonomy structure: {e}")
+        return {}
+
+
+def validate_taxonomy_assignment(department: str, category: str, subcategory: str, taxonomy_path: str = None) -> tuple:
+    """
+    Validate that taxonomy assignment matches the defined taxonomy structure.
+
+    Args:
+        department: Department name from AI
+        category: Category name from AI
+        subcategory: Subcategory name from AI (can be empty)
+        taxonomy_path: Optional path to taxonomy file
+
+    Returns:
+        Tuple of (is_valid: bool, error_message: str, suggestions: dict)
+    """
+    import logging
+
+    taxonomy = load_taxonomy_structure(taxonomy_path)
+
+    if not taxonomy:
+        return (False, "Failed to load taxonomy structure for validation", {})
+
+    # Check department
+    if department not in taxonomy:
+        valid_departments = list(taxonomy.keys())
+        return (
+            False,
+            f"Invalid department: '{department}' is not in the defined taxonomy",
+            {
+                "valid_departments": valid_departments,
+                "suggestion": f"Add '{department}' to PRODUCT_TAXONOMY.md or correct the product data"
+            }
+        )
+
+    # Check category
+    if category not in taxonomy[department]:
+        valid_categories = list(taxonomy[department].keys())
+        return (
+            False,
+            f"Invalid category: '{category}' does not exist under department '{department}'",
+            {
+                "valid_categories": valid_categories,
+                "suggestion": f"Add '{category}' under '{department}' in PRODUCT_TAXONOMY.md or correct the product data"
+            }
+        )
+
+    # Check subcategory (if provided)
+    if subcategory:
+        valid_subcategories = taxonomy[department][category]
+        if valid_subcategories and subcategory not in valid_subcategories:
+            return (
+                False,
+                f"Invalid subcategory: '{subcategory}' does not exist under '{department}' > '{category}'",
+                {
+                    "valid_subcategories": valid_subcategories if valid_subcategories else ["(no subcategories defined)"],
+                    "suggestion": f"Add '{subcategory}' under '{department}' > '{category}' in PRODUCT_TAXONOMY.md or correct the product data"
+                }
+            )
+
+    logging.debug(f"✅ Taxonomy validation passed: {department} > {category} > {subcategory}")
+    return (True, "", {})

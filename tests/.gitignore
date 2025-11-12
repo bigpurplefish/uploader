@@ -1,0 +1,18 @@
+# Test output files
+output/*
+!output/.gitkeep
+
+# Pytest cache
+__pycache__/
+.pytest_cache/
+*.pyc
+
+# Coverage reports
+.coverage
+htmlcov/
+coverage.xml
+
+# Temporary test files
+*.tmp
+*.log
+temp_*

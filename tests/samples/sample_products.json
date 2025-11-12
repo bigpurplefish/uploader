@@ -1,0 +1,100 @@
+[
+  {
+    "title": "Techo-Bloc Aberdeen Slab",
+    "product_type": "Landscape and Construction",
+    "tags": ["Pavers and Hardscaping", "Slabs"],
+    "body_html": "<p>Premium concrete paver slab for patios and walkways. Wet-cast construction provides superior strength and durability.</p>",
+    "vendor": "Techo-Bloc",
+    "variants": [
+      {
+        "sku": "50000",
+        "price": "12.99",
+        "compare_at_price": "",
+        "weight": 0,
+        "grams": 0,
+        "barcode": "",
+        "taxable": true,
+        "option1": "Rock Garden Brown",
+        "metafields": [
+          {
+            "namespace": "custom",
+            "key": "size_info",
+            "value": "20 × 10 × 2 ¼ in (508 × 254 × 57 mm)",
+            "type": "single_line_text_field"
+          }
+        ]
+      }
+    ],
+    "options": [
+      {"name": "Color"}
+    ],
+    "images": [],
+    "metafields": []
+  },
+  {
+    "title": "Premium Dog Food 50lb Bag",
+    "product_type": "Pet Supplies",
+    "tags": ["Dogs", "Food"],
+    "body_html": "<p>High-quality 50 lb bag of premium dog food with real chicken as the first ingredient.</p>",
+    "vendor": "Pet Nutrition Co",
+    "variants": [
+      {
+        "sku": "DOG-001",
+        "price": "49.99",
+        "compare_at_price": "59.99",
+        "weight": 50,
+        "grams": 22680,
+        "barcode": "123456789012",
+        "taxable": true,
+        "metafields": []
+      }
+    ],
+    "options": [],
+    "images": [],
+    "metafields": []
+  },
+  {
+    "title": "Concrete Sealer 5 Gallon Professional Grade",
+    "product_type": "Paving & Construction Supplies",
+    "tags": ["Paving & Construction Supplies", "Sealers"],
+    "body_html": "<p>Professional grade concrete sealer in 5 gallon container. Provides long-lasting protection for driveways, patios, and walkways.</p>",
+    "vendor": "Seal-Tech",
+    "variants": [
+      {
+        "sku": "SEAL-5GAL",
+        "price": "89.99",
+        "compare_at_price": "",
+        "weight": 0,
+        "grams": 0,
+        "barcode": "",
+        "taxable": true,
+        "metafields": []
+      }
+    ],
+    "options": [],
+    "images": [],
+    "metafields": []
+  },
+  {
+    "title": "Garden Gnome Decorative Statue",
+    "product_type": "Home and Gift",
+    "tags": ["Home Decor", "Statues"],
+    "body_html": "<p>Charming garden gnome statue adds whimsy to any outdoor space.</p>",
+    "vendor": "Garden Decor Plus",
+    "variants": [
+      {
+        "sku": "GNOME-001",
+        "price": "24.99",
+        "compare_at_price": "",
+        "weight": 0,
+        "grams": 0,
+        "barcode": "",
+        "taxable": true,
+        "metafields": []
+      }
+    ],
+    "options": [],
+    "images": [],
+    "metafields": []
+  }
+]

@@ -1,0 +1,21 @@
+# Development dependencies for testing
+
+# Testing framework
+pytest>=8.0.0
+
+# Test coverage
+pytest-cov>=4.1.0
+
+# For capturing log output in tests
+pytest-capturelog>=0.7
+
+# For testing with multiple Python versions (optional)
+tox>=4.0.0
+
+# Code quality tools (optional but recommended)
+black>=23.0.0
+flake8>=6.0.0
+mypy>=1.0.0
+
+# Install production requirements as well
+-r requirements.txt
