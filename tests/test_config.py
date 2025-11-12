@@ -129,6 +129,57 @@ class TestConfigManagement:
         # Should log error but not crash
         assert "Failed to write config.json" in caplog.text or "error" in caplog.text.lower()
 
+    def test_load_config_io_error(self, temp_dir, monkeypatch, caplog):
+        """Test that load_config handles IO errors gracefully."""
+        config_path = temp_dir / "config.json"
+        monkeypatch.setattr(config, 'CONFIG_FILE', str(config_path))
+
+        # Create file and make it unreadable by mocking open to raise IOError
+        config_path.touch()
+
+        def mock_open_ioerror(*args, **kwargs):
+            if 'r' in str(kwargs.get('mode', args[1] if len(args) > 1 else '')):
+                raise IOError("Cannot read file")
+            # Allow write for initial creation
+            return open(*args, **kwargs)
+
+        monkeypatch.setattr("builtins.open", mock_open_ioerror)
+
+        with caplog.at_level(logging.ERROR):
+            result = config.load_config()
+
+        assert isinstance(result, dict)
+        assert "Failed to read/write config.json" in caplog.text
+
+    def test_load_config_generic_exception(self, temp_dir, monkeypatch, caplog):
+        """Test that load_config handles unexpected exceptions gracefully."""
+        config_path = temp_dir / "config.json"
+        monkeypatch.setattr(config, 'CONFIG_FILE', str(config_path))
+        config_path.touch()
+
+        def mock_open_error(*args, **kwargs):
+            raise RuntimeError("Unexpected error")
+
+        monkeypatch.setattr("builtins.open", mock_open_error)
+
+        with caplog.at_level(logging.ERROR):
+            result = config.load_config()
+
+        assert isinstance(result, dict)
+        assert "Unexpected error loading config" in caplog.text
+
+    def test_save_config_generic_exception(self, monkeypatch, caplog):
+        """Test that save_config handles unexpected exceptions gracefully."""
+        def mock_open_error(*args, **kwargs):
+            raise RuntimeError("Unexpected error")
+
+        monkeypatch.setattr("builtins.open", mock_open_error)
+
+        with caplog.at_level(logging.ERROR):
+            config.save_config({"test": "data"})
+
+        assert "Unexpected error saving config" in caplog.text
+
 
 # ============================================================================
 # LOGGING SETUP TESTS
@@ -173,6 +224,20 @@ class TestLoggingSetup:
         with open(log_path, 'r') as f:
             content = f.read()
             assert "Console test message" in content
+
+    def test_setup_logging_handles_exceptions(self, temp_dir, monkeypatch, capsys):
+        """Test that setup_logging handles exceptions and re-raises."""
+        def mock_file_handler_error(*args, **kwargs):
+            raise RuntimeError("Cannot create file handler")
+
+        monkeypatch.setattr("logging.FileHandler", mock_file_handler_error)
+
+        with pytest.raises(RuntimeError, match="Cannot create file handler"):
+            config.setup_logging(str(temp_dir / "test.log"))
+
+        # Check that error was printed to stderr
+        captured = capsys.readouterr()
+        assert "Failed to setup logging" in captured.err
 
 
 # ============================================================================
@@ -316,6 +381,25 @@ class TestGlobalExceptionLogging:
         # but we can verify it was installed
         import sys
         assert sys.excepthook != sys.__excepthook__
+
+    def test_exception_hook_logs_unhandled_exceptions(self, temp_dir):
+        """Test that exception hook logs unhandled exceptions."""
+        log_path = temp_dir / "test.log"
+        config.setup_logging(str(log_path))
+
+        # Trigger the exception hook directly
+        import sys
+        try:
+            raise ValueError("Test exception")
+        except ValueError:
+            exc_info = sys.exc_info()
+            # Call the exception hook
+            sys.excepthook(*exc_info)
+
+        # Check that it was logged to the file
+        with open(log_path, 'r') as f:
+            log_content = f.read()
+            assert "Unhandled exception" in log_content or "CRITICAL" in log_content
 
 
 # ============================================================================

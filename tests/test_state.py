@@ -298,6 +298,20 @@ class TestStateErrorHandling:
         result = state.load_state()
         assert result == {}
 
+    def test_load_state_handles_io_error(self, mock_state_files, caplog, monkeypatch):
+        """Test that load_state handles IO errors gracefully."""
+        def mock_open_error(*args, **kwargs):
+            raise IOError("Disk read error")
+
+        monkeypatch.setattr("os.path.exists", lambda x: True)
+        monkeypatch.setattr("builtins.open", mock_open_error)
+
+        with caplog.at_level(logging.WARNING):
+            result = state.load_state()
+
+        assert result == {}
+        assert "Failed to read upload_state.json" in caplog.text
+
     def test_save_state_logs_io_error(self, mock_state_files, caplog, monkeypatch):
         """Test that save_state logs IO errors."""
         def mock_open_error(*args, **kwargs):
