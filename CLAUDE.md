@@ -10,6 +10,13 @@ This is a Python GUI application for uploading products to Shopify using the Gra
 **Current Version:** 2.6.0
 **API Version:** Shopify GraphQL Admin API 2025-10
 
+**Important**: This tool expects PRE-CATEGORIZED product data from the categorizer project. Products should arrive with:
+- Taxonomy already assigned (`product_type`, `tags`)
+- Descriptions already rewritten (`body_html`)
+- Weights already estimated (`weight` field)
+
+The uploader focuses purely on Shopify upload operations and does not perform any content enhancement or categorization.
+
 ## 🚨 CRITICAL: Development Standards
 
 **BEFORE writing or modifying ANY code, you MUST:**
@@ -28,8 +35,6 @@ This project follows organization-wide Python development standards located at:
 - `GRAPHQL_OUTPUT_REQUIREMENTS.md` - API output format requirements
 - `GUI_DESIGN_REQUIREMENTS.md` - GUI design patterns (if applicable)
 - `GIT_WORKFLOW.md` - Git commit and branching standards
-- `PRODUCT_TAXONOMY.md` - Product categorization structure
-- `PACKAGING_WEIGHT_REFERENCE.md` - Shipping weight calculation standards
 
 **Before ANY code changes:**
 1. Read relevant standards from shared-docs
@@ -38,7 +43,7 @@ This project follows organization-wide Python development standards located at:
 
 ### 2. Use Context7 for Library Documentation
 
-When working with external libraries (Shopify API, requests, anthropic, openai, ttkbootstrap, etc.), you MUST use the Context7 MCP tools to fetch current documentation:
+When working with external libraries (Shopify API, requests, ttkbootstrap, etc.), you MUST use the Context7 MCP tools to fetch current documentation:
 
 **Available Context7 Tools:**
 - `mcp__context7__resolve-library-id` - Find the correct library ID
@@ -61,22 +66,16 @@ When working with external libraries (Shopify API, requests, anthropic, openai, 
 
 ### 3. Project-Specific Requirements
 
-**Taxonomy Validation:**
-- All products MUST fit into defined taxonomy structure
-- Validation happens after AI assignment
-- Processing STOPS immediately if taxonomy is invalid
-- User must update `PRODUCT_TAXONOMY.md` or fix product data
+**Input Data Expectations:**
+- Products arrive from categorizer project with taxonomy, descriptions, and weights already assigned
+- Taxonomy structure follows 3-level hierarchy (Department → Category → Subcategory)
+- All weights should include packaging estimates
+- Product data should be complete and ready for upload
 
-**Weight Calculation:**
-- Uses packaging reference table from shared-docs
-- AI estimates weights using 4-priority system
-- All weights include 10% safety margin
-- Low-confidence estimates flagged for review
-
-**Purchase Options:**
-- Product-level metafields (not variant-level)
-- Category-driven (from taxonomy)
-- 5 options: In-store, In-store+delivery, Pickup, Local delivery, Shipped
+**Collection Structure:**
+- Department level: Based on `product_type` field
+- Category level: Based on primary tag
+- Subcategory level: Based on compound tag rules
 
 ## Development Commands
 
@@ -93,8 +92,6 @@ pip install -r requirements.txt
 Required packages:
 - `ttkbootstrap>=1.10.0` - Modern themed tkinter GUI
 - `requests>=2.28.0` - HTTP library for API calls
-- `anthropic>=0.18.0` - Claude AI API client (optional, for AI enhancement)
-- `openai>=1.0.0` - OpenAI API client (optional, for AI enhancement)
 
 ### Setup Script (First Time)
 ```bash
@@ -297,63 +294,22 @@ Functions: `search_shopify_taxonomy()` (line 1186), `get_taxonomy_id()` (line 12
 - Caches results in `product_taxonomy.json` to reduce API calls
 - Falls back gracefully if no match found
 
-### AI Integration (AI-Powered Content Enhancement)
+### Input Data Format
 
-**Purpose**: Uses AI (Claude or OpenAI) to automatically assign products to internal taxonomy and rewrite descriptions according to voice and tone guidelines.
+Products should arrive from the categorizer project with the following structure:
 
-**Supported Providers**:
-- **Claude (Anthropic)**: Models include Sonnet 4.5, Opus 3.5, Sonnet 3.5, Haiku 3.5
-- **OpenAI (ChatGPT)**: Models include GPT-5, GPT-5 Mini, GPT-5 Nano, GPT-4o, GPT-4o Mini, GPT-4 Turbo, GPT-4
+**Required Pre-Processing (handled by categorizer)**:
+- `product_type`: Department assignment (e.g., "Pet Supplies", "Landscape & Garden")
+- `tags`: Array with Category and Subcategory tags (first tag = category, second tag = subcategory)
+- `body_html`: Rewritten product description following voice and tone guidelines
+- `weight`: Estimated shipping weight including packaging
 
-**Pre-Processing Steps** (before Shopify upload):
-
-1. **Taxonomy Assignment**:
-   - Analyzes product title, existing description, and metadata
-   - Assigns Department → stored in `product_type`
-   - Assigns Category → stored as first tag
-   - Assigns Subcategory → stored as second tag
-   - Follows structure defined in `docs/PRODUCT_TAXONOMY.md`
-
-2. **Description Rewriting**:
-   - Rewrites `body_html` content using voice and tone guidelines
-   - Applies department-specific tone (Pet Supplies: empathetic, Landscape: professional, etc.)
-   - Ensures second-person voice and imperative-first phrasing
-   - Maintains uniqueness across similar products (no 7+ word repetitions)
-   - Follows standards in `docs/VOICE_AND_TONE_GUIDELINES.md`
-
-3. **Collection Descriptions**:
-   - Generates SEO-optimized 100-word descriptions for collections
-   - Samples up to 5 products from each collection for context
-   - Applies appropriate department tone
-
-**Configuration**:
-- `AI_PROVIDER`: "claude" or "openai" (default: "claude")
-- `CLAUDE_API_KEY`: Stored in `config.json`
-- `CLAUDE_MODEL`: Model version (e.g., "claude-sonnet-4-5-20250929")
-- `OPENAI_API_KEY`: Stored in `config.json`
-- `OPENAI_MODEL`: Model version (e.g., "gpt-4o")
-- Enable/disable via GUI checkbox: "Use AI for taxonomy and descriptions"
-
-**API Flow**:
-```
-Input Product → AI API Call (Claude/OpenAI) → Enhanced Product → Shopify Upload
-                         ↓
-                  (taxonomy + rewritten description)
-```
-
-**Cost Comparison** (approximate per product):
-- OpenAI GPT-5 Nano: ~$0.002 per product (2 API calls) - cheapest
-- OpenAI GPT-5 Mini: ~$0.003 per product (2 API calls)
-- OpenAI GPT-5: ~$0.008 per product (2 API calls) - recommended
-- OpenAI GPT-4o: ~$0.015 per product (2 API calls)
-- Claude Sonnet 4.5: ~$0.022 per product (2 API calls)
-- Claude Opus 3.5: ~$0.040 per product (2 API calls) - highest quality
-
-**Benefits**:
-- Consistent taxonomy across all products
-- Professional, on-brand product descriptions
-- Reduced manual categorization effort
-- Improved SEO and customer experience
+**Upload Process**:
+1. Validate that input data contains required taxonomy fields
+2. Create collections based on taxonomy structure
+3. Upload products with pre-assigned taxonomy
+4. Create variants and metafields
+5. Publish to configured sales channels
 
 ## Common Development Patterns
 
@@ -442,9 +398,9 @@ When Shopify releases new API versions:
 - `docs/README.md`: User guide and feature overview
 - `docs/TECHNICAL_DOCS.md`: Architecture and design decisions
 - `docs/QUICK_START.md`: Getting started guide
-- `docs/PRODUCT_TAXONOMY.md`: Internal product taxonomy structure and mapping rules
-- `docs/VOICE_AND_TONE_GUIDELINES.md`: Content standards for product descriptions
 - `requirements/SHOPIFY_API_2025-10_REQUIREMENTS.md`: Complete API compatibility analysis
+
+**Note**: Product taxonomy and voice/tone guidelines are maintained in the categorizer project, as that tool handles content enhancement before upload.
 
 ### Data Files
 - `config.json`: Application configuration (includes credentials - not committed)
@@ -533,3 +489,80 @@ mutation fileCreate($files: [FileCreateInput!]!)
 
 Main execution starts at line 2247: `build_gui()` function creates the tkinter application and enters the event loop.
 - The sample input file is located here: /Users/moosemarketer/Library/CloudStorage/GoogleDrive-dave@bigpurplefish.com/My\ Drive/Big\ Purple\ Fish/Clients/Garoppos/Inventory\ Cleanup/3.5\)\ Voice\ and\ Tone/techo_bloc_products.json
+
+---
+
+## Agent Delegation Strategy
+
+You have access to specialized agents in `.claude/agents/`. **Automatically analyze each request and delegate to the appropriate specialist(s) without asking permission.**
+
+### Available Agents
+
+| Agent | Trigger Keywords | Use For |
+|-------|------------------|---------|
+| `requirements-analyst` | requirements, specifications, how should, verify against docs | Reading/interpreting requirements before implementation |
+| `shopify-api-specialist` | shopify, graphql, mutation, product create, variant, collection, metafield, api error | All Shopify GraphQL API work |
+| `gui-specialist` | gui, tkinter, ttkbootstrap, button, entry, tooltip, thread, queue | GUI development and threading |
+| `ai-integration-specialist` | openai, claude, gpt, ai enhancement, taxonomy, audience | AI API integration (OpenAI, Claude) |
+| `test-writer` | test, pytest, mock, fixture, coverage | Writing and running tests |
+| `code-reviewer` | review, check code, verify, before commit | Code review before committing |
+| `product-taxonomy-specialist` | taxonomy, category, subcategory, department, collection rules | Product categorization and collections |
+| `shopify-theme-specialist` | liquid, theme, template, snippet, section, css | Shopify Liquid theme development |
+
+### Delegation Rules
+
+1. **Analyze the request** - Identify the domain, file types, and technical areas involved
+2. **Match to specialists** - Check which agent descriptions match the task
+3. **Delegate proactively** - Invoke the specialist automatically, don't ask first
+4. **Coordinate multiple agents** - For complex tasks, orchestrate multiple specialists in sequence
+
+### When to Delegate
+
+- Starting new feature → `requirements-analyst` first, then domain specialist
+- Shopify API work → `shopify-api-specialist`
+- GUI changes → `gui-specialist`
+- AI/OpenAI/Claude work → `ai-integration-specialist`
+- After implementation → `test-writer` for tests, then `code-reviewer`
+- Taxonomy/collections → `product-taxonomy-specialist`
+- Theme/Liquid work → `shopify-theme-specialist`
+
+### Orchestration Pattern for Features
+
+For complex feature implementation:
+
+1. **requirements-analyst** reads and clarifies requirements
+2. **Domain specialist(s)** implement the feature
+3. **test-writer** creates tests
+4. **code-reviewer** validates quality
+
+**Never implement Shopify API features without first consulting requirements documents.**
+
+### Slash Commands
+
+Custom commands are available in `.claude/commands/`:
+
+| Command | Purpose |
+|---------|---------|
+| `/implement-feature` | Requirements-driven feature implementation |
+| `/review` | Code review against requirements and standards |
+| `/test` | Generate or run tests |
+| `/document` | Update documentation |
+| `/fix-api-error` | Diagnose and fix Shopify/OpenAI API errors |
+| `/add-shopify-mutation` | Add new Shopify GraphQL mutation with proper patterns |
+| `/debug-gui` | Diagnose and fix GUI issues |
+
+---
+
+## Quick Reference: Key Requirements Documents
+
+**Always read these before making changes to related areas:**
+
+| Area | Primary Document |
+|------|------------------|
+| Shopify API | `@requirements/SHOPIFY_API_2025-10_REQUIREMENTS.md` |
+| OpenAI/GPT-5 API | `@requirements/OPENAI_API_REQUIREMENTS.md` |
+| GUI Design | `@docs/GUI_DESIGN_REQUIREMENTS.md` |
+| Product Taxonomy | `@docs/PRODUCT_TAXONOMY.md` |
+| Voice & Tone | `@docs/VOICE_AND_TONE_GUIDELINES.md` |
+| Audience Feature | `@docs/AUDIENCE_DESCRIPTIONS_FEATURE.md` |
+| Shared Standards | `/Users/moosemarketer/Code/shared-docs/python/COMPLIANCE_CHECKLIST.md` |
