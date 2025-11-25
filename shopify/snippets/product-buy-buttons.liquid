@@ -4,6 +4,12 @@
   {%- assign recipient_feature_active = true -%}
 {%- endif -%}
 
+{%- comment -%}
+CUSTOM: Check if online price should be hidden via metafield
+If custom.hide_online_price is true, show call-for-quote CTA instead of buy button
+{%- endcomment -%}
+{%- assign hide_online_price = product.metafields.custom.hide_online_price | default: false -%}
+
 <div class="product-form__buy-buttons" {{ block.shopify_attributes }}>
   {%- if recipient_feature_active -%}
     <gift-card-recipient class="gift-card-recipient">
@@ -42,28 +48,54 @@
   {%- endif -%}
 
   <div class="product-form__payment-container">
-    {%- if product.template_suffix != 'contact' -%}
-      {%- if product.selected_or_first_available_variant == nil -%}
-        <button type="button" class="product-form__add-button button button--disabled" disabled>{{ 'product.form.unavailable' | t }}</button>
-      {%- elsif product.selected_or_first_available_variant.available -%}
-        {%- if product.template_suffix == 'pre-order' -%}
-          <buy-button class="buy-button">
-            <button type="submit" class="product-form__add-button button button--primary">{{ 'product.form.pre_order' | t }}</button>
-          </buy-button>
-        {%- else -%}
-          <buy-button class="buy-button">
-            <button type="submit" class="product-form__add-button button button--primary">{{ 'product.form.add_to_cart' | t }}</button>
-          </buy-button>
-        {%- endif -%}
-      {%- else -%}
-        <button type="submit" class="product-form__add-button button button--disabled" disabled>{{ 'product.form.sold_out' | t }}</button>
-      {%- endif -%}
+    {%- comment -%}
+    CUSTOM: If hide_online_price is true, show call-for-quote CTA instead of buy button
+    {%- endcomment -%}
+    {%- if hide_online_price -%}
+      {%- comment -%}Call for quote CTA - device-aware{%- endcomment -%}
+      {%- if shop.phone != blank -%}
+        {%- comment -%}Mobile: clickable phone link{%- endcomment -%}
+        <a href="tel:{{ shop.phone }}" class="product-form__add-button button button--primary hidden-tablet-and-up">
+          Call for Quote: {{ shop.phone }}
+        </a>
 
-      {%- if block.settings.show_payment_button and recipient_feature_active == false and product.template_suffix != 'pre-order' -%}
-        {{ form | payment_button }}
+        {%- comment -%}Desktop: styled call-to-action box{%- endcomment -%}
+        <div class="product-form__call-quote hidden-phone" style="background: var(--secondary-background, #ffffff); border: 2px solid var(--border-color, #e1e3e4); border-radius: 4px; padding: 1.5rem; text-align: center; margin-bottom: 1rem;">
+          <p style="font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.05em; margin: 0 0 0.75rem 0; color: var(--text-color, #677279); font-weight: 600;">Call for Quote</p>
+          <a href="tel:{{ shop.phone }}" style="font-size: 1.5rem; font-weight: bold; color: var(--accent-color, #00badb); text-decoration: none; display: inline-block; margin: 0;">{{ shop.phone }}</a>
+          <p style="font-size: 0.875rem; margin: 0.75rem 0 0 0; color: var(--text-color, #677279);">Contact us for pricing and availability</p>
+        </div>
+      {%- else -%}
+        {%- comment -%}Fallback if no phone number set in Shopify{%- endcomment -%}
+        <a href="mailto:{{ shop.email }}" class="product-form__add-button button button--primary">
+          Email for Quote
+        </a>
       {%- endif -%}
     {%- else -%}
-      <a href="mailto:{{ shop.email }}" class="button button--primary">{{ 'product.form.contact_us' | t }}</a>
+      {%- comment -%}Original buy button logic{%- endcomment -%}
+      {%- if product.template_suffix != 'contact' -%}
+        {%- if product.selected_or_first_available_variant == nil -%}
+          <button type="button" class="product-form__add-button button button--disabled" disabled>{{ 'product.form.unavailable' | t }}</button>
+        {%- elsif product.selected_or_first_available_variant.available -%}
+          {%- if product.template_suffix == 'pre-order' -%}
+            <buy-button class="buy-button">
+              <button type="submit" class="product-form__add-button button button--primary">{{ 'product.form.pre_order' | t }}</button>
+            </buy-button>
+          {%- else -%}
+            <buy-button class="buy-button">
+              <button type="submit" class="product-form__add-button button button--primary">{{ 'product.form.add_to_cart' | t }}</button>
+            </buy-button>
+          {%- endif -%}
+        {%- else -%}
+          <button type="submit" class="product-form__add-button button button--disabled" disabled>{{ 'product.form.sold_out' | t }}</button>
+        {%- endif -%}
+
+        {%- if block.settings.show_payment_button and recipient_feature_active == false and product.template_suffix != 'pre-order' -%}
+          {{ form | payment_button }}
+        {%- endif -%}
+      {%- else -%}
+        <a href="mailto:{{ shop.email }}" class="button button--primary">{{ 'product.form.contact_us' | t }}</a>
+      {%- endif -%}
     {%- endif -%}
 
     {%- if block.settings.show_payment_button -%}

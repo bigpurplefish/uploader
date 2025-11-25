@@ -9,15 +9,8 @@ omit =
     */site-packages/*
 
 [report]
-# Exclude GUI and large integration modules that require extensive mocking
-# Focus coverage on testable utility modules (config, state, utils)
+# No exclusions - testing everything for 100% total coverage
 omit =
-    */gui.py
-    */product_processing.py
-    */ai_provider.py
-    */claude_api.py
-    */openai_api.py
-    */shopify_api.py
 
 # Show lines that weren't covered
 show_missing = True

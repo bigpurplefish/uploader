@@ -21,15 +21,6 @@ def load_config():
         "_SYSTEM SETTINGS": "These are system settings specified in the Settings dialog.",
         "SHOPIFY_STORE_URL": "",
         "SHOPIFY_ACCESS_TOKEN": "",
-        "_AI_SETTINGS": "AI settings for taxonomy and description enhancement.",
-        "AI_PROVIDER": "claude",
-        "USE_AI_ENHANCEMENT": False,
-        "_CLAUDE_AI_SETTINGS": "Claude AI specific settings.",
-        "CLAUDE_API_KEY": "",
-        "CLAUDE_MODEL": "claude-sonnet-4-5-20250929",
-        "_OPENAI_SETTINGS": "OpenAI/ChatGPT specific settings.",
-        "OPENAI_API_KEY": "",
-        "OPENAI_MODEL": "gpt-5",
         "_USER SETTINGS": "These are user settings specified in the main UI.",
         "INPUT_FILE": "",
         "PRODUCT_OUTPUT_FILE": "",
@@ -52,23 +43,27 @@ def load_config():
                     loaded_config["PRODUCT_OUTPUT_FILE"] = loaded_config["OUTPUT_FILE"]
                     del loaded_config["OUTPUT_FILE"]
 
-                # Migrate old USE_CLAUDE_AI to USE_AI_ENHANCEMENT
-                if "USE_CLAUDE_AI" in loaded_config and "USE_AI_ENHANCEMENT" not in loaded_config:
-                    loaded_config["USE_AI_ENHANCEMENT"] = loaded_config["USE_CLAUDE_AI"]
-                    loaded_config["AI_PROVIDER"] = "claude"  # Default to Claude for existing users
-                    del loaded_config["USE_CLAUDE_AI"]
-                    logging.info("Migrated USE_CLAUDE_AI to USE_AI_ENHANCEMENT with AI_PROVIDER=claude")
+                # Remove deprecated AI-related settings
+                deprecated_keys = [
+                    "USE_CLAUDE_AI", "USE_AI_ENHANCEMENT", "AI_PROVIDER",
+                    "CLAUDE_API_KEY", "CLAUDE_MODEL", "OPENAI_API_KEY", "OPENAI_MODEL",
+                    "_AI_SETTINGS", "_CLAUDE_AI_SETTINGS", "_OPENAI_SETTINGS",
+                    "AUDIENCE_COUNT", "AUDIENCE_1_NAME", "AUDIENCE_2_NAME",
+                    "AUDIENCE_TAB_1_LABEL", "AUDIENCE_TAB_2_LABEL"
+                ]
+                for key in deprecated_keys:
+                    if key in loaded_config:
+                        del loaded_config[key]
+                        logging.info(f"Removed deprecated AI setting: {key}")
 
                 # Ensure all new fields exist
-                for key in ["PRODUCT_OUTPUT_FILE", "COLLECTIONS_OUTPUT_FILE", "AI_PROVIDER",
-                           "USE_AI_ENHANCEMENT", "CLAUDE_API_KEY", "CLAUDE_MODEL",
-                           "OPENAI_API_KEY", "OPENAI_MODEL"]:
+                for key in ["PRODUCT_OUTPUT_FILE", "COLLECTIONS_OUTPUT_FILE"]:
                     if key not in loaded_config:
                         if key in default:
                             loaded_config[key] = default[key]
 
                 # Save if we made any migrations
-                if "USE_CLAUDE_AI" in json.dumps(loaded_config) or "OUTPUT_FILE" in json.dumps(loaded_config):
+                if any(key in json.dumps(loaded_config) for key in ["OUTPUT_FILE"] + deprecated_keys):
                     save_config(loaded_config)
 
                 return loaded_config

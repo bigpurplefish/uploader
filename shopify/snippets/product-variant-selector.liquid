@@ -2,6 +2,15 @@
 {%- assign color_label = 'color,colour,couleur,cor,colore,farbe,색,色,カラー,färg,farve,szín,barva' | split: ',' -%}
 {%- assign texture_label = 'texture,finish,acabado,finition,textur,질감,質地,テクスチャ,textura' | split: ',' -%}
 
+{%- comment -%}
+CUSTOM: Check if online price should be hidden via metafield
+If custom.hide_online_price is true, skip price and quantity display
+{%- endcomment -%}
+{%- assign hide_online_price = product.metafields.custom.hide_online_price -%}
+
+{%- comment -%}Hidden input for variant ID - required by variant picker JavaScript{%- endcomment -%}
+<input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}">
+
 {%- comment -%}Check if this product has custom size selector data (Techo-Bloc){%- endcomment -%}
 {%- assign has_size_diagram = false -%}
 {%- for variant in product.variants -%}
@@ -341,33 +350,22 @@
   </variant-picker>
 {%- endunless -%}
 
-{%- comment -%}The rest of the price/inventory/quantity sections remain unchanged{%- endcomment -%}
-{%- if show_prices_and_inventory -%}
+{%- comment -%}Only show prices/inventory/quantity if hide_online_price is NOT true{%- endcomment -%}
+{%- if hide_online_price != true -%}
   {%- if product.template_suffix != 'pre-order' or block.settings.show_price_for_pre_orders -%}
     <div class="product-form__info-item">
       <span class="product-form__info-title text--strong">{{ 'product.form.price' | t }}:</span>
 
       <div class="product-form__info-content">
         <div class="price-list">
-          {%- comment -%}On sale price badge{%- endcomment -%}
-          {%- if product.price_varies -%}
-            <span class="price">
-              {%- if product.compare_at_price > product.price -%}
-                <span class="sr-only">{{ 'product.general.sale_price' | t }}</span>
-              {%- endif -%}
+          {%- comment -%}Always show selected variant price, not range{%- endcomment -%}
+          <span class="price {% if selected_variant.compare_at_price > selected_variant.price %}price--highlight{% endif %}">
+            {%- if selected_variant.compare_at_price > selected_variant.price -%}
+              <span class="sr-only">{{ 'product.general.sale_price' | t }}</span>
+            {%- endif -%}
 
-              {{- product.price_min | money -}}
-              {%- if product.price_max != product.price_min %} - {{ product.price_max | money }}{% endif -%}
-            </span>
-          {%- else -%}
-            <span class="price {% if selected_variant.compare_at_price > selected_variant.price %}price--highlight{% endif %}">
-              {%- if selected_variant.compare_at_price > selected_variant.price -%}
-                <span class="sr-only">{{ 'product.general.sale_price' | t }}</span>
-              {%- endif -%}
-
-              {{- selected_variant.price | money -}}
-            </span>
-          {%- endif -%}
+            {{- selected_variant.price | money -}}
+          </span>
 
           {%- if block.settings.show_compare_at_price and selected_variant.compare_at_price > selected_variant.price -%}
             <span class="price price--compare">
@@ -513,4 +511,7 @@
       <input type="hidden" name="quantity" value="1">
     {%- endif -%}
   {%- endif -%}
+{%- else -%}
+  {%- comment -%}When hide_online_price is true, include hidden quantity input for JavaScript compatibility{%- endcomment -%}
+  <input type="hidden" name="quantity" value="1">
 {%- endif -%}

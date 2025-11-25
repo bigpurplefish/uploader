@@ -4125,6 +4125,23 @@ body:not(.is-tabbing) [tabindex]:focus, body:not(.is-tabbing) label:focus, body:
   margin-top: 12px;
 }
 
+/* Footer subscribe button fix - v2024.11.20.3 */
+.footer__newsletter-form .form__submit.button.button--primary {
+  color: #ffffff !important;
+  background: transparent !important;
+  border: 2px solid #ffffff !important;
+  font-size: var(--base-text-font-size);
+  line-height: 44px;
+  padding: 0 30px;
+  transition: all 0.25s ease-in-out;
+}
+
+.footer__newsletter-form .form__submit.button.button--primary:hover {
+  background: #ffffff !important;
+  color: #3e4b3c !important;
+  border-color: #ffffff !important;
+}
+
 .form__spam-disclaimer {
   margin-top: 10px;
   display: block;
@@ -8121,6 +8138,7 @@ shopify-payment-terms {
 .product-form__payment-container {
   flex-direction: column;
   display: flex;
+  margin-top: 22px;
 }
 
 .product-form__status-message {
@@ -8156,7 +8174,7 @@ shopify-payment-terms {
   .product-form__payment-container {
     flex-flow: wrap;
     align-items: flex-start;
-    margin: -9px;
+    margin: 22px -9px -9px -9px;
   }
 
   .product-form__payment-container > * {

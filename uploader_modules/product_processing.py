@@ -26,7 +26,6 @@ from .utils import (
     key_to_label, validate_image_urls, validate_image_alt_tags_for_filtering,
     generate_image_filter_hashtags
 )
-from .ai_provider import batch_enhance_products, generate_collection_description
 
 
 def process_collections(products, cfg, status_fn):
@@ -43,21 +42,6 @@ def process_collections(products, cfg, status_fn):
         Tuple of (success, created_count, existing_count, failed_count)
     """
     try:
-        # Check if AI enhancement is enabled for collection descriptions
-        use_claude = cfg.get("USE_AI_ENHANCEMENT", False)
-        voice_tone_doc = None
-
-        if use_claude:
-            # Load voice and tone guidelines
-            voice_tone_path = "docs/VOICE_AND_TONE_GUIDELINES.md"
-            try:
-                with open(voice_tone_path, 'r', encoding='utf-8') as f:
-                    voice_tone_doc = f.read()
-                logging.info(f"Loaded voice and tone guidelines for collection descriptions")
-            except Exception as e:
-                logging.warning(f"Failed to load voice/tone doc for collections: {e}")
-                logging.warning("Collection descriptions will be generated without voice/tone guidelines")
-
         # Load collections tracking data
         collections_data = load_collections()
         
@@ -217,85 +201,10 @@ def process_collections(products, cfg, status_fn):
                     collections_existing += 1
                     time.sleep(0.5)
                     continue
-                
-                # Generate description with Claude (if enabled)
-                description = None
-                if use_claude and voice_tone_doc:
-                    try:
-                        log_and_status(status_fn, f"    Generating AI description...")
 
-                        # Gather product samples that match this collection
-                        product_samples = []
-                        for product in products:
-                            product_matches = False
-
-                            # Check if product matches collection rules
-                            if level == "department":
-                                if product.get('product_type', '').lower() == collection_name.lower():
-                                    product_matches = True
-                            elif level == "category":
-                                product_tags = product.get('tags', [])
-                                if isinstance(product_tags, str):
-                                    product_tags = [t.strip() for t in product_tags.split(',')]
-                                if any(tag.lower() == collection_name.lower() for tag in product_tags):
-                                    product_matches = True
-                            elif level == "subcategory":
-                                # Subcategory requires both category and subcategory tags
-                                product_tags = product.get('tags', [])
-                                if isinstance(product_tags, str):
-                                    product_tags = [t.strip() for t in product_tags.split(',')]
-                                # Check if all rule conditions are met
-                                all_conditions_met = True
-                                for rule in rules:
-                                    if rule["column"] == "TAG":
-                                        if not any(tag.lower() == rule["condition"].lower() for tag in product_tags):
-                                            all_conditions_met = False
-                                            break
-                                if all_conditions_met:
-                                    product_matches = True
-
-                            if product_matches:
-                                body_html = product.get('body_html', '')
-                                if body_html:
-                                    product_samples.append(body_html)
-
-                        # Limit to 5 samples
-                        product_samples = product_samples[:5]
-
-                        if product_samples:
-                            # Determine department for tone
-                            department = None
-                            if level == "department":
-                                department = collection_name
-                            else:
-                                # Try to get department from a sample product
-                                for product in products:
-                                    if product.get('body_html') in product_samples:
-                                        department = product.get('product_type', 'Landscape and Construction')
-                                        break
-                                if not department:
-                                    department = "Landscape and Construction"  # Default
-
-                            # Generate description
-                            description = generate_collection_description(
-                                collection_name,
-                                department,
-                                product_samples,
-                                voice_tone_doc,
-                                cfg,
-                                status_fn
-                            )
-                        else:
-                            logging.warning(f"No product samples found for collection '{collection_name}'")
-
-                    except Exception as e:
-                        log_and_status(status_fn, f"    ⚠️  Failed to generate description: {str(e)}", "warning")
-                        logging.exception(f"Error generating collection description for '{collection_name}':")
-                        # Continue without description
-
-                # Create new collection
+                # Create new collection (without AI-generated description)
                 log_and_status(status_fn, f"    Creating new collection...")
-                created_collection = create_collection(collection_name, rules, cfg, description)
+                created_collection = create_collection(collection_name, rules, cfg, description=None)
                 
                 if not created_collection:
                     error_msg = f"Failed to create collection: {collection_name}"
@@ -551,53 +460,6 @@ def process_products(cfg, status_fn, execution_mode="resume"):
             return
         
         log_and_status(status_fn, f"✅ Loaded {len(products)} products\n")
-
-        # ========== AI ENHANCEMENT (if enabled) ==========
-        if cfg.get("USE_AI_ENHANCEMENT", False):
-            provider = cfg.get("AI_PROVIDER", "claude").upper()
-            log_and_status(status_fn, "=" * 80)
-            log_and_status(status_fn, f"AI ENHANCEMENT ({provider})")
-            log_and_status(status_fn, "=" * 80)
-
-            try:
-                products = batch_enhance_products(
-                    products,
-                    cfg,
-                    status_fn,
-                    taxonomy_path="docs/PRODUCT_TAXONOMY.md",
-                    voice_tone_path="docs/VOICE_AND_TONE_GUIDELINES.md"
-                )
-
-                log_and_status(status_fn, "=" * 80 + "\n")
-
-            except Exception as e:
-                provider_name = cfg.get("AI_PROVIDER", "claude").title()
-                log_and_status(status_fn, "", "error")
-                log_and_status(status_fn, "=" * 80, "error")
-                log_and_status(status_fn, f"❌ PROCESSING STOPPED DUE TO {provider_name.upper()} API FAILURE", "error")
-                log_and_status(status_fn, "=" * 80, "error")
-                log_and_status(status_fn, f"Error: {str(e)}", "error")
-                log_and_status(status_fn, "", "error")
-                log_and_status(status_fn, "What happened:", "error")
-                log_and_status(status_fn, f"- {provider_name} AI failed to enhance a product", "error")
-                log_and_status(status_fn, "- Processing was stopped to prevent partial/incomplete data", "error")
-                log_and_status(status_fn, "- No products were uploaded to Shopify", "error")
-                log_and_status(status_fn, "", "error")
-                log_and_status(status_fn, "How to fix:", "error")
-                log_and_status(status_fn, "1. Check the log file for detailed error information", "error")
-                log_and_status(status_fn, "2. Common issues:", "error")
-                log_and_status(status_fn, "   - Invalid API key (check Settings)", "error")
-                log_and_status(status_fn, "   - API rate limit hit (wait a few minutes)", "error")
-                log_and_status(status_fn, "   - Network connectivity issue", "error")
-                log_and_status(status_fn, "   - Product data format issue", "error")
-                log_and_status(status_fn, "3. Fix the issue and restart processing", "error")
-                log_and_status(status_fn, "4. Already-processed products are cached and won't be re-processed", "error")
-                log_and_status(status_fn, "=" * 80, "error")
-                logging.exception(f"Full traceback for {provider_name} API failure:")
-                return  # Stop processing
-
-        else:
-            log_and_status(status_fn, "ℹ️  AI enhancement disabled (enable in main window)\n")
 
         # ========== PRE-UPLOAD VALIDATION ==========
         log_and_status(status_fn, "=" * 80)
@@ -906,14 +768,14 @@ def process_products(cfg, status_fn, execution_mode="resume"):
                 category, subcategory = extract_category_subcategory(product)
 
                 # Get Shopify product category
-                # If AI enhancement added shopify_category_id, use that
-                # Otherwise, try to look up from product_category field
+                # Look up from shopify_category_id field (if provided by categorizer)
+                # Otherwise, try product_category field for lookup
                 taxonomy_id = product.get('shopify_category_id')
 
                 if taxonomy_id:
-                    log_and_status(status_fn, f"  Using AI-matched Shopify category ID: {taxonomy_id}")
+                    log_and_status(status_fn, f"  Using provided Shopify category ID: {taxonomy_id}")
                 else:
-                    # Fallback: Try product_category field (for non-AI enhanced products)
+                    # Fallback: Try product_category field for taxonomy lookup
                     product_category_field = product.get('product_category', '').strip()
 
                     if product_category_field:

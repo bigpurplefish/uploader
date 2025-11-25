@@ -27,13 +27,52 @@
         "description": {
           "type": "description",
           "settings": {}
+        },
+        "layout_possibilities": {
+          "type": "layout_possibilities",
+          "settings": {
+            "title": "Layout Possibilities",
+            "display_mode": "collapse"
+          }
+        },
+        "documentation": {
+          "type": "documentation",
+          "settings": {
+            "title": "Documentation",
+            "display_mode": "collapse"
+          }
+        },
+        "additional_documentation": {
+          "type": "additional_documentation",
+          "settings": {
+            "title": "Additional Documentation",
+            "display_mode": "collapse"
+          }
+        },
+        "specifications": {
+          "type": "specifications",
+          "settings": {
+            "title": "Specifications",
+            "display_mode": "collapse"
+          }
+        },
+        "faqs": {
+          "type": "faqs",
+          "settings": {
+            "title": "Frequently Asked Questions"
+          }
         }
       },
       "block_order": [
         "product_meta",
         "variant_selector",
         "buy_buttons",
-        "description"
+        "description",
+        "layout_possibilities",
+        "documentation",
+        "additional_documentation",
+        "specifications",
+        "faqs"
       ],
       "settings": {}
     },
