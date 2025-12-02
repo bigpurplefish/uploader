@@ -28,6 +28,11 @@ def setup_logging(log_file: str, verbose: bool = False) -> None:
     handlers = [logging.StreamHandler(sys.stdout)]
 
     if log_file:
+        # Create parent directory if it doesn't exist
+        log_dir = os.path.dirname(log_file)
+        if log_dir and not os.path.exists(log_dir):
+            os.makedirs(log_dir, exist_ok=True)
+        # FileHandler will create the file if it doesn't exist
         handlers.append(logging.FileHandler(log_file))
 
     logging.basicConfig(

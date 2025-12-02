@@ -101,6 +101,12 @@ def setup_logging(log_path: str, level: int = logging.INFO):
         for h in logging.root.handlers[:]:
             logging.root.removeHandler(h)
 
+        # Create parent directory if it doesn't exist
+        log_dir = os.path.dirname(log_path)
+        if log_dir and not os.path.exists(log_dir):
+            os.makedirs(log_dir, exist_ok=True)
+
+        # FileHandler will create the file if it doesn't exist
         file_handler = logging.FileHandler(log_path, encoding="utf-8")
         file_handler.setLevel(logging.DEBUG)
         file_handler.setFormatter(
