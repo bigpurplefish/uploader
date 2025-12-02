@@ -6,8 +6,7 @@ pytest>=8.0.0
 # Test coverage
 pytest-cov>=4.1.0
 
-# For capturing log output in tests
-pytest-capturelog>=0.7
+# For capturing log output in tests (built into pytest now)
 
 # For testing with multiple Python versions (optional)
 tox>=4.0.0
