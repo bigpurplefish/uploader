@@ -70,10 +70,12 @@ When working with external libraries (Shopify API, requests, ttkbootstrap, etc.)
 ### 3. Project-Specific Requirements
 
 **Input Data Expectations:**
-- Products arrive from categorizer project with taxonomy, descriptions, and weights already assigned
+- See `requirements/INPUT_FORMAT_REQUIREMENTS.md` for complete input JSON schema
+- Products arrive from categorizer/upscaler projects with taxonomy, descriptions, and weights already assigned
 - Taxonomy structure follows 3-level hierarchy (Department → Category → Subcategory)
 - All weights should include packaging estimates
 - Product data should be complete and ready for upload
+- All image URLs must be pre-uploaded to Shopify CDN
 
 **Collection Structure:**
 - Department level: Based on `product_type` field
@@ -410,6 +412,7 @@ When Shopify releases new API versions:
 - `docs/TECHNICAL_DOCS.md`: Architecture and design decisions
 - `docs/QUICK_START.md`: Getting started guide
 - `requirements/SHOPIFY_API_2025-10_REQUIREMENTS.md`: Complete API compatibility analysis
+- `requirements/INPUT_FORMAT_REQUIREMENTS.md`: **Input JSON file format specification**
 
 **Note**: Product taxonomy and voice/tone guidelines are maintained in the categorizer project, as that tool handles content enhancement before upload.
 

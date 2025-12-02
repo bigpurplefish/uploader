@@ -171,13 +171,20 @@ def validate_image_urls(products):
                     })
 
         # Check variant metafields for URL types
+        # Also check known image metafield keys that may have single_line_text_field type
+        IMAGE_METAFIELD_KEYS = {'color_swatch_image', 'texture_swatch_image', 'finish_swatch_image'}
+
         for var_idx, variant in enumerate(product.get('variants', [])):
             for mf in variant.get('metafields', []):
                 mf_type = mf.get('type', '')
                 mf_value = mf.get('value', '')
                 mf_key = mf.get('key', '')
 
-                if mf_type in ['url', 'file_reference'] and mf_value:
+                # Check URL/file_reference types OR known image metafield keys
+                is_url_type = mf_type in ['url', 'file_reference']
+                is_image_key = mf_key in IMAGE_METAFIELD_KEYS
+
+                if (is_url_type or is_image_key) and mf_value:
                     if not is_shopify_cdn_url(mf_value):
                         invalid_urls.append({
                             'product_title': product_title,

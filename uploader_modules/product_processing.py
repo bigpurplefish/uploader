@@ -795,9 +795,12 @@ def process_products(cfg, status_fn, execution_mode="resume"):
                         log_and_status(status_fn, "  No Shopify category available", "warning")
                 
                 # Prepare product input (API 2025-10 format)
+                # Support both 'descriptionHtml' (new) and 'body_html' (legacy) field names
+                description = product.get('descriptionHtml') or product.get('body_html', '')
+
                 product_input = {
                     "title": product.get('title'),
-                    "descriptionHtml": product.get('body_html', ''),
+                    "descriptionHtml": description,
                     "vendor": product.get('vendor', ''),
                     "productType": product.get('product_type', ''),
                     "status": "ACTIVE"
