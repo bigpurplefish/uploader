@@ -1,0 +1,10 @@
+# GUI dependencies for Shopify Product Uploader
+
+# Modern themed tkinter widgets
+ttkbootstrap>=1.10.0
+
+# Note: tkinter itself comes with Python standard library
+# and does not need to be installed via pip
+
+# Install base requirements as well
+-r requirements.txt
