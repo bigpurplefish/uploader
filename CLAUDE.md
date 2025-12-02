@@ -4,9 +4,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-This is a Python GUI application for uploading products to Shopify using the GraphQL Admin API (2025-10). It handles products with variants, images, 3D models, metafields, and automated collection creation.
+This is a Python application for uploading products to Shopify using the GraphQL Admin API (2025-10). It handles products with variants, images, 3D models, metafields, and automated collection creation.
 
-**Main Script:** `uploader.py` (~2670 lines)
+**Entry Points:**
+- `main.py` - CLI entry point (command-line interface)
+- `gui.py` - GUI entry point (graphical interface)
+
 **Current Version:** 2.6.0
 **API Version:** Shopify GraphQL Admin API 2025-10
 
@@ -80,8 +83,16 @@ When working with external libraries (Shopify API, requests, ttkbootstrap, etc.)
 ## Development Commands
 
 ### Running the Application
+
+**GUI Mode:**
 ```bash
-python3 uploader.py
+python3 gui.py
+```
+
+**CLI Mode:**
+```bash
+python3 main.py --input products.json --output results.json
+python3 main.py --input products.json --output results.json --mode overwrite --verbose
 ```
 
 ### Installing Dependencies
@@ -485,10 +496,20 @@ mutation stagedUploadsCreate($input: [StagedUploadInput!]!)
 mutation fileCreate($files: [FileCreateInput!]!)
 ```
 
-## Entry Point
+## Entry Points
 
-Main execution starts at line 2247: `build_gui()` function creates the tkinter application and enters the event loop.
-- The sample input file is located here: /Users/moosemarketer/Library/CloudStorage/GoogleDrive-dave@bigpurplefish.com/My\ Drive/Big\ Purple\ Fish/Clients/Garoppos/Inventory\ Cleanup/3.5\)\ Voice\ and\ Tone/techo_bloc_products.json
+**GUI Mode (`gui.py`):**
+- Calls `build_gui()` function which creates the tkinter application and enters the event loop
+- Uses ttkbootstrap with "darkly" theme
+- Thread-safe status updates via queue
+
+**CLI Mode (`main.py`):**
+- Uses argparse for command-line argument handling
+- Supports `--input`, `--output`, `--mode`, `--verbose` options
+- Same processing logic as GUI, different interface
+
+**Sample Input File:**
+`/Users/moosemarketer/Library/CloudStorage/GoogleDrive-dave@bigpurplefish.com/My Drive/Big Purple Fish/Clients/Garoppos/Inventory Cleanup/3.5) Voice and Tone/techo_bloc_products.json`
 
 ---
 
