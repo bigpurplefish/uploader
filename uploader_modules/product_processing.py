@@ -454,7 +454,12 @@ def process_products(cfg, status_fn, execution_mode="resume"):
             log_and_status(status_fn, f"❌ Error loading input file: {e}", "error")
             return
         
-        products = data.get('products', [])
+        # Handle both formats: {"products": [...]} or just [...]
+        if isinstance(data, list):
+            products = data
+        else:
+            products = data.get('products', [])
+
         if not products:
             log_and_status(status_fn, "❌ No products found in input file.", "error")
             return
