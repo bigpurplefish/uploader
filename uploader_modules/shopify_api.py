@@ -8,6 +8,7 @@ import json
 import logging
 import requests
 from .config import log_and_status
+from .state import save_taxonomy_cache
 from .utils import key_to_label
 
 
@@ -915,3 +916,293 @@ def upload_model_to_shopify(model_url, filename, cfg, status_fn=None):
         else:
             logging.error(f"Unexpected error uploading model: {e}")
         return None, None
+
+
+def search_shopify_taxonomy(category_name, api_url, headers, status_fn=None):
+    """
+    Search Shopify's standard product taxonomy for a category.
+
+    Args:
+        category_name: Category name to search for
+        api_url: Shopify GraphQL API URL
+        headers: API request headers
+        status_fn: Optional status update function
+
+    Returns:
+        Taxonomy ID (GID format) if found, None otherwise
+    """
+    try:
+        # Use taxonomyCategories to search (API 2025-10)
+        # Fetch all categories with pagination
+        all_edges = []
+        cursor = None
+        page_count = 0
+        max_pages = 20  # Max 5000 categories (250 per page)
+
+        if status_fn:
+            log_and_status(status_fn, f"  Searching taxonomy for: {category_name}")
+        else:
+            logging.info(f"  Searching taxonomy for: {category_name}")
+
+        while page_count < max_pages:
+            # Fixed query for API 2025-10: Use taxonomy.categories instead of taxonomyCategories
+            search_query = """
+            query searchTaxonomy($cursor: String) {
+              taxonomy {
+                categories(first: 250, after: $cursor) {
+                  edges {
+                    node {
+                      id
+                      fullName
+                      name
+                    }
+                    cursor
+                  }
+                  pageInfo {
+                    hasNextPage
+                    endCursor
+                  }
+                }
+              }
+            }
+            """
+
+            variables = {"cursor": cursor} if cursor else {}
+
+            response = requests.post(
+                api_url,
+                json={"query": search_query, "variables": variables},
+                headers=headers,
+                timeout=30
+            )
+            response.raise_for_status()
+            result = response.json()
+
+            # Check for errors
+            if "errors" in result:
+                if status_fn:
+                    log_and_status(status_fn, f"  GraphQL errors in taxonomy search: {result['errors']}", "error")
+                else:
+                    logging.error(f"  GraphQL errors in taxonomy search: {result['errors']}")
+                return None
+
+            # Fixed path for API 2025-10: data.taxonomy.categories instead of data.taxonomyCategories
+            taxonomy_data = result.get("data", {}).get("taxonomy", {}).get("categories", {})
+            edges = taxonomy_data.get("edges", [])
+            page_info = taxonomy_data.get("pageInfo", {})
+
+            all_edges.extend(edges)
+            page_count += 1
+
+            # Check if there are more pages
+            if not page_info.get("hasNextPage"):
+                break
+
+            cursor = page_info.get("endCursor")
+
+        if status_fn:
+            log_and_status(status_fn, f"  Loaded {len(all_edges)} taxonomy categories from {page_count} page(s)")
+        else:
+            logging.info(f"  Loaded {len(all_edges)} taxonomy categories from {page_count} page(s)")
+
+        edges = all_edges
+
+        if not edges:
+            if status_fn:
+                log_and_status(status_fn, f"  No taxonomy results")
+            else:
+                logging.info(f"  No taxonomy results")
+            return None
+
+        # ========== MULTI-STRATEGY SEARCH ==========
+        # Try multiple search strategies to find the best match
+        category_lower = category_name.lower()
+
+        # Strategy 1: Exact match (case-insensitive)
+        exact_match = None
+        for edge in edges:
+            node = edge.get("node", {})
+            full_name = node.get("fullName", "")
+            if full_name.lower() == category_lower:
+                exact_match = node
+                break
+
+        if exact_match:
+            taxonomy_id = exact_match.get("id")
+            full_name = exact_match.get("fullName")
+            if status_fn:
+                log_and_status(status_fn, f"  ✅ Found exact taxonomy match: {full_name}")
+            else:
+                logging.info(f"  ✅ Found exact taxonomy match: {full_name}")
+            return taxonomy_id
+
+        # Strategy 2: Contains match (search term in fullName)
+        contains_matches = []
+        for edge in edges:
+            node = edge.get("node", {})
+            full_name = node.get("fullName", "")
+            full_name_lower = full_name.lower()
+
+            if category_lower in full_name_lower:
+                contains_matches.append(node)
+
+        if contains_matches:
+            # Pick the shortest match (usually most specific)
+            best_match = min(contains_matches, key=lambda n: len(n.get("fullName", "")))
+            taxonomy_id = best_match.get("id")
+            full_name = best_match.get("fullName")
+            if status_fn:
+                log_and_status(status_fn, f"  ✅ Found contains match: {full_name}")
+            else:
+                logging.info(f"  ✅ Found contains match: {full_name}")
+            return taxonomy_id
+
+        # Strategy 3: Keyword search (extract keywords and find matches)
+        # Split category_name by common separators
+        keywords = []
+        for sep in [" > ", " - ", " / ", " & ", " and "]:
+            if sep in category_name:
+                parts = category_name.split(sep)
+                keywords.extend([p.strip().lower() for p in parts if p.strip()])
+                break
+
+        # If no separators found, use individual words (excluding common words)
+        if not keywords:
+            stop_words = {'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with'}
+            words = category_name.lower().split()
+            keywords = [w for w in words if w not in stop_words and len(w) > 2]
+
+        if keywords:
+            keyword_matches = []
+            for edge in edges:
+                node = edge.get("node", {})
+                full_name = node.get("fullName", "")
+                full_name_lower = full_name.lower()
+
+                # Count how many keywords match
+                match_count = sum(1 for kw in keywords if kw in full_name_lower)
+
+                if match_count > 0:
+                    keyword_matches.append((node, match_count))
+
+            if keyword_matches:
+                # Sort by match count (descending), then by length (ascending)
+                keyword_matches.sort(key=lambda x: (-x[1], len(x[0].get("fullName", ""))))
+                best_match = keyword_matches[0][0]
+                match_count = keyword_matches[0][1]
+                taxonomy_id = best_match.get("id")
+                full_name = best_match.get("fullName")
+                if status_fn:
+                    log_and_status(status_fn, f"  ✅ Found keyword match ({match_count}/{len(keywords)} keywords): {full_name}")
+                else:
+                    logging.info(f"  ✅ Found keyword match ({match_count}/{len(keywords)} keywords): {full_name}")
+                return taxonomy_id
+
+        # No match found
+        if status_fn:
+            log_and_status(status_fn, f"  ⚠️  No taxonomy match found for: {category_name}")
+        else:
+            logging.info(f"  ⚠️  No taxonomy match found for: {category_name}")
+        return None
+
+    except requests.exceptions.RequestException as e:
+        if status_fn:
+            log_and_status(status_fn, f"  Network error searching taxonomy: {e}", "error")
+        else:
+            logging.error(f"  Network error searching taxonomy: {e}")
+        return None
+    except Exception as e:
+        if status_fn:
+            log_and_status(status_fn, f"  Unexpected error searching taxonomy: {e}", "error")
+        else:
+            logging.error(f"  Unexpected error searching taxonomy: {e}")
+        return None
+
+
+def get_taxonomy_id(category_name, taxonomy_cache, api_url, headers, status_fn=None):
+    """
+    Get the taxonomy ID for a category, using cache or API lookup.
+
+    Uses multi-strategy search with fallbacks:
+    1. Try the full category name
+    2. If hierarchical (contains " > "), try each part from most specific to least
+    3. Try individual keywords
+
+    Args:
+        category_name: Category name to look up
+        taxonomy_cache: Dictionary of cached taxonomy mappings
+        api_url: Shopify GraphQL API URL
+        headers: API request headers
+        status_fn: Optional status update function
+
+    Returns:
+        Tuple of (taxonomy_id, updated_cache)
+    """
+    if not category_name:
+        return None, taxonomy_cache
+
+    # Check cache first
+    if category_name in taxonomy_cache:
+        taxonomy_id = taxonomy_cache[category_name]
+        if status_fn:
+            log_and_status(status_fn, f"  Using cached taxonomy ID: {taxonomy_id}")
+        else:
+            logging.info(f"  Using cached taxonomy ID: {taxonomy_id}")
+        return taxonomy_id, taxonomy_cache
+
+    # Not in cache - search via API with fallback strategies
+    if status_fn:
+        log_and_status(status_fn, f"  Looking up Shopify taxonomy for: {category_name}")
+    else:
+        logging.info(f"  Looking up Shopify taxonomy for: {category_name}")
+
+    # Strategy 1: Try the full category name
+    taxonomy_id = search_shopify_taxonomy(category_name, api_url, headers, status_fn)
+
+    # Strategy 2: If no match and category is hierarchical, try each part
+    if not taxonomy_id and " > " in category_name:
+        parts = [p.strip() for p in category_name.split(" > ") if p.strip()]
+        if status_fn:
+            log_and_status(status_fn, f"  Trying hierarchical parts: {parts}")
+        else:
+            logging.info(f"  Trying hierarchical parts: {parts}")
+
+        # Try from most specific (last) to least specific (first)
+        for part in reversed(parts):
+            if status_fn:
+                log_and_status(status_fn, f"  Trying part: {part}")
+            else:
+                logging.info(f"  Trying part: {part}")
+            taxonomy_id = search_shopify_taxonomy(part, api_url, headers, status_fn)
+            if taxonomy_id:
+                break
+
+    # Strategy 3: If still no match, try just the last word (often the product type)
+    if not taxonomy_id:
+        words = category_name.split()
+        if len(words) > 1:
+            last_word = words[-1]
+            if status_fn:
+                log_and_status(status_fn, f"  Trying last word: {last_word}")
+            else:
+                logging.info(f"  Trying last word: {last_word}")
+            taxonomy_id = search_shopify_taxonomy(last_word, api_url, headers, status_fn)
+
+    if taxonomy_id:
+        # Add to cache
+        taxonomy_cache[category_name] = taxonomy_id
+        save_taxonomy_cache(taxonomy_cache)
+        if status_fn:
+            log_and_status(status_fn, f"  ✅ Cached taxonomy mapping: {category_name} -> {taxonomy_id}")
+        else:
+            logging.info(f"  ✅ Cached taxonomy mapping: {category_name} -> {taxonomy_id}")
+    else:
+        # Cache the failure to avoid repeated lookups
+        taxonomy_cache[category_name] = None
+        save_taxonomy_cache(taxonomy_cache)
+        if status_fn:
+            log_and_status(status_fn, f"  ⚠️  No taxonomy match found for: {category_name}")
+        else:
+            logging.warning(f"  ⚠️  No taxonomy match found for: {category_name}")
+
+    return taxonomy_id, taxonomy_cache
