@@ -795,6 +795,44 @@ def process_products(cfg, status_fn, execution_mode="resume", start_record=None,
                             log_and_status(status_fn, "  ✅ Deleted existing product")
                             time.sleep(0.5)
 
+                    elif product_created and not variants_created:
+                        # Product was created but variants failed - delete and recreate
+                        log_and_status(
+                            status_fn,
+                            f"  ⚠️  Product created but variants failed. Deleting to retry.",
+                            ui_msg="  ⚠️  Retrying failed variant creation"
+                        )
+                        log_and_status(status_fn, f"  Previous error: {existing_restore.get('error', 'Unknown')}")
+                        log_and_status(
+                            status_fn,
+                            f"  Deleting product: {shopify_id}",
+                            ui_msg="  Deleting for recreation..."
+                        )
+
+                        if not delete_shopify_product(shopify_id, cfg):
+                            error_msg = "Failed to delete product with failed variants"
+                            log_and_status(status_fn, f"  ❌ {error_msg}", "error")
+
+                            # Save restore point with error
+                            result_dict = {
+                                "title": product_title,
+                                "status": "failed",
+                                "error": error_msg,
+                                "failed_stage": "product_deletion"
+                            }
+                            add_result(result_dict)
+                            products_restore = update_product_in_restore(products_restore, result_dict)
+                            save_products(products_restore)
+
+                            # STOP IMMEDIATELY
+                            log_and_status(status_fn, "\n" + "=" * 80)
+                            log_and_status(status_fn, "❌ PRODUCT DELETION FAILED - STOPPING", "error")
+                            log_and_status(status_fn, "=" * 80)
+                            return
+
+                        log_and_status(status_fn, "  ✅ Deleted existing product")
+                        time.sleep(0.5)
+
                 # Create or recreate product
                 log_and_status(status_fn, "  Creating product in Shopify...")
                 
