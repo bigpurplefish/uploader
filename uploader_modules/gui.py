@@ -438,6 +438,104 @@ def build_gui():
 
     execution_mode_var.trace_add("write", on_execution_mode_change)
 
+    # Start Record field
+    row = container.grid_size()[1]
+
+    label_frame = tb.Frame(container)
+    label_frame.grid(row=row, column=0, sticky="w", padx=5, pady=5)
+
+    tb.Label(label_frame, text="Start Record", anchor="w").pack(side="left")
+    help_icon = tb.Label(label_frame, text=" ⓘ ", font=("Arial", 9),
+                         foreground="#5BC0DE", cursor="hand2")
+    help_icon.pack(side="left")
+    tb.Label(label_frame, text=":", anchor="w").pack(side="left")
+
+    tooltip_text = (
+        "Specify the first record to process (1-based index).\n\n"
+        "Leave blank to start from the beginning.\n"
+        "Example: Enter '10' to start from the 10th record.\n\n"
+        "Tip: Blank = process from start."
+    )
+    ToolTip(help_icon, text=tooltip_text, bootstyle="info")
+
+    # Use StringVar to allow blank values in spinbox
+    start_val = cfg.get("START_RECORD", "")
+    start_record_var = tb.StringVar(value=start_val)
+    start_spinbox = tb.Spinbox(
+        container,
+        textvariable=start_record_var,
+        from_=0,
+        to=999999,
+        increment=1,
+        width=10
+    )
+    start_spinbox.grid(row=row, column=1, sticky="w", padx=5, pady=5)
+
+    def on_start_record_change(*args):
+        """Auto-save start record to config."""
+        try:
+            val = start_record_var.get().strip()
+            # Validate it's a number or blank
+            if val:
+                int(val)  # Validate it's a valid integer
+            cfg["START_RECORD"] = val
+            save_config(cfg)
+        except (ValueError, Exception):
+            # Handle invalid spinbox values gracefully
+            cfg["START_RECORD"] = ""
+            save_config(cfg)
+
+    start_record_var.trace_add("write", on_start_record_change)
+
+    # End Record field
+    row = container.grid_size()[1]
+
+    label_frame = tb.Frame(container)
+    label_frame.grid(row=row, column=0, sticky="w", padx=5, pady=5)
+
+    tb.Label(label_frame, text="End Record", anchor="w").pack(side="left")
+    help_icon = tb.Label(label_frame, text=" ⓘ ", font=("Arial", 9),
+                         foreground="#5BC0DE", cursor="hand2")
+    help_icon.pack(side="left")
+    tb.Label(label_frame, text=":", anchor="w").pack(side="left")
+
+    tooltip_text = (
+        "Specify the last record to process (1-based index).\n\n"
+        "Leave blank to process until the end.\n"
+        "Example: Enter '50' to stop processing after the 50th record.\n\n"
+        "Tip: Blank = process to end."
+    )
+    ToolTip(help_icon, text=tooltip_text, bootstyle="info")
+
+    # Use StringVar to allow blank values in spinbox
+    end_val = cfg.get("END_RECORD", "")
+    end_record_var = tb.StringVar(value=end_val)
+    end_spinbox = tb.Spinbox(
+        container,
+        textvariable=end_record_var,
+        from_=0,
+        to=999999,
+        increment=1,
+        width=10
+    )
+    end_spinbox.grid(row=row, column=1, sticky="w", padx=5, pady=5)
+
+    def on_end_record_change(*args):
+        """Auto-save end record to config."""
+        try:
+            val = end_record_var.get().strip()
+            # Validate it's a number or blank
+            if val:
+                int(val)  # Validate it's a valid integer
+            cfg["END_RECORD"] = val
+            save_config(cfg)
+        except (ValueError, Exception):
+            # Handle invalid spinbox values gracefully
+            cfg["END_RECORD"] = ""
+            save_config(cfg)
+
+    end_record_var.trace_add("write", on_end_record_change)
+
     # Buttons
     button_frame = tb.Frame(app)
     button_frame.pack(pady=10)
@@ -493,8 +591,27 @@ def build_gui():
             try:
                 # Get execution mode from config
                 execution_mode = cfg.get("EXECUTION_MODE", "resume")
+
+                # Get start/end record values (convert to int or None)
+                start_record = None
+                end_record = None
+                try:
+                    start_val = start_record_var.get().strip()
+                    if start_val:
+                        start_record = int(start_val)
+                except (ValueError, Exception):
+                    start_record = None
+
+                try:
+                    end_val = end_record_var.get().strip()
+                    if end_val:
+                        end_record = int(end_val)
+                except (ValueError, Exception):
+                    end_record = None
+
                 print("DEBUG: Starting process_products()")
-                process_products(cfg, status, execution_mode=execution_mode)
+                process_products(cfg, status, execution_mode=execution_mode,
+                               start_record=start_record, end_record=end_record)
                 print("DEBUG: process_products() completed normally")
             except Exception as e:
                 print(f"DEBUG: Exception in process_products(): {e}")

@@ -417,7 +417,7 @@ def ensure_metafield_definitions(products, cfg, status_fn):
 
 
 
-def process_products(cfg, status_fn, execution_mode="resume"):
+def process_products(cfg, status_fn, execution_mode="resume", start_record=None, end_record=None):
     """
     Process products from input file with granular restore points.
     Stops immediately on any failure (product, variant, or collection).
@@ -426,6 +426,8 @@ def process_products(cfg, status_fn, execution_mode="resume"):
         cfg: Configuration dictionary
         status_fn: Status update function
         execution_mode: "resume" to continue from last run, "overwrite" to delete and recreate existing products
+        start_record: 1-based index of first record to process (None = start from beginning)
+        end_record: 1-based index of last record to process (None = process to end)
     """
     try:
         input_file = cfg.get("INPUT_FILE", "").strip()
@@ -463,8 +465,38 @@ def process_products(cfg, status_fn, execution_mode="resume"):
         if not products:
             log_and_status(status_fn, "❌ No products found in input file.", "error")
             return
-        
-        log_and_status(status_fn, f"✅ Loaded {len(products)} products\n")
+
+        total_in_file = len(products)
+        log_and_status(status_fn, f"✅ Loaded {total_in_file} products from file")
+
+        # Apply start/end record filtering if specified
+        start_idx = 0
+        end_idx = None
+
+        if start_record is not None and start_record > 0:
+            start_idx = start_record - 1  # Convert 1-based to 0-based index
+
+        if end_record is not None and end_record > 0:
+            end_idx = end_record  # Keep as-is for slicing (end is exclusive in Python)
+
+        # Slice the products list
+        products = products[start_idx:end_idx]
+
+        if not products:
+            log_and_status(status_fn, f"❌ No products in specified range (records {start_record or 1} to {end_record or total_in_file})", "error")
+            return
+
+        # Log filtering info
+        if start_record or end_record:
+            actual_start = (start_record or 1)
+            actual_end = min(end_record, total_in_file) if end_record else total_in_file
+            log_and_status(
+                status_fn,
+                f"📋 Processing records {actual_start} to {actual_end} ({len(products)} products)",
+                ui_msg=f"Processing records {actual_start}-{actual_end}"
+            )
+
+        log_and_status(status_fn, "")
 
         # ========== PRE-UPLOAD VALIDATION ==========
         log_and_status(status_fn, "=" * 80)
