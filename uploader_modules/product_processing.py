@@ -1326,32 +1326,53 @@ def process_products(cfg, status_fn, execution_mode="resume", start_record=None,
                                 "taxable": variant.get('taxable', True),
                             }
                             
-                            # Set SKU, inventory tracking, AND requiresShipping via inventoryItem (API 2025-10 structure)
+                            # Set SKU, inventory tracking, requiresShipping, and weight via inventoryItem (API 2025-10 structure)
                             sku_value = variant.get('sku', '')
+                            inventory_item = {
+                                "tracked": True,
+                                "requiresShipping": True  # ✅ All products require shipping
+                            }
+
                             if sku_value:
-                                variant_input["inventoryItem"] = {
-                                    "sku": sku_value,
-                                    "tracked": True,
-                                    "requiresShipping": True  # ✅ All products require shipping
-                                }
-                            else:
-                                # Even without SKU, still set requiresShipping
-                                variant_input["inventoryItem"] = {
-                                    "tracked": True,
-                                    "requiresShipping": True  # ✅ All products require shipping
-                                }
-                            
-                            if 'compare_at_price' in variant and variant['compare_at_price']:
-                                variant_input["compareAtPrice"] = str(variant['compare_at_price'])
-                            
-                            # Handle weight (note: weight fields are NOT validated by ProductVariantsBulkInput schema,
-                            # but Shopify silently accepts and processes them)
+                                inventory_item["sku"] = sku_value
+
+                            # Handle weight via inventoryItem.measurement.weight (API 2025-10 structure)
                             if 'weight' in variant and variant['weight']:
                                 try:
-                                    variant_input["weight"] = float(variant['weight'])
-                                    variant_input["weightUnit"] = variant.get('weight_unit', 'LB')
+                                    weight_value = float(variant['weight'])
+                                    # Map weight_unit to Shopify WeightUnit enum (POUNDS, OUNCES, KILOGRAMS, GRAMS)
+                                    weight_unit_map = {
+                                        'lb': 'POUNDS',
+                                        'lbs': 'POUNDS',
+                                        'LB': 'POUNDS',
+                                        'pound': 'POUNDS',
+                                        'pounds': 'POUNDS',
+                                        'oz': 'OUNCES',
+                                        'ounce': 'OUNCES',
+                                        'ounces': 'OUNCES',
+                                        'kg': 'KILOGRAMS',
+                                        'kilogram': 'KILOGRAMS',
+                                        'kilograms': 'KILOGRAMS',
+                                        'g': 'GRAMS',
+                                        'gram': 'GRAMS',
+                                        'grams': 'GRAMS',
+                                    }
+                                    input_unit = variant.get('weight_unit', 'lb')
+                                    weight_unit = weight_unit_map.get(input_unit, 'POUNDS')
+
+                                    inventory_item["measurement"] = {
+                                        "weight": {
+                                            "value": weight_value,
+                                            "unit": weight_unit
+                                        }
+                                    }
                                 except (ValueError, TypeError):
                                     pass
+
+                            variant_input["inventoryItem"] = inventory_item
+
+                            if 'compare_at_price' in variant and variant['compare_at_price']:
+                                variant_input["compareAtPrice"] = str(variant['compare_at_price'])
                             
                             # Build optionValues (API 2025-10 format)
                             option_values = []
