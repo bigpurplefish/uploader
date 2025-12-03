@@ -846,23 +846,21 @@ def process_products(cfg, status_fn, execution_mode="resume", start_record=None,
                 # Look up from shopify_category_id field (if provided by categorizer)
                 # Otherwise, try product_category field for lookup
                 taxonomy_id = product.get('shopify_category_id')
+                product_category_field = product.get('product_category', '').strip()
 
                 if taxonomy_id:
                     log_and_status(status_fn, f"  Using provided Shopify category ID: {taxonomy_id}")
-                else:
+                elif product_category_field:
                     # Fallback: Try product_category field for taxonomy lookup
-                    product_category_field = product.get('product_category', '').strip()
+                    log_and_status(status_fn, f"  Looking up Shopify taxonomy for: {product_category_field}")
+                    taxonomy_id, taxonomy_cache = get_taxonomy_id(product_category_field, taxonomy_cache, api_url, headers, status_fn)
 
-                    if product_category_field:
-                        log_and_status(status_fn, f"  Looking up Shopify taxonomy for: {product_category_field}")
-                        taxonomy_id, taxonomy_cache = get_taxonomy_id(product_category_field, taxonomy_cache, api_url, headers, status_fn)
-
-                        if taxonomy_id:
-                            log_and_status(status_fn, f"  ✅ Found taxonomy ID: {taxonomy_id}")
-                        else:
-                            log_and_status(status_fn, f"  ⚠️  No taxonomy match found for: {product_category_field}", "warning")
+                    if taxonomy_id:
+                        log_and_status(status_fn, f"  ✅ Found taxonomy ID: {taxonomy_id}")
                     else:
-                        log_and_status(status_fn, "  No Shopify category available", "warning")
+                        log_and_status(status_fn, f"  ⚠️  No taxonomy match found for: {product_category_field}", "warning")
+                else:
+                    log_and_status(status_fn, "  No Shopify category available", "warning")
                 
                 # Prepare product input (API 2025-10 format)
                 # Support both 'descriptionHtml' (new) and 'body_html' (legacy) field names
