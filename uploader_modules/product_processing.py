@@ -77,6 +77,7 @@ def process_collections(products, cfg, status_fn):
                 if cat_key not in collections_to_create["category"]:
                     collections_to_create["category"][cat_key] = {
                         "name": category,
+                        "parent_department": product_type,  # Track parent department
                         "rules": [
                             {
                                 "column": "TAG",
@@ -85,12 +86,14 @@ def process_collections(products, cfg, status_fn):
                             }
                         ]
                     }
-            
+
             if subcategory and category:
                 subcat_key = f"{category.lower()}_{subcategory.lower()}"
                 if subcat_key not in collections_to_create["subcategory"]:
                     collections_to_create["subcategory"][subcat_key] = {
                         "name": subcategory,
+                        "parent_category": category,  # Track parent category
+                        "grandparent_department": product_type,  # Track grandparent department
                         "rules": [
                             {
                                 "column": "TAG",
@@ -108,11 +111,16 @@ def process_collections(products, cfg, status_fn):
         log_and_status(status_fn, "\n" + "=" * 80)
         log_and_status(status_fn, "CREATING COLLECTIONS")
         log_and_status(status_fn, "=" * 80)
-        
+
         collections_created = 0
         collections_existing = 0
         collections_failed = 0
-        
+
+        # Track handles for hierarchy metafields
+        # Maps collection name (lowercase) to handle
+        department_handles = {}
+        category_handles = {}
+
         # Process each level in order
         for level in ['department', 'category', 'subcategory']:
             if level not in collections_to_create:
@@ -137,6 +145,13 @@ def process_collections(products, cfg, status_fn):
                 
                 if existing:
                     log_and_status(status_fn, f"    ✓ Collection already tracked: {existing.get('id')}")
+
+                    # Store handle for hierarchy lookups
+                    handle = existing.get('handle', '')
+                    if level == 'department' and handle:
+                        department_handles[collection_name.lower()] = handle
+                    elif level == 'category' and handle:
+                        category_handles[collection_name.lower()] = handle
 
                     # Publish already-tracked collection to sales channels (in case it wasn't published)
                     log_and_status(status_fn, f"    Publishing to sales channels...")
@@ -169,6 +184,13 @@ def process_collections(products, cfg, status_fn):
                         f"    ✓ Collection already exists in Shopify: {found_collection['id']}",
                         ui_msg="    ✓ Collection exists"
                     )
+
+                    # Store handle for hierarchy lookups
+                    handle = found_collection.get('handle', '')
+                    if level == 'department' and handle:
+                        department_handles[collection_name.lower()] = handle
+                    elif level == 'category' and handle:
+                        category_handles[collection_name.lower()] = handle
 
                     # Publish existing collection to sales channels (in case it wasn't published)
                     log_and_status(status_fn, f"    Publishing to sales channels...")
@@ -204,8 +226,64 @@ def process_collections(products, cfg, status_fn):
 
                 # Create new collection (without AI-generated description)
                 log_and_status(status_fn, f"    Creating new collection...")
-                created_collection = create_collection(collection_name, rules, cfg, description=None)
-                
+
+                # Build hierarchy metafields based on level
+                hierarchy_metafields = [
+                    {
+                        "namespace": "hierarchy",
+                        "key": "level",
+                        "value": level,
+                        "type": "single_line_text_field"
+                    }
+                ]
+
+                if level == 'category':
+                    # Category has a parent department
+                    parent_dept = collection_info.get("parent_department", "")
+                    if parent_dept:
+                        parent_handle = department_handles.get(parent_dept.lower(), "")
+                        if parent_handle:
+                            hierarchy_metafields.append({
+                                "namespace": "hierarchy",
+                                "key": "parent_handle",
+                                "value": parent_handle,
+                                "type": "single_line_text_field"
+                            })
+                            log_and_status(status_fn, f"    Adding hierarchy: parent_handle={parent_handle}")
+
+                elif level == 'subcategory':
+                    # Subcategory has parent category and grandparent department
+                    parent_cat = collection_info.get("parent_category", "")
+                    grandparent_dept = collection_info.get("grandparent_department", "")
+
+                    if parent_cat:
+                        parent_handle = category_handles.get(parent_cat.lower(), "")
+                        if parent_handle:
+                            hierarchy_metafields.append({
+                                "namespace": "hierarchy",
+                                "key": "parent_handle",
+                                "value": parent_handle,
+                                "type": "single_line_text_field"
+                            })
+                            log_and_status(status_fn, f"    Adding hierarchy: parent_handle={parent_handle}")
+
+                    if grandparent_dept:
+                        grandparent_handle = department_handles.get(grandparent_dept.lower(), "")
+                        if grandparent_handle:
+                            hierarchy_metafields.append({
+                                "namespace": "hierarchy",
+                                "key": "grandparent_handle",
+                                "value": grandparent_handle,
+                                "type": "single_line_text_field"
+                            })
+                            log_and_status(status_fn, f"    Adding hierarchy: grandparent_handle={grandparent_handle}")
+
+                created_collection = create_collection(
+                    collection_name, rules, cfg,
+                    description=None,
+                    metafields=hierarchy_metafields
+                )
+
                 if not created_collection:
                     error_msg = f"Failed to create collection: {collection_name}"
                     log_and_status(status_fn, f"    ❌ {error_msg}", "error")
@@ -225,6 +303,13 @@ def process_collections(products, cfg, status_fn):
                     f"    ✅ Created collection: {created_collection['id']}",
                     ui_msg="    ✅ Collection created"
                 )
+
+                # Store handle for hierarchy lookups by child collections
+                handle = created_collection.get('handle', '')
+                if level == 'department' and handle:
+                    department_handles[collection_name.lower()] = handle
+                elif level == 'category' and handle:
+                    category_handles[collection_name.lower()] = handle
 
                 # Publish collection to sales channels
                 log_and_status(status_fn, f"    Publishing to sales channels...")
@@ -633,7 +718,7 @@ def process_products(cfg, status_fn, execution_mode="resume", start_record=None,
                 if inventory_quantity > 0:
                     log_and_status(status_fn, f"Inventory quantity configured: {inventory_quantity}")
                     log_and_status(status_fn, "Retrieving default location ID...")
-                    location_id = get_default_location_id(cfg)
+                    location_id = get_default_location_id(cfg, status_fn)
                     if location_id:
                         log_and_status(status_fn, f"✅ Location ID: {location_id}\n")
                     else:
@@ -1412,12 +1497,8 @@ def process_products(cfg, status_fn, execution_mode="resume", start_record=None,
                             if option_values:
                                 variant_input['optionValues'] = option_values
 
-                            # Add inventory quantities if configured
-                            if inventory_quantity and location_id:
-                                variant_input['inventoryQuantities'] = [{
-                                    "availableQuantity": inventory_quantity,
-                                    "locationId": location_id
-                                }]
+                            # Note: Inventory quantities are now set via inventorySetQuantities mutation
+                            # after variant creation for better reliability (see code below)
 
                             # Add variant metafields with key mapping
                             # Map input file keys to Shopify metafield definition keys
@@ -1489,6 +1570,9 @@ def process_products(cfg, status_fn, execution_mode="resume", start_record=None,
                             productVariants {
                               id
                               sku
+                              inventoryItem {
+                                id
+                              }
                             }
                             userErrors {
                               field
@@ -1617,7 +1701,76 @@ def process_products(cfg, status_fn, execution_mode="resume", start_record=None,
                             restore_data["variant_ids"] = created_variant_ids
                             products_restore = update_product_in_restore(products_restore, restore_data)
                             save_products(products_restore)
-                            
+
+                            # Set inventory quantities using inventorySetQuantities mutation
+                            # This is more reliable than inventoryQuantities in productVariantsBulkCreate
+                            if inventory_quantity and location_id:
+                                log_and_status(status_fn, f"  Setting inventory quantities...")
+
+                                # Build quantities input for all variants
+                                inventory_quantities_input = []
+                                for variant in created_variants:
+                                    inventory_item = variant.get("inventoryItem", {})
+                                    inventory_item_id = inventory_item.get("id") if inventory_item else None
+
+                                    if inventory_item_id:
+                                        inventory_quantities_input.append({
+                                            "inventoryItemId": inventory_item_id,
+                                            "locationId": location_id,
+                                            "quantity": inventory_quantity
+                                        })
+
+                                if inventory_quantities_input:
+                                    set_inventory_mutation = """
+                                    mutation inventorySetQuantities($input: InventorySetQuantitiesInput!) {
+                                      inventorySetQuantities(input: $input) {
+                                        inventoryAdjustmentGroup {
+                                          id
+                                        }
+                                        userErrors {
+                                          field
+                                          message
+                                        }
+                                      }
+                                    }
+                                    """
+
+                                    inventory_variables = {
+                                        "input": {
+                                            "name": "available",
+                                            "reason": "correction",
+                                            "ignoreCompareQuantity": True,
+                                            "quantities": inventory_quantities_input
+                                        }
+                                    }
+
+                                    try:
+                                        inv_response = requests.post(
+                                            api_url,
+                                            json={"query": set_inventory_mutation, "variables": inventory_variables},
+                                            headers=headers,
+                                            timeout=60
+                                        )
+                                        inv_response.raise_for_status()
+                                        inv_result = inv_response.json()
+
+                                        # Check for errors
+                                        if "errors" in inv_result:
+                                            logging.warning(f"GraphQL errors setting inventory: {inv_result['errors']}")
+                                            log_and_status(status_fn, f"  ⚠️  Warning: Could not set inventory quantities", "warning")
+                                        else:
+                                            inv_user_errors = inv_result.get("data", {}).get("inventorySetQuantities", {}).get("userErrors", [])
+                                            if inv_user_errors:
+                                                error_msgs = "; ".join([f"{e.get('field')}: {e.get('message')}" for e in inv_user_errors])
+                                                logging.warning(f"Inventory user errors: {error_msgs}")
+                                                log_and_status(status_fn, f"  ⚠️  Warning: {error_msgs}", "warning")
+                                            else:
+                                                log_and_status(status_fn, f"  ✅ Set inventory quantity to {inventory_quantity} for {len(inventory_quantities_input)} variants")
+
+                                    except Exception as inv_e:
+                                        logging.warning(f"Error setting inventory quantities: {inv_e}")
+                                        log_and_status(status_fn, f"  ⚠️  Warning: Could not set inventory quantities: {inv_e}", "warning")
+
                         except requests.exceptions.Timeout:
                             error_msg = "Request timeout creating variants"
                             logging.error(error_msg)

@@ -94,16 +94,19 @@ def get_sales_channel_ids(cfg):
 
 
 
-def get_default_location_id(cfg):
+def get_default_location_id(cfg, status_fn=None):
     """
     Retrieve the default (primary) location ID from Shopify.
 
     Args:
         cfg: Configuration dictionary
+        status_fn: Optional status callback function for GUI updates
 
     Returns:
         Location ID string (e.g., gid://shopify/Location/123) or None on error
     """
+    from .config import log_and_status
+
     try:
         store_url = cfg.get("SHOPIFY_STORE_URL", "").strip()
         access_token = cfg.get("SHOPIFY_ACCESS_TOKEN", "").strip()
@@ -120,15 +123,42 @@ def get_default_location_id(cfg):
             "X-Shopify-Access-Token": access_token
         }
 
+        # First try: Use location query without ID to get primary location
+        # Only request 'id' field - other fields like 'name' require read_locations scope
+        query = """
+        query {
+          location {
+            id
+          }
+        }
+        """
+
+        response = requests.post(
+            api_url,
+            json={"query": query},
+            headers=headers,
+            timeout=30
+        )
+        response.raise_for_status()
+        result = response.json()
+
+        logging.debug(f"Primary location query response: {result}")
+
+        if "errors" not in result:
+            location = result.get("data", {}).get("location", {})
+            if location and location.get("id"):
+                location_id = location.get("id")
+                logging.info(f"Found primary location: {location_id}")
+                return location_id
+
+        # Fallback: Query locations list (only request id field)
+        logging.debug("Primary location query failed, trying locations list...")
         query = """
         query {
           locations(first: 1) {
             edges {
               node {
                 id
-                name
-                isActive
-                isPrimary
               }
             }
           }
@@ -144,26 +174,39 @@ def get_default_location_id(cfg):
         response.raise_for_status()
         result = response.json()
 
+        logging.debug(f"Locations list query response: {result}")
+
         if "errors" in result:
-            logging.error(f"GraphQL errors retrieving locations: {result['errors']}")
+            error_msg = f"GraphQL errors retrieving locations: {result['errors']}"
+            logging.error(error_msg)
+            if status_fn:
+                log_and_status(status_fn, f"  Error: {error_msg}", "error")
             return None
 
         edges = result.get("data", {}).get("locations", {}).get("edges", [])
 
         if edges:
+            # Use the first location
             location = edges[0].get("node", {})
             location_id = location.get("id")
-            logging.debug(f"Found default location: {location.get('name')} ({location_id})")
-            return location_id
+            if location_id:
+                logging.info(f"Found location: {location_id}")
+                return location_id
 
         logging.warning("No locations found in Shopify store")
+        if status_fn:
+            log_and_status(status_fn, "  No locations found in Shopify store", "warning")
         return None
 
     except requests.exceptions.RequestException as e:
         logging.error(f"Network error retrieving locations: {e}")
+        if status_fn:
+            log_and_status(status_fn, f"  Network error: {e}", "error")
         return None
     except Exception as e:
         logging.error(f"Unexpected error retrieving locations: {e}")
+        if status_fn:
+            log_and_status(status_fn, f"  Unexpected error: {e}", "error")
         return None
 
 
@@ -526,7 +569,7 @@ def search_collection(name, cfg):
 
 
 
-def create_collection(name, rules, cfg, description=None):
+def create_collection(name, rules, cfg, description=None, metafields=None):
     """
     Create a collection in Shopify.
 
@@ -535,6 +578,7 @@ def create_collection(name, rules, cfg, description=None):
         rules: List of rule dictionaries (column, relation, condition)
         cfg: Configuration dictionary
         description: Optional collection description (plain text)
+        metafields: Optional list of metafield dictionaries with namespace, key, value, type
 
     Returns:
         Dictionary with 'id' and 'handle' if successful, None otherwise
@@ -584,6 +628,10 @@ def create_collection(name, rules, cfg, description=None):
         # Add description if provided
         if description:
             variables["input"]["descriptionHtml"] = f"<p>{description}</p>"
+
+        # Add metafields if provided
+        if metafields:
+            variables["input"]["metafields"] = metafields
 
         response = requests.post(
             api_url,

@@ -44,57 +44,56 @@
   <div class="container container--flush">
     <div class="page__sub-header">
       {%- comment -%}
-      Extract parent hierarchy from collection products
-      For category collections: Show Product Type > Category
-      For subcategory collections: Show Product Type > Category > Subcategory
+      Breadcrumb hierarchy using collection metafields.
+      Metafields stored by uploader:
+      - hierarchy.level: "department", "category", or "subcategory"
+      - hierarchy.parent_handle: Handle of parent collection (for category/subcategory)
+      - hierarchy.grandparent_handle: Handle of grandparent collection (for subcategory only)
       {%- endcomment -%}
 
-      {%- assign first_product = collection.products.first -%}
-      {%- assign product_type = blank -%}
-      {%- assign category = blank -%}
-      {%- assign subcategory = blank -%}
-
-      {%- if first_product -%}
-        {%- assign product_type = first_product.type -%}
-
-        {%- comment -%} Extract category and subcategory from first product's tags {%- endcomment -%}
-        {%- for tag in first_product.tags -%}
-          {%- unless tag contains ':' or tag contains '>' -%}
-            {%- if category == blank -%}
-              {%- assign category = tag -%}
-            {%- elsif subcategory == blank -%}
-              {%- assign subcategory = tag -%}
-              {%- break -%}
-            {%- endif -%}
-          {%- endunless -%}
-        {%- endfor -%}
-      {%- endif -%}
-
-      {%- comment -%}
-      Determine collection level:
-      - If collection title matches product_type: Department level (no parents)
-      - If collection title matches category: Category level (parent = product_type)
-      - If collection title matches subcategory: Subcategory level (parents = product_type > category)
-      {%- endcomment -%}
+      {%- assign hierarchy_level = collection.metafields.hierarchy.level -%}
+      {%- assign parent_handle = collection.metafields.hierarchy.parent_handle -%}
+      {%- assign grandparent_handle = collection.metafields.hierarchy.grandparent_handle -%}
 
       <nav aria-label="{{ 'general.breadcrumb.title' | t }}" class="breadcrumb">
         <ol class="breadcrumb__list" role="list">
+          {%- comment -%} Home {%- endcomment -%}
           <li class="breadcrumb__item">
             <a class="breadcrumb__link link" href="{{ routes.root_url }}">{{ 'general.breadcrumb.home' | t }}</a> {%- render 'icon', icon: 'arrow-right' -%}
           </li>
 
-          {%- comment -%} Show Product Type if this is NOT a department-level collection {%- endcomment -%}
-          {%- if product_type != blank and collection.title != product_type -%}
-            <li class="breadcrumb__item">
-              <a class="breadcrumb__link link" href="/collections/all?filter.p.product_type={{ product_type | url_encode }}">{{ product_type }}</a> {%- render 'icon', icon: 'arrow-right' -%}
-            </li>
-          {%- endif -%}
+          {%- if hierarchy_level == 'subcategory' -%}
+            {%- comment -%} Subcategory: Show Grandparent (Department) > Parent (Category) > Current {%- endcomment -%}
+            {%- if grandparent_handle != blank -%}
+              {%- assign grandparent = collections[grandparent_handle] -%}
+              {%- if grandparent -%}
+                <li class="breadcrumb__item">
+                  <a class="breadcrumb__link link" href="{{ grandparent.url }}">{{ grandparent.title }}</a> {%- render 'icon', icon: 'arrow-right' -%}
+                </li>
+              {%- endif -%}
+            {%- endif -%}
+            {%- if parent_handle != blank -%}
+              {%- assign parent = collections[parent_handle] -%}
+              {%- if parent -%}
+                <li class="breadcrumb__item">
+                  <a class="breadcrumb__link link" href="{{ parent.url }}">{{ parent.title }}</a> {%- render 'icon', icon: 'arrow-right' -%}
+                </li>
+              {%- endif -%}
+            {%- endif -%}
 
-          {%- comment -%} Show Category if this is a subcategory-level collection {%- endcomment -%}
-          {%- if category != blank and collection.title != category and collection.title != product_type -%}
-            <li class="breadcrumb__item">
-              <a class="breadcrumb__link link" href="/collections/{{ category | handleize }}">{{ category }}</a> {%- render 'icon', icon: 'arrow-right' -%}
-            </li>
+          {%- elsif hierarchy_level == 'category' -%}
+            {%- comment -%} Category: Show Parent (Department) > Current {%- endcomment -%}
+            {%- if parent_handle != blank -%}
+              {%- assign parent = collections[parent_handle] -%}
+              {%- if parent -%}
+                <li class="breadcrumb__item">
+                  <a class="breadcrumb__link link" href="{{ parent.url }}">{{ parent.title }}</a> {%- render 'icon', icon: 'arrow-right' -%}
+                </li>
+              {%- endif -%}
+            {%- endif -%}
+
+          {%- elsif hierarchy_level == 'department' or hierarchy_level == blank -%}
+            {%- comment -%} Department or no hierarchy: No parents to show {%- endcomment -%}
           {%- endif -%}
 
           {%- comment -%} Current collection {%- endcomment -%}
