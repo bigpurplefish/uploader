@@ -776,8 +776,16 @@ def build_gui():
             print(f"ERROR queuing status message: {e}")
     
     def clear_status():
-        """Clear status field."""
+        """Clear status field and any pending messages in the queue."""
         try:
+            # Clear any pending messages in the queue first
+            while True:
+                try:
+                    status_queue.get_nowait()
+                except queue.Empty:
+                    break
+
+            # Clear the text widget
             status_log.config(state="normal")
             status_log.delete("1.0", "end")
             status_log.config(state="disabled")
