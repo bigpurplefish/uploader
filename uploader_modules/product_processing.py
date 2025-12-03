@@ -1518,10 +1518,18 @@ def process_products(cfg, status_fn, execution_mode="resume", start_record=None,
                                 f"  ✅ Created {len(created_variants)} variants",
                                 ui_msg="  ✅ Variants created"
                             )
-                            
+
+                            # Extract variant IDs for output
+                            created_variant_ids = [
+                                {"id": v.get("id"), "sku": v.get("sku")}
+                                for v in created_variants
+                                if v.get("id")
+                            ]
+
                             # Update restore point with successful variant creation
                             restore_data["variants_created"] = True
                             restore_data["variant_count"] = len(created_variants)
+                            restore_data["variant_ids"] = created_variant_ids
                             products_restore = update_product_in_restore(products_restore, restore_data)
                             save_products(products_restore)
                             
@@ -1590,7 +1598,8 @@ def process_products(cfg, status_fn, execution_mode="resume", start_record=None,
                     "shopify_id": shopify_product_id,
                     "handle": product_handle,
                     "status": "completed",
-                    "variant_count": len(variants) if variants else 0
+                    "variant_count": len(variants) if variants else 0,
+                    "variant_ids": restore_data.get("variant_ids", [])
                 }
                 add_result(result_dict)
                 
