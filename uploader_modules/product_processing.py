@@ -16,8 +16,8 @@ from .state import (
     load_taxonomy_cache, update_product_in_restore
 )
 from .shopify_api import (
-    get_sales_channel_ids, search_collection, create_collection,
-    publish_collection_to_channels, publish_product_to_channels,
+    get_sales_channel_ids, get_default_location_id, search_collection,
+    create_collection, publish_collection_to_channels, publish_product_to_channels,
     delete_shopify_product, create_metafield_definition,
     upload_model_to_shopify, get_taxonomy_id
 )
@@ -622,7 +622,28 @@ def process_products(cfg, status_fn, execution_mode="resume", start_record=None,
         log_and_status(status_fn, f"✅ Sales channel IDs retrieved")
         log_and_status(status_fn, f"  - Online Store: {sales_channel_ids.get('online_store', 'Not found')}")
         log_and_status(status_fn, f"  - Point of Sale: {sales_channel_ids.get('point_of_sale', 'Not found')}\n")
-        
+
+        # Get inventory quantity setting and location ID if needed
+        inventory_quantity = None
+        location_id = None
+        try:
+            inv_qty_str = cfg.get("INVENTORY_QUANTITY", "").strip()
+            if inv_qty_str:
+                inventory_quantity = int(inv_qty_str)
+                if inventory_quantity > 0:
+                    log_and_status(status_fn, f"Inventory quantity configured: {inventory_quantity}")
+                    log_and_status(status_fn, "Retrieving default location ID...")
+                    location_id = get_default_location_id(cfg)
+                    if location_id:
+                        log_and_status(status_fn, f"✅ Location ID: {location_id}\n")
+                    else:
+                        log_and_status(status_fn, "⚠️  Could not retrieve location ID. Inventory quantities will not be set.", "warning")
+                        inventory_quantity = None
+                else:
+                    inventory_quantity = None
+        except (ValueError, TypeError):
+            inventory_quantity = None
+
         # Process collections first
         success, created, existing, failed = process_collections(products, cfg, status_fn)
         if not success:
@@ -1390,7 +1411,14 @@ def process_products(cfg, status_fn, execution_mode="resume", start_record=None,
                             
                             if option_values:
                                 variant_input['optionValues'] = option_values
-                            
+
+                            # Add inventory quantities if configured
+                            if inventory_quantity and location_id:
+                                variant_input['inventoryQuantities'] = [{
+                                    "availableQuantity": inventory_quantity,
+                                    "locationId": location_id
+                                }]
+
                             # Add variant metafields with key mapping
                             # Map input file keys to Shopify metafield definition keys
                             # Note: weight and dimensions are handled as standard Shopify fields, not metafields

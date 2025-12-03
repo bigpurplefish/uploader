@@ -94,6 +94,79 @@ def get_sales_channel_ids(cfg):
 
 
 
+def get_default_location_id(cfg):
+    """
+    Retrieve the default (primary) location ID from Shopify.
+
+    Args:
+        cfg: Configuration dictionary
+
+    Returns:
+        Location ID string (e.g., gid://shopify/Location/123) or None on error
+    """
+    try:
+        store_url = cfg.get("SHOPIFY_STORE_URL", "").strip()
+        access_token = cfg.get("SHOPIFY_ACCESS_TOKEN", "").strip()
+
+        if not store_url or not access_token:
+            logging.error("Shopify credentials not configured")
+            return None
+
+        store_url = store_url.replace("https://", "").replace("http://", "")
+
+        api_url = f"https://{store_url}/admin/api/2025-10/graphql.json"
+        headers = {
+            "Content-Type": "application/json",
+            "X-Shopify-Access-Token": access_token
+        }
+
+        query = """
+        query {
+          locations(first: 1) {
+            edges {
+              node {
+                id
+                name
+                isActive
+                isPrimary
+              }
+            }
+          }
+        }
+        """
+
+        response = requests.post(
+            api_url,
+            json={"query": query},
+            headers=headers,
+            timeout=30
+        )
+        response.raise_for_status()
+        result = response.json()
+
+        if "errors" in result:
+            logging.error(f"GraphQL errors retrieving locations: {result['errors']}")
+            return None
+
+        edges = result.get("data", {}).get("locations", {}).get("edges", [])
+
+        if edges:
+            location = edges[0].get("node", {})
+            location_id = location.get("id")
+            logging.debug(f"Found default location: {location.get('name')} ({location_id})")
+            return location_id
+
+        logging.warning("No locations found in Shopify store")
+        return None
+
+    except requests.exceptions.RequestException as e:
+        logging.error(f"Network error retrieving locations: {e}")
+        return None
+    except Exception as e:
+        logging.error(f"Unexpected error retrieving locations: {e}")
+        return None
+
+
 def publish_collection_to_channels(collection_id, sales_channel_ids, cfg):
     """
     Publish a collection to specified sales channels.

@@ -536,6 +536,55 @@ def build_gui():
 
     end_record_var.trace_add("write", on_end_record_change)
 
+    # Inventory Quantity field
+    row = container.grid_size()[1]
+
+    label_frame = tb.Frame(container)
+    label_frame.grid(row=row, column=0, sticky="w", padx=5, pady=5)
+
+    tb.Label(label_frame, text="Inventory Quantity", anchor="w").pack(side="left")
+    help_icon = tb.Label(label_frame, text=" ⓘ ", font=("Arial", 9),
+                         foreground="#5BC0DE", cursor="hand2")
+    help_icon.pack(side="left")
+    tb.Label(label_frame, text=":", anchor="w").pack(side="left")
+
+    tooltip_text = (
+        "Specify the inventory quantity to set for all variants.\n\n"
+        "This quantity will be applied to your default location.\n"
+        "Leave blank or set to 0 to skip inventory quantity setting.\n\n"
+        "Example: Enter '100' to set 100 units for each variant."
+    )
+    ToolTip(help_icon, text=tooltip_text, bootstyle="info")
+
+    # Use StringVar to allow blank values in spinbox
+    inv_qty_val = cfg.get("INVENTORY_QUANTITY", "")
+    inventory_qty_var = tb.StringVar(value=inv_qty_val)
+    inventory_qty_spinbox = tb.Spinbox(
+        container,
+        textvariable=inventory_qty_var,
+        from_=0,
+        to=999999,
+        increment=1,
+        width=10
+    )
+    inventory_qty_spinbox.grid(row=row, column=1, sticky="w", padx=5, pady=5)
+
+    def on_inventory_qty_change(*args):
+        """Auto-save inventory quantity to config."""
+        try:
+            val = inventory_qty_var.get().strip()
+            # Validate it's a number or blank
+            if val:
+                int(val)  # Validate it's a valid integer
+            cfg["INVENTORY_QUANTITY"] = val
+            save_config(cfg)
+        except (ValueError, Exception):
+            # Handle invalid spinbox values gracefully
+            cfg["INVENTORY_QUANTITY"] = ""
+            save_config(cfg)
+
+    inventory_qty_var.trace_add("write", on_inventory_qty_change)
+
     # Buttons
     button_frame = tb.Frame(app)
     button_frame.pack(pady=10)
