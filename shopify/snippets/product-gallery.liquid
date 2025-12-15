@@ -468,6 +468,30 @@
             thumbnails[firstVisibleIndex].classList.add('is-nav-selected');
           }
         }
+
+        // CRITICAL: Refresh Flickity carousel to recognize filtered items
+        // The theme uses Flickity which caches slides on init - we must tell it to refresh
+        refreshFlickity();
+      }
+
+      function refreshFlickity() {
+        // Find the Flickity instance on the carousel element
+        const carouselElement = document.querySelector('.product-gallery__carousel');
+        if (carouselElement && carouselElement.flickityInstance) {
+          console.log('Multi-selector filtering: Refreshing Flickity instance');
+          carouselElement.flickityInstance.deactivate();
+          carouselElement.flickityInstance.activate();
+        } else if (window.Flickity) {
+          // Try to get Flickity instance via Flickity.data()
+          const flkty = window.Flickity.data(carouselElement);
+          if (flkty) {
+            console.log('Multi-selector filtering: Refreshing Flickity via Flickity.data()');
+            flkty.deactivate();
+            flkty.activate();
+          } else {
+            console.log('Multi-selector filtering: No Flickity instance found');
+          }
+        }
       }
 
       function shouldShowMedia(altText, selectedValues) {

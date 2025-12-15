@@ -104,27 +104,27 @@ def open_system_settings(cfg, parent):
 
 
 def build_gui():
-    """Build the main GUI application."""
+    """Build the main GUI application with tabbed interface."""
     global cfg
     cfg = load_config()
-    
+
     app = tb.Window(themename="darkly")
     app.title("Shopify Product Uploader")
-    app.geometry(cfg.get("WINDOW_GEOMETRY", "900x900"))
-    
+    app.geometry(cfg.get("WINDOW_GEOMETRY", "900x800"))
+
     # Create menu bar
     menu_bar = tb.Menu(app)
     app.config(menu=menu_bar)
-    
+
     # Add Settings menu
     settings_menu = tb.Menu(menu_bar, tearoff=0)
     menu_bar.add_cascade(label="Settings", menu=settings_menu)
     settings_menu.add_command(label="System Settings", command=lambda: open_system_settings(cfg, app))
-    
+
     # Create toolbar
     toolbar = tb.Frame(app)
     toolbar.pack(side="top", fill="x", padx=5, pady=5)
-    
+
     # Add settings button with gear icon
     settings_btn = tb.Button(
         toolbar,
@@ -133,29 +133,33 @@ def build_gui():
         bootstyle="secondary-outline"
     )
     settings_btn.pack(side="left", padx=5)
-    
-    # Main container
-    container = tb.Frame(app)
-    container.pack(fill="both", expand=True, padx=10, pady=10)
-    container.columnconfigure(1, weight=1)
-    
+
     # Title
-    tb.Label(container, text="Shopify Product Uploader", font=("Arial", 14, "bold")).grid(
-        row=0, column=0, columnspan=3, pady=10
-    )
-    
+    title_frame = tb.Frame(app)
+    title_frame.pack(fill="x", padx=10, pady=(5, 10))
+    tb.Label(title_frame, text="Shopify Product Uploader", font=("Arial", 14, "bold")).pack()
+
+    # Create Notebook (tabbed interface)
+    notebook = tb.Notebook(app, bootstyle="primary")
+    notebook.pack(fill="x", padx=10, pady=(0, 5))
+
+    # ==================== TAB 1: FILES ====================
+    files_tab = tb.Frame(notebook, padding=15)
+    notebook.add(files_tab, text="  Files  ")
+    files_tab.columnconfigure(1, weight=1)
+
     # Input File field
-    row = container.grid_size()[1]
-    
-    label_frame = tb.Frame(container)
+    row = 0
+
+    label_frame = tb.Frame(files_tab)
     label_frame.grid(row=row, column=0, sticky="w", padx=5, pady=5)
-    
+
     tb.Label(label_frame, text="Input File", anchor="w").pack(side="left")
     help_icon = tb.Label(label_frame, text=" ⓘ ", font=("Arial", 9),
                          foreground="#5BC0DE", cursor="hand2")
     help_icon.pack(side="left")
     tb.Label(label_frame, text=":", anchor="w").pack(side="left")
-    
+
     tooltip_text = (
         "Select the JSON file containing your product data.\n\n"
         "This file should include product information, variants, images, "
@@ -163,12 +167,12 @@ def build_gui():
         "Tip: Use the Browse button to easily find your file."
     )
     ToolTip(help_icon, text=tooltip_text, bootstyle="info")
-    
+
     input_var = tb.StringVar(value=cfg.get("INPUT_FILE", ""))
-    tb.Entry(container, textvariable=input_var, width=50).grid(
+    tb.Entry(files_tab, textvariable=input_var, width=50).grid(
         row=row, column=1, sticky="ew", padx=5, pady=5
     )
-    
+
     def browse_input():
         """Browse for input file."""
         try:
@@ -180,11 +184,11 @@ def build_gui():
                 input_var.set(filename)
         except Exception as e:
             messagebox.showerror("Browse Failed", f"Failed to open file dialog:\n\n{str(e)}")
-    
-    tb.Button(container, text="Browse", command=browse_input, bootstyle="info-outline").grid(
+
+    tb.Button(files_tab, text="Browse", command=browse_input, bootstyle="info-outline").grid(
         row=row, column=2, padx=5, pady=5
     )
-    
+
     def on_input_change(*args):
         """Auto-save input file path to config."""
         try:
@@ -192,21 +196,21 @@ def build_gui():
             save_config(cfg)
         except Exception:
             pass
-    
+
     input_var.trace_add("write", on_input_change)
-    
+
     # Product Output File field
-    row = container.grid_size()[1]
-    
-    label_frame = tb.Frame(container)
+    row += 1
+
+    label_frame = tb.Frame(files_tab)
     label_frame.grid(row=row, column=0, sticky="w", padx=5, pady=5)
-    
+
     tb.Label(label_frame, text="Product Output File", anchor="w").pack(side="left")
     help_icon = tb.Label(label_frame, text=" ⓘ ", font=("Arial", 9),
                          foreground="#5BC0DE", cursor="hand2")
     help_icon.pack(side="left")
     tb.Label(label_frame, text=":", anchor="w").pack(side="left")
-    
+
     tooltip_text = (
         "Choose where to save the product upload results.\n\n"
         "This file will contain details about each uploaded product, "
@@ -214,12 +218,12 @@ def build_gui():
         "Tip: Use a descriptive filename like 'products_output_2025-10-26.json'"
     )
     ToolTip(help_icon, text=tooltip_text, bootstyle="info")
-    
+
     product_output_var = tb.StringVar(value=cfg.get("PRODUCT_OUTPUT_FILE", ""))
-    tb.Entry(container, textvariable=product_output_var, width=50).grid(
+    tb.Entry(files_tab, textvariable=product_output_var, width=50).grid(
         row=row, column=1, sticky="ew", padx=5, pady=5
     )
-    
+
     def browse_product_output():
         """Browse for product output file."""
         try:
@@ -232,11 +236,11 @@ def build_gui():
                 product_output_var.set(filename)
         except Exception as e:
             messagebox.showerror("Browse Failed", f"Failed to open file dialog:\n\n{str(e)}")
-    
-    tb.Button(container, text="Browse", command=browse_product_output, bootstyle="info-outline").grid(
+
+    tb.Button(files_tab, text="Browse", command=browse_product_output, bootstyle="info-outline").grid(
         row=row, column=2, padx=5, pady=5
     )
-    
+
     def on_product_output_change(*args):
         """Auto-save product output file path to config."""
         try:
@@ -244,21 +248,21 @@ def build_gui():
             save_config(cfg)
         except Exception:
             pass
-    
+
     product_output_var.trace_add("write", on_product_output_change)
-    
+
     # Collections Output File field
-    row = container.grid_size()[1]
-    
-    label_frame = tb.Frame(container)
+    row += 1
+
+    label_frame = tb.Frame(files_tab)
     label_frame.grid(row=row, column=0, sticky="w", padx=5, pady=5)
-    
+
     tb.Label(label_frame, text="Collections Output File", anchor="w").pack(side="left")
     help_icon = tb.Label(label_frame, text=" ⓘ ", font=("Arial", 9),
                          foreground="#5BC0DE", cursor="hand2")
     help_icon.pack(side="left")
     tb.Label(label_frame, text=":", anchor="w").pack(side="left")
-    
+
     tooltip_text = (
         "Choose where to save the collection creation results.\n\n"
         "This file will track all collections created during the upload, "
@@ -266,12 +270,12 @@ def build_gui():
         "Tip: This helps avoid duplicate collections on future runs."
     )
     ToolTip(help_icon, text=tooltip_text, bootstyle="info")
-    
+
     collections_output_var = tb.StringVar(value=cfg.get("COLLECTIONS_OUTPUT_FILE", ""))
-    tb.Entry(container, textvariable=collections_output_var, width=50).grid(
+    tb.Entry(files_tab, textvariable=collections_output_var, width=50).grid(
         row=row, column=1, sticky="ew", padx=5, pady=5
     )
-    
+
     def browse_collections_output():
         """Browse for collections output file."""
         try:
@@ -284,11 +288,11 @@ def build_gui():
                 collections_output_var.set(filename)
         except Exception as e:
             messagebox.showerror("Browse Failed", f"Failed to open file dialog:\n\n{str(e)}")
-    
-    tb.Button(container, text="Browse", command=browse_collections_output, bootstyle="info-outline").grid(
+
+    tb.Button(files_tab, text="Browse", command=browse_collections_output, bootstyle="info-outline").grid(
         row=row, column=2, padx=5, pady=5
     )
-    
+
     def on_collections_output_change(*args):
         """Auto-save collections output file path to config."""
         try:
@@ -296,21 +300,21 @@ def build_gui():
             save_config(cfg)
         except Exception:
             pass
-    
+
     collections_output_var.trace_add("write", on_collections_output_change)
-    
+
     # Log File field
-    row = container.grid_size()[1]
-    
-    label_frame = tb.Frame(container)
+    row += 1
+
+    label_frame = tb.Frame(files_tab)
     label_frame.grid(row=row, column=0, sticky="w", padx=5, pady=5)
-    
+
     tb.Label(label_frame, text="Log File", anchor="w").pack(side="left")
     help_icon = tb.Label(label_frame, text=" ⓘ ", font=("Arial", 9),
                          foreground="#5BC0DE", cursor="hand2")
     help_icon.pack(side="left")
     tb.Label(label_frame, text=":", anchor="w").pack(side="left")
-    
+
     tooltip_text = (
         "Choose where to save detailed processing logs.\n\n"
         "Logs help you track what happened during processing and "
@@ -318,12 +322,12 @@ def build_gui():
         "Tip: Include the date in the filename (e.g., log_2025-10-26.txt)"
     )
     ToolTip(help_icon, text=tooltip_text, bootstyle="info")
-    
+
     log_file_var = tb.StringVar(value=cfg.get("LOG_FILE", ""))
-    tb.Entry(container, textvariable=log_file_var, width=50).grid(
+    tb.Entry(files_tab, textvariable=log_file_var, width=50).grid(
         row=row, column=1, sticky="ew", padx=5, pady=5
     )
-    
+
     def browse_log_file():
         """Browse for log file."""
         try:
@@ -336,27 +340,27 @@ def build_gui():
                 log_file_var.set(filename)
         except Exception as e:
             messagebox.showerror("Browse Failed", f"Failed to open file dialog:\n\n{str(e)}")
-    
-    tb.Button(container, text="Browse", command=browse_log_file, bootstyle="info-outline").grid(
+
+    tb.Button(files_tab, text="Browse", command=browse_log_file, bootstyle="info-outline").grid(
         row=row, column=2, padx=5, pady=5
     )
-    
+
     def delete_log_file():
         """Delete the log file after confirmation."""
         log_path = log_file_var.get().strip()
         if not log_path:
             messagebox.showwarning("No File", "No log file path specified.")
             return
-        
+
         if not os.path.exists(log_path):
             messagebox.showwarning("File Not Found", f"Log file does not exist:\n{log_path}")
             return
-        
+
         confirm = messagebox.askyesno(
             "Confirm Delete",
             f"Are you sure you want to delete this log file?\n\n{log_path}\n\nThis action cannot be undone."
         )
-        
+
         if confirm:
             try:
                 os.remove(log_path)
@@ -365,11 +369,11 @@ def build_gui():
                 messagebox.showerror("Delete Failed", f"Permission denied. The log file may be in use.")
             except Exception as e:
                 messagebox.showerror("Delete Failed", f"Failed to delete log file:\n\n{str(e)}")
-    
-    tb.Button(container, text="Delete", command=delete_log_file, bootstyle="danger-outline").grid(
+
+    tb.Button(files_tab, text="Delete", command=delete_log_file, bootstyle="danger-outline").grid(
         row=row, column=3, padx=5, pady=5
     )
-    
+
     def on_log_change(*args):
         """Auto-save log file path to config."""
         try:
@@ -377,13 +381,18 @@ def build_gui():
             save_config(cfg)
         except Exception:
             pass
-    
+
     log_file_var.trace_add("write", on_log_change)
 
-    # Execution Mode toggle
-    row = container.grid_size()[1]
+    # ==================== TAB 2: PROCESSING ====================
+    processing_tab = tb.Frame(notebook, padding=15)
+    notebook.add(processing_tab, text="  Processing  ")
+    processing_tab.columnconfigure(1, weight=1)
 
-    label_frame = tb.Frame(container)
+    # Execution Mode toggle
+    row = 0
+
+    label_frame = tb.Frame(processing_tab)
     label_frame.grid(row=row, column=0, sticky="w", padx=5, pady=5)
 
     tb.Label(label_frame, text="Execution Mode", anchor="w").pack(side="left")
@@ -405,7 +414,7 @@ def build_gui():
     ToolTip(help_icon, text=tooltip_text, bootstyle="info")
 
     # Create frame for radio buttons
-    mode_frame = tb.Frame(container)
+    mode_frame = tb.Frame(processing_tab)
     mode_frame.grid(row=row, column=1, columnspan=2, sticky="w", padx=5, pady=5)
 
     execution_mode_var = tb.StringVar(value=cfg.get("EXECUTION_MODE", "resume"))
@@ -439,9 +448,9 @@ def build_gui():
     execution_mode_var.trace_add("write", on_execution_mode_change)
 
     # Start Record field
-    row = container.grid_size()[1]
+    row += 1
 
-    label_frame = tb.Frame(container)
+    label_frame = tb.Frame(processing_tab)
     label_frame.grid(row=row, column=0, sticky="w", padx=5, pady=5)
 
     tb.Label(label_frame, text="Start Record", anchor="w").pack(side="left")
@@ -462,7 +471,7 @@ def build_gui():
     start_val = cfg.get("START_RECORD", "")
     start_record_var = tb.StringVar(value=start_val)
     start_spinbox = tb.Spinbox(
-        container,
+        processing_tab,
         textvariable=start_record_var,
         from_=0,
         to=999999,
@@ -488,9 +497,9 @@ def build_gui():
     start_record_var.trace_add("write", on_start_record_change)
 
     # End Record field
-    row = container.grid_size()[1]
+    row += 1
 
-    label_frame = tb.Frame(container)
+    label_frame = tb.Frame(processing_tab)
     label_frame.grid(row=row, column=0, sticky="w", padx=5, pady=5)
 
     tb.Label(label_frame, text="End Record", anchor="w").pack(side="left")
@@ -511,7 +520,7 @@ def build_gui():
     end_val = cfg.get("END_RECORD", "")
     end_record_var = tb.StringVar(value=end_val)
     end_spinbox = tb.Spinbox(
-        container,
+        processing_tab,
         textvariable=end_record_var,
         from_=0,
         to=999999,
@@ -537,9 +546,9 @@ def build_gui():
     end_record_var.trace_add("write", on_end_record_change)
 
     # Inventory Quantity field
-    row = container.grid_size()[1]
+    row += 1
 
-    label_frame = tb.Frame(container)
+    label_frame = tb.Frame(processing_tab)
     label_frame.grid(row=row, column=0, sticky="w", padx=5, pady=5)
 
     tb.Label(label_frame, text="Inventory Quantity", anchor="w").pack(side="left")
@@ -560,7 +569,7 @@ def build_gui():
     inv_qty_val = cfg.get("INVENTORY_QUANTITY", "")
     inventory_qty_var = tb.StringVar(value=inv_qty_val)
     inventory_qty_spinbox = tb.Spinbox(
-        container,
+        processing_tab,
         textvariable=inventory_qty_var,
         from_=0,
         to=999999,
@@ -585,7 +594,7 @@ def build_gui():
 
     inventory_qty_var.trace_add("write", on_inventory_qty_change)
 
-    # Buttons
+    # ==================== BUTTONS (outside tabs) ====================
     button_frame = tb.Frame(app)
     button_frame.pack(pady=10)
     

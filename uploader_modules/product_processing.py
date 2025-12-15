@@ -1103,7 +1103,16 @@ def process_products(cfg, status_fn, execution_mode="resume", start_record=None,
                                 log_and_status(status_fn, f"    ⚠️ Failed to upload {source_format.upper()} (no resourceUrl returned)", "warning")
 
                 # Add images to media input
-                for img in product.get('images', []):
+                images = product.get('images', [])
+
+                if images:
+                    log_and_status(
+                        status_fn,
+                        f"  📊 Images: {len(images)}",
+                        ui_msg=f"  📊 {len(images)} images"
+                    )
+
+                for img in images:
                     media_input.append({
                         "originalSource": img.get('src'),
                         "alt": img.get('alt', ''),
