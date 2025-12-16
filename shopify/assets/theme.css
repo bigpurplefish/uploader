@@ -8466,11 +8466,26 @@ shopify-accelerated-checkout, shopify-accelerated-checkout-cart {
   padding-left: 4px;
 }
 
+/* Product page color swatches - use CSS Grid for consistent alignment */
+.product-form .color-swatch-list {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px 16px;
+  margin: 0;
+  padding: 0;
+  max-width: 420px;
+}
+
 .color-swatch {
   vertical-align: middle;
   margin: 6px;
   display: inline-block;
   position: relative;
+}
+
+/* Reset margin for grid layout */
+.product-form .color-swatch-list .color-swatch {
+  margin: 0;
 }
 
 .color-swatch__radio {
@@ -8627,6 +8642,20 @@ shopify-accelerated-checkout, shopify-accelerated-checkout-cart {
   display: block;
 }
 
+/* Hide the X icon on block swatches by default */
+.block-swatch__item svg {
+  display: none;
+}
+
+/* Show X icon only for disabled/sold-out block swatches */
+.block-swatch--disabled .block-swatch__item svg {
+  display: inline-block;
+  vertical-align: middle;
+  margin-left: 4px;
+  width: 10px;
+  height: 10px;
+}
+
 .block-swatch__radio:checked + .block-swatch__item, .block-swatch__item.is-selected {
   box-shadow: 0 0 0 1px var(--accent-color);
   border-color: var(--accent-color);
@@ -8653,10 +8682,66 @@ shopify-accelerated-checkout, shopify-accelerated-checkout-cart {
   margin: -5px -5px -2px -4px;
 }
 
+/* Product page variant swatches - use CSS Grid for consistent 4-column alignment */
+.product-block-list .variant-swatch-list,
+.variant-swatch-list--metafield {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px 20px;
+  margin: 0;
+  width: 100%;
+}
+
 .variant-swatch {
   vertical-align: middle;
   margin: 5px;
   display: inline-block;
+}
+
+/* Metafield variant swatches with labels */
+.variant-swatch--metafield {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0;
+  text-align: center;
+}
+
+.variant-swatch--metafield .variant-swatch__item {
+  display: block;
+  width: 100%;
+  cursor: pointer;
+}
+
+.variant-swatch--metafield .variant-swatch__item img {
+  width: 100%;
+  height: auto;
+}
+
+.variant-swatch__label {
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  font-weight: bold;
+  line-height: 1.3;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: none;
+  text-align: center;
+  width: 100%;
+}
+
+.variant-swatch__description {
+  font-size: 0.7rem;
+  color: #666;
+  margin-top: 0.25rem;
+  line-height: 1.3;
+  text-align: center;
+  width: 100%;
+}
+
+/* Reset margin for grid layout */
+.product-block-list .variant-swatch-list .variant-swatch {
+  margin: 0;
 }
 
 .variant-swatch__radio {

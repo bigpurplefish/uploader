@@ -196,350 +196,161 @@
   </div>
 
   {%- comment -%}
-  ============================================================================
-  MULTI-SELECTOR MEDIA FILTERING (Images, Videos, GIFs)
-  Custom JavaScript to extend Warehouse theme's single-selector filtering
-  to support multiple option selectors (Color + Texture + Size)
-  Now supports: images, native videos, external videos (YouTube/Vimeo), and GIFs
-  ============================================================================
+  ============================================
+  CUSTOM: Multi-Option Image Filtering
+  ============================================
+  This script extends the Warehouse theme's built-in variant image filtering
+  to support multiple hashtag values in alt text.
+
+  Alt text format: "Description #Color#Unit of Sale" (e.g., "#Onyx Natural#Sq Ft")
+
+  The theme's built-in filtering only supports single-option filtering.
+  This script intercepts variant changes using CAPTURE PHASE to run BEFORE
+  the theme's handler, updates the data-group-value attributes to encode
+  multi-option matching, then lets the theme handle filtering and Flickity refresh.
   {%- endcomment -%}
+
+  {%- comment -%} Force hide filtered items with !important to override Flickity {%- endcomment -%}
+  <style>
+    .product-gallery__carousel-item.is-filtered,
+    .product-gallery__thumbnail.is-filtered {
+      display: none !important;
+      visibility: hidden !important;
+      opacity: 0 !important;
+      pointer-events: none !important;
+    }
+  </style>
+
   <script>
-    (function() {
-      'use strict';
-      
-      // Only run on actual product pages, not quick view
-      if (!document.querySelector('[data-section-type="product"]')) {
+  (function() {
+    console.log('[MultiFilter] Script initializing...');
+
+    var productSection = document.querySelector('[data-section-type="product"]');
+    if (!productSection) {
+      console.log('[MultiFilter] ERROR: Product section not found!');
+      return;
+    }
+    console.log('[MultiFilter] Product section found');
+
+    // Listen on DOCUMENT to catch all variant:change events regardless of where the form is
+    // Use CAPTURE PHASE to run BEFORE the theme's bubbling listener
+    document.addEventListener('variant:change', function(event) {
+      console.log('[MultiFilter] CAPTURE: variant:change event received');
+      console.log('[MultiFilter] Event target:', event.target.tagName, event.target.id || '(no id)');
+
+      var newVariant = event.detail.variant;
+      if (!newVariant) {
+        console.log('[MultiFilter] No variant in event');
         return;
       }
 
-      // Configuration: Define which product options should be used for filtering
-      const FILTER_OPTIONS = ['Color Description', 'Colour Description', 'Color', 'Colour', 'Texture', 'Item Size Description', 'Size'];
+      console.log('[MultiFilter] New variant:', newVariant.option1, newVariant.option2, newVariant.option3);
 
-      // VERSION CHECK: v3.0 - Enhanced logging and real-time filtering
-      console.log('Multi-selector filtering: VERSION 3.0 LOADED');
-      
-      // Wait for DOM to be ready
-      function init() {
-        // Get all variant selectors (dropdowns, radio buttons, swatches)
-        const variantSelectors = getVariantSelectors();
-        
-        if (variantSelectors.length === 0) {
-          console.log('Multi-selector filtering: No variant selectors found');
-          return;
-        }
-
-        console.log('Multi-selector filtering: Initialized with', variantSelectors.length, 'selectors');
-
-        // Listen for changes on all variant selectors
-        variantSelectors.forEach(function(selector) {
-          if (selector.tagName === 'SELECT') {
-            selector.addEventListener('change', function() {
-              console.log('Dropdown changed, filtering media...');
-              filterMedia();
-            });
-          } else if (selector.tagName === 'INPUT') {
-            selector.addEventListener('change', function() {
-              console.log('Radio changed, filtering media...');
-              filterMedia();
-            });
-          }
-        });
-
-        // Run initial filter on page load
-        setTimeout(filterMedia, 100);
-      }
-
-      function getVariantSelectors() {
-        const selectors = [];
-        
-        // Get all select dropdowns
-        const selectElements = document.querySelectorAll('.product-form__option select, select[name^="option"]');
-        selectElements.forEach(function(select) {
-          selectors.push(select);
-        });
-
-        // Get all radio buttons (for block/swatch style selectors)
-        const radioElements = document.querySelectorAll('.product-form__option input[type="radio"], input[name^="option"]');
-        radioElements.forEach(function(radio) {
-          selectors.push(radio);
-        });
-
-        return selectors;
-      }
-
-      function getSelectedOptionValues() {
-        const values = [];
-
-        console.log('Multi-selector filtering: Getting selected option values...');
-
-        // PRIMARY METHOD: Get from form controls directly (most reliable for real-time changes)
-
-        // Get all checked radio buttons (for block/swatch selectors)
-        const radios = document.querySelectorAll('.product-form__option input[type="radio"]:checked, input[name^="option"]:checked');
-        console.log('Multi-selector filtering: Found ' + radios.length + ' checked radio buttons');
-        radios.forEach(function(radio) {
-          // Get option value from the label, not the radio value (which is variant ID)
-          const label = document.querySelector('label[for="' + radio.id + '"]');
-          if (label) {
-            // Try title attribute first (contains full text), then text content
-            let optionValue = label.getAttribute('title');
-
-            // Title might have dimensions after " - ", extract just the option value
-            // Example: "20 X 10 & 20 X 20 - A: 20 × 10 × 2 ¼ in (508 × 254 × 57 mm)"
-            // We want: "20 X 10 & 20 X 20"
-            if (optionValue) {
-              // Split on newline first (in case dimensions are on new line)
-              if (optionValue.includes('\n')) {
-                optionValue = optionValue.split('\n')[0].trim();
-              }
-              // Then split on " - " to remove dimensions on same line
-              if (optionValue.includes(' - ')) {
-                optionValue = optionValue.split(' - ')[0].trim();
-              }
-            }
-
-            // Fallback to text content if no title
-            if (!optionValue) {
-              optionValue = label.textContent.trim();
-            }
-
-            console.log('Multi-selector filtering: Radio label text: "' + optionValue + '"');
-
-            if (optionValue) {
-              const normalized = normalizeValue(optionValue);
-              console.log('Multi-selector filtering: Normalized to: "' + normalized + '"');
-              values.push(normalized);
-            }
-          }
-        });
-
-        // Get all selects (if any dropdowns are used)
-        const selects = document.querySelectorAll('.product-form__option select, select[name^="option"]');
-        console.log('Multi-selector filtering: Found ' + selects.length + ' select dropdowns');
-        selects.forEach(function(select) {
-          const selectedOption = select.options[select.selectedIndex];
-          if (selectedOption && selectedOption.text && selectedOption.text !== 'Sold out') {
-            // Extract option text, removing any " - Sold out" suffix
-            const optionText = selectedOption.text.replace(/ - .*$/, '').trim();
-            console.log('Multi-selector filtering: Select option text: "' + optionText + '"');
-            if (optionText) {
-              const normalized = normalizeValue(optionText);
-              console.log('Multi-selector filtering: Normalized to: "' + normalized + '"');
-              values.push(normalized);
-            }
-          }
-        });
-
-        if (values.length > 0) {
-          console.log('Multi-selector filtering: Got values from form controls:', values);
-          return values;
-        }
-
-        // FALLBACK: Try variant data JSON if form controls didn't work
-        console.log('Multi-selector filtering: No values from form controls, trying JSON...');
-        const variantDataScript = document.querySelector('script[data-variant][type="application/json"]');
-        if (variantDataScript) {
-          try {
-            const variantData = JSON.parse(variantDataScript.textContent);
-            console.log('Multi-selector filtering: Variant data from JSON:', variantData);
-            if (variantData && variantData.options && Array.isArray(variantData.options)) {
-              variantData.options.forEach(function(optionValue) {
-                if (optionValue && optionValue !== 'Default Title') {
-                  const normalized = normalizeValue(optionValue);
-                  console.log('Multi-selector filtering: JSON option "' + optionValue + '" -> "' + normalized + '"');
-                  values.push(normalized);
-                }
-              });
-            }
-          } catch (e) {
-            console.log('Multi-selector filtering: Could not parse variant data JSON', e);
-          }
-        }
-
-        console.log('Multi-selector filtering: Final selected values:', values);
-        return values;
-      }
-
-      function normalizeValue(value) {
-        // Normalize value: uppercase, replace spaces and special chars with underscores
-        // MUST match Python's format_value_for_filter_tag() in utils.py
-        var formatted = value.toString().toUpperCase();
-
-        // Replace each special character with underscore (matches Python logic)
-        var specialChars = [' ', '-', '/', '&', '+', ',', '.'];
-        for (var i = 0; i < specialChars.length; i++) {
-          // Use split/join to replace all occurrences
-          formatted = formatted.split(specialChars[i]).join('_');
-        }
-
-        return formatted;
-      }
-
-      function filterMedia() {
-        const selectedValues = getSelectedOptionValues();
-        
-        if (selectedValues.length === 0) {
-          console.log('Multi-selector filtering: No values selected');
-          return;
-        }
-
-        console.log('Multi-selector filtering: Selected values:', selectedValues);
-
-        // Get all carousel items and thumbnails
-        const carouselItems = document.querySelectorAll('.product-gallery__carousel-item');
-        const thumbnails = document.querySelectorAll('.product-gallery__thumbnail');
-
-        let visibleCount = 0;
-        let firstVisibleItem = null;
-
-        carouselItems.forEach(function(item, index) {
-          // Get alt text from data attribute (works for all media types)
-          const altText = item.getAttribute('data-media-alt') || '';
-          const mediaType = item.getAttribute('data-media-type') || 'image';
-          
-          // Check if this media should be visible
-          const shouldShow = shouldShowMedia(altText, selectedValues);
-
-          if (shouldShow) {
-            item.classList.remove('is-filtered');
-            if (thumbnails[index]) {
-              thumbnails[index].classList.remove('is-filtered');
-            }
-            visibleCount++;
-            if (!firstVisibleItem) {
-              firstVisibleItem = item;
-            }
-          } else {
-            item.classList.add('is-filtered');
-            if (thumbnails[index]) {
-              thumbnails[index].classList.add('is-filtered');
-            }
-          }
-        });
-
-        console.log('Multi-selector filtering: Showing', visibleCount, 'of', carouselItems.length, 'media items');
-
-        // If the currently selected media is now hidden, select the first visible one
-        const currentlySelected = document.querySelector('.product-gallery__carousel-item.is-selected');
-        if (currentlySelected && currentlySelected.classList.contains('is-filtered') && firstVisibleItem) {
-          console.log('Multi-selector filtering: Currently selected image is filtered, selecting first visible');
-          // Remove is-selected from current
-          currentlySelected.classList.remove('is-selected');
-
-          // Add is-selected to first visible
-          firstVisibleItem.classList.add('is-selected');
-
-          // Update thumbnail selection
-          const firstVisibleIndex = Array.from(carouselItems).indexOf(firstVisibleItem);
-          document.querySelectorAll('.product-gallery__thumbnail').forEach(function(thumb) {
-            thumb.classList.remove('is-nav-selected');
-          });
-          if (thumbnails[firstVisibleIndex]) {
-            thumbnails[firstVisibleIndex].classList.add('is-nav-selected');
-          }
-        }
-
-        // CRITICAL: Refresh Flickity carousel to recognize filtered items
-        // The theme uses Flickity which caches slides on init - we must tell it to refresh
-        refreshFlickity();
-      }
-
-      function refreshFlickity() {
-        // Find the Flickity instance on the carousel element
-        const carouselElement = document.querySelector('.product-gallery__carousel');
-        if (carouselElement && carouselElement.flickityInstance) {
-          console.log('Multi-selector filtering: Refreshing Flickity instance');
-          carouselElement.flickityInstance.deactivate();
-          carouselElement.flickityInstance.activate();
-        } else if (window.Flickity) {
-          // Try to get Flickity instance via Flickity.data()
-          const flkty = window.Flickity.data(carouselElement);
-          if (flkty) {
-            console.log('Multi-selector filtering: Refreshing Flickity via Flickity.data()');
-            flkty.deactivate();
-            flkty.activate();
-          } else {
-            console.log('Multi-selector filtering: No Flickity instance found');
-          }
+      // Build selected options array (lowercased for comparison)
+      var selectedOptions = [];
+      for (var i = 1; i <= 3; i++) {
+        var optionValue = newVariant['option' + i];
+        if (optionValue) {
+          selectedOptions.push(optionValue.toLowerCase());
         }
       }
+      console.log('[MultiFilter] Selected options:', selectedOptions);
 
-      function shouldShowMedia(altText, selectedValues) {
-        // If media has no # tags, show it for all variants (universal media)
-        if (!altText.includes('#')) {
-          console.log('Multi-selector filtering: Image has no hashtags, showing');
-          return true;
+      // Get all carousel items and thumbnails from the product section
+      var carouselItems = productSection.querySelectorAll('.product-gallery__carousel-item');
+      var thumbnails = productSection.querySelectorAll('.product-gallery__thumbnail');
+      console.log('[MultiFilter] Carousel items:', carouselItems.length, 'Thumbnails:', thumbnails.length);
+
+      var matchCount = 0;
+      var filterCount = 0;
+
+      carouselItems.forEach(function(item, index) {
+        var mediaAlt = item.getAttribute('data-media-alt') || '';
+        var thumbnail = thumbnails[index];
+
+        // Skip images without hashtag filtering
+        if (mediaAlt.indexOf('#') === -1) return;
+
+        // Parse hashtag values from alt text
+        var parts = mediaAlt.split('#');
+        var hashtagValues = [];
+        for (var j = 1; j < parts.length; j++) {
+          var value = parts[j].trim().toLowerCase();
+          if (value) hashtagValues.push(value);
         }
 
-        // Extract all tags from alt text
-        // Format: "Description #VALUE1#VALUE2#VALUE3"
-        const parts = altText.split('#');
-        if (parts.length < 2) {
-          console.log('Multi-selector filtering: No valid hashtags found, showing by default');
-          return true; // No valid tags, show by default
-        }
+        if (hashtagValues.length === 0) return;
 
-        // Get all tag values (everything after the first #)
-        const mediaTags = [];
-        for (let i = 1; i < parts.length; i++) {
-          const tag = parts[i].trim();
-          if (tag) {
-            const normalizedTag = normalizeValue(tag);
-            mediaTags.push(normalizedTag);
+        // Check if ALL hashtag values match corresponding selected options
+        var allMatch = true;
+        for (var k = 0; k < hashtagValues.length && k < selectedOptions.length; k++) {
+          if (hashtagValues[k] !== selectedOptions[k]) {
+            allMatch = false;
+            break;
           }
         }
 
-        console.log('Multi-selector filtering: Image alt="' + altText.substring(0, 50) + '..."');
-        console.log('Multi-selector filtering: Extracted media tags:', mediaTags);
-
-        if (mediaTags.length === 0) {
-          console.log('Multi-selector filtering: No valid tags after normalization, showing');
-          return true; // No valid tags found
+        // Update data-group-value to trick theme's built-in filter
+        if (allMatch) {
+          item.setAttribute('data-group-value', selectedOptions[0]);
+          if (thumbnail) thumbnail.setAttribute('data-group-value', selectedOptions[0]);
+          matchCount++;
+        } else {
+          item.setAttribute('data-group-value', '__filtered__');
+          if (thumbnail) thumbnail.setAttribute('data-group-value', '__filtered__');
+          filterCount++;
         }
-
-        // For multi-selector filtering:
-        // Show media if ALL selected values are present in the media tags
-        let matchCount = 0;
-        selectedValues.forEach(function(selectedValue) {
-          if (mediaTags.includes(selectedValue)) {
-            matchCount++;
-            console.log('Multi-selector filtering: ✓ Match found for "' + selectedValue + '"');
-          } else {
-            console.log('Multi-selector filtering: ✗ No match for "' + selectedValue + '"');
-          }
-        });
-
-        const shouldShow = matchCount === selectedValues.length;
-        console.log('Multi-selector filtering: Match count: ' + matchCount + '/' + selectedValues.length + ' -> ' + (shouldShow ? 'SHOW' : 'HIDE'));
-
-        // Media should be shown if all selected values match
-        return shouldShow;
-      }
-
-      // Initialize when DOM is ready
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', init);
-      } else {
-        init();
-      }
-
-      // Listen for variant changes from Shopify and theme
-      document.addEventListener('variant:changed', function(event) {
-        console.log('variant:changed event fired, filtering media...');
-        filterMedia();
       });
 
-      // Listen for form changes (more reliable for Warehouse theme)
-      var productForm = document.querySelector('[id^="product-form"]');
-      if (productForm) {
-        productForm.addEventListener('change', function(event) {
-          if (event.target.matches('input[name^="option"], select[name^="option"]')) {
-            console.log('Form input changed, filtering media...');
-            // Small delay to ensure variant data JSON is updated
-            setTimeout(filterMedia, 50);
+      console.log('[MultiFilter] Results: matching=' + matchCount + ', filtered=' + filterCount);
+    }, true); // CAPTURE PHASE on document
+
+    // Bubbling phase listener - runs AFTER theme, then force visual update
+    document.addEventListener('variant:change', function(event) {
+      console.log('[MultiFilter] BUBBLE: variant:change (after theme processed)');
+
+      // Check DOM state
+      var carouselFiltered = productSection.querySelectorAll('.product-gallery__carousel-item.is-filtered');
+      var carouselTotal = productSection.querySelectorAll('.product-gallery__carousel-item');
+      var thumbFiltered = productSection.querySelectorAll('.product-gallery__thumbnail.is-filtered');
+      var thumbTotal = productSection.querySelectorAll('.product-gallery__thumbnail');
+
+      console.log('[MultiFilter] Carousel: ' + carouselFiltered.length + ' filtered / ' + carouselTotal.length + ' total');
+      console.log('[MultiFilter] Thumbnails: ' + thumbFiltered.length + ' filtered / ' + thumbTotal.length + ' total');
+
+      // Force Flickity to refresh after a short delay
+      setTimeout(function() {
+        var carousel = productSection.querySelector('.product-gallery__carousel');
+        if (!carousel) {
+          console.log('[MultiFilter] Carousel element not found');
+          return;
+        }
+
+        // Try to access Flickity instance
+        var flickity = null;
+        if (typeof Flickity !== 'undefined') {
+          flickity = Flickity.data(carousel);
+        }
+
+        if (flickity) {
+          console.log('[MultiFilter] Flickity found, refreshing...');
+          flickity.deactivate();
+          flickity.activate();
+
+          // Select first visible cell
+          var firstVisible = carousel.querySelector('.product-gallery__carousel-item:not(.is-filtered)');
+          if (firstVisible) {
+            flickity.selectCell(firstVisible);
           }
-        });
-      }
-    })();
+          console.log('[MultiFilter] Flickity refreshed');
+        } else {
+          console.log('[MultiFilter] Flickity not accessible globally');
+        }
+      }, 50);
+    }, false); // BUBBLE PHASE
+
+    console.log('[MultiFilter] Listeners attached to document (capture + bubble)');
+  })();
   </script>
+
 {%- endif -%}

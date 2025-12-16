@@ -120,7 +120,7 @@ If custom.hide_online_price is true, skip price and quantity display
             {%- when 'metafield-variant' -%}
               <span class="product-form__option-name text--strong">{{ option.name }}: <span class="product-form__selected-value">{{ option.selected_value }}</span></span>
 
-              <div class="variant-swatch-list" style="display: flex; flex-wrap: wrap; gap: 1rem;">
+              <div class="variant-swatch-list variant-swatch-list--metafield">
                 {%- for value in option.values -%}
                   {%- capture variant_swatch_id -%}{{ product_form_id }}-{{ option_name }}-{{ forloop.index }}{%- endcapture -%}
 
@@ -165,13 +165,13 @@ If custom.hide_online_price is true, skip price and quantity display
                     {%- endif -%}
                   {%- endcapture -%}
 
-                  <div class="variant-swatch {% unless value.available %}variant-swatch--disabled{% endunless %}" style="flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; max-width: 140px;">
+                  <div class="variant-swatch variant-swatch--metafield {% unless value.available %}variant-swatch--disabled{% endunless %}">
                     {%- if value.product_url != blank -%}
                       {%- if value == option.selected_value -%}
                         <input type="hidden" name="{{ option_name }}" form="{{ product_form_id }}" value="{{ value.id }}" data-option-position="{{ option.position }}">
                       {%- endif -%}
 
-                      <a href="{{ value.product_url }}" class="variant-swatch__item {% if value == option.selected_value %}is-selected{% endif %}" title="{{ swatch_title }}" style="display: block; margin: 0 auto;">
+                      <a href="{{ value.product_url }}" class="variant-swatch__item {% if value == option.selected_value %}is-selected{% endif %}" title="{{ swatch_title }}">
                         <div class="aspect-ratio aspect-ratio--square">
                           <img src="{{ swatch_url }}" loading="lazy" alt="{{ value | escape }}" width="120" height="120">
                         </div>
@@ -180,7 +180,7 @@ If custom.hide_online_price is true, skip price and quantity display
                     {%- else -%}
                       <input class="variant-swatch__radio product-form__single-selector" type="radio" name="{{ option_name }}" id="{{ variant_swatch_id }}" value="{{ value.id }}" form="{{ product_form_id }}" {% if option.selected_value == value %}checked{% endif %} data-option-position="{{ option.position }}">
 
-                      <label class="variant-swatch__item" for="{{ variant_swatch_id }}" title="{{ swatch_title }}" style="display: block; margin: 0 auto; cursor: pointer;">
+                      <label class="variant-swatch__item" for="{{ variant_swatch_id }}" title="{{ swatch_title }}">
                         <div class="aspect-ratio aspect-ratio--square">
                           <img src="{{ swatch_url }}" loading="lazy" alt="{{ value | escape }}" width="120" height="120">
                         </div>
@@ -189,13 +189,13 @@ If custom.hide_online_price is true, skip price and quantity display
                     {%- endif -%}
 
                     {%- comment -%}Add option name label below swatch{%- endcomment -%}
-                    <div class="variant-swatch__label" style="margin-top: 0.5rem; font-size: 0.875rem; word-wrap: break-word; overflow-wrap: break-word; word-break: break-word; hyphens: auto; text-align: center; width: 100%;">
-                      <strong>{{ value | escape }}</strong>
+                    <div class="variant-swatch__label">
+                      {{ value | escape }}
                     </div>
 
                     {%- comment -%}Add dimensions description for size options{%- endcomment -%}
                     {%- if size_dimensions != blank -%}
-                      <div class="variant-swatch__description" style="font-size: 0.75rem; color: #666; margin-top: 0.25rem; line-height: 1.4; word-wrap: break-word; text-align: center; width: 100%;">
+                      <div class="variant-swatch__description">
                         {%- comment -%}Replace newline character (not escaped string) with <br>{%- endcomment -%}
                         {%- assign dimensions_lines = size_dimensions | split: '
 ' -%}
