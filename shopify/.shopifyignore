@@ -1,5 +1,0 @@
-# Ignore theme settings to prevent overwriting live customizations
-config/settings_data.json
-sections/header-group.json
-sections/footer-group.json
-sections/announcement-bar.liquid

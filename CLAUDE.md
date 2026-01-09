@@ -425,13 +425,17 @@ When Shopify releases new API versions:
 
 ### Shopify Theme Files
 
-The `shopify/` directory contains Shopify theme files (Liquid templates, JavaScript, CSS) for debugging and reference. This mirrors the structure found in Shopify Admin → Online Store → Themes → Edit Code.
+Shopify theme files are maintained in a **separate sibling repository**:
+- **Location**: `/Users/moosemarketer/Code/garoppos/shopify/`
+- **Repository**: https://github.com/bigpurplefish/shopify
+
+This repository contains Liquid templates, JavaScript, CSS for debugging and reference. It mirrors the structure found in Shopify Admin → Online Store → Themes → Edit Code.
 
 **Shopify Store URL:** c2280b-es.myshopify.com
 
 **Directory structure**:
 ```
-shopify/
+../shopify/
 ├── assets/          - JavaScript, CSS, images, fonts
 ├── config/          - Theme settings schema files
 ├── layout/          - Base theme templates (theme.liquid)
@@ -531,7 +535,8 @@ You have access to specialized agents in `.claude/agents/`. **Automatically anal
 | `test-writer` | test, pytest, mock, fixture, coverage | Writing and running tests |
 | `code-reviewer` | review, check code, verify, before commit | Code review before committing |
 | `product-taxonomy-specialist` | taxonomy, category, subcategory, department, collection rules | Product categorization and collections |
-| `shopify-theme-specialist` | liquid, theme, template, snippet, section, css | Shopify Liquid theme development |
+
+**Note:** The `shopify-theme-specialist` agent has moved to the separate `../shopify/` repository.
 
 ### Delegation Rules
 
@@ -548,7 +553,6 @@ You have access to specialized agents in `.claude/agents/`. **Automatically anal
 - AI/OpenAI/Claude work → `ai-integration-specialist`
 - After implementation → `test-writer` for tests, then `code-reviewer`
 - Taxonomy/collections → `product-taxonomy-specialist`
-- Theme/Liquid work → `shopify-theme-specialist`
 
 ### Orchestration Pattern for Features
 

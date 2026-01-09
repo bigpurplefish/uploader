@@ -8,6 +8,7 @@ import os
 import threading
 import logging
 import queue
+import datetime
 from tkinter import filedialog, messagebox
 import ttkbootstrap as tb
 from ttkbootstrap.constants import *
@@ -693,7 +694,6 @@ def build_gui():
     # TEST BUTTON: Add a test button to verify status function works
     def test_status_button():
         """Test button to verify status function works."""
-        import datetime
         status(f"Test button clicked at {datetime.datetime.now().strftime('%H:%M:%S')}")
         status("If you see this, the status function is working!")
 
@@ -759,14 +759,8 @@ def build_gui():
     # Create a queue for thread-safe button control signals
     button_control_queue = queue.Queue()
 
-    # Test: Try writing directly to widget
-    try:
-        status_log.insert("1.0", "=== DIRECT WRITE TEST ===\n")
-        status_log.insert("end", "If you see this, the Text widget is working\n")
-        status_log.insert("end", "=" * 80 + "\n")
-        print("DEBUG: Direct write to Text widget succeeded")
-    except Exception as e:
-        print(f"ERROR: Direct write to Text widget failed: {e}")
+    # Set widget to disabled state (read-only for user)
+    status_log.config(state="disabled")
 
     def process_status_queue():
         """Process all pending status messages and button control signals from queues. Runs in main thread."""
@@ -847,8 +841,16 @@ def build_gui():
             status_log.config(state="normal")
             status_log.delete("1.0", "end")
             status_log.config(state="disabled")
+
+            # Add header for new run
+            timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            status("=" * 80)
+            status(f"New Run Started: {timestamp}")
+            status("=" * 80)
+            status("")
         except Exception as e:
             logging.warning(f"Failed to clear status UI: {e}")
+            print(f"ERROR: Failed to clear status UI: {e}")
     
     app.protocol("WM_DELETE_WINDOW", on_closing)
 
