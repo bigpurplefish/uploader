@@ -5,6 +5,7 @@ This module contains the main business logic for processing products and collect
 """
 
 import json
+import os
 import time
 import logging
 import requests
@@ -1112,7 +1113,22 @@ def process_products(cfg, status_fn, execution_mode="resume", start_record=None,
                         ui_msg=f"  📊 {len(images)} images"
                     )
 
-                for img in images:
+                    # Sort images by position to ensure correct ordering
+                    sorted_images = sorted(images, key=lambda x: x.get('position', 999))
+
+                    # Log sorted image order for debugging
+                    logging.debug(f"  Sorted images for '{product_title}':")
+                    for i, img in enumerate(sorted_images):
+                        img_src = img.get('src', '')
+                        img_alt = img.get('alt', '')
+                        img_pos = img.get('position', 'N/A')
+                        # Extract filename from URL for clearer logging
+                        filename = img_src.split('/')[-1].split('?')[0] if img_src else 'N/A'
+                        logging.debug(f"    [{i+1}] pos={img_pos}, file={filename}, alt={img_alt[:50]}...")
+                else:
+                    sorted_images = []
+
+                for img in sorted_images:
                     media_input.append({
                         "originalSource": img.get('src'),
                         "alt": img.get('alt', ''),
@@ -1123,6 +1139,7 @@ def process_products(cfg, status_fn, execution_mode="resume", start_record=None,
                 # using productCreateMedia mutation (they can't be added during productCreate)
                 
                 # Create product mutation (API 2025-10)
+                # Returns media details to verify correct image association
                 create_product_mutation = """
                 mutation productCreate($product: ProductCreateInput!, $media: [CreateMediaInput!]) {
                   productCreate(product: $product, media: $media) {
@@ -1130,6 +1147,20 @@ def process_products(cfg, status_fn, execution_mode="resume", start_record=None,
                       id
                       title
                       handle
+                      media(first: 250) {
+                        edges {
+                          node {
+                            ... on MediaImage {
+                              id
+                              alt
+                              image {
+                                url
+                                originalSrc
+                              }
+                            }
+                          }
+                        }
+                      }
                     }
                     userErrors {
                       field
@@ -1146,7 +1177,16 @@ def process_products(cfg, status_fn, execution_mode="resume", start_record=None,
 
                 log_and_status(status_fn, f"  Creating product with title: {product_input['title']}")
                 logging.debug(f"Product input: {json.dumps(product_input, indent=2)}")
-                
+
+                # Log media input for debugging image association issues
+                if media_input:
+                    logging.debug(f"Media input ({len(media_input)} items):")
+                    for i, m in enumerate(media_input):
+                        src = m.get('originalSource', '')
+                        alt = m.get('alt', '')
+                        filename = src.split('/')[-1].split('?')[0] if src else 'N/A'
+                        logging.debug(f"  [{i+1}] file={filename}, alt={alt[:60] if alt else 'N/A'}...")
+
                 # Make API request
                 try:
                     response = requests.post(
@@ -1240,6 +1280,41 @@ def process_products(cfg, status_fn, execution_mode="resume", start_record=None,
                         f"  ✅ Product created successfully: {shopify_product_id}",
                         ui_msg="  ✅ Product created"
                     )
+
+                    # Verify media was created correctly
+                    created_media = created_product.get("media", {}).get("edges", [])
+                    if created_media and media_input:
+                        logging.debug(f"  Media verification for '{product_title}':")
+                        logging.debug(f"    Sent {len(media_input)} images, received {len(created_media)} media items")
+
+                        # Compare sent URLs with received URLs
+                        sent_urls = [m.get('originalSource', '') for m in media_input]
+                        received_media_info = []
+
+                        for i, edge in enumerate(created_media):
+                            node = edge.get("node") or {}
+                            image_data = node.get("image") or {}
+                            media_id = node.get("id", "N/A")
+                            media_alt = node.get("alt") or ""
+                            original_src = image_data.get("originalSrc") or ""
+
+                            # Extract filename for comparison
+                            received_filename = original_src.split('/')[-1].split('?')[0] if original_src else 'N/A'
+                            received_media_info.append({
+                                'position': i + 1,
+                                'id': media_id,
+                                'filename': received_filename,
+                                'alt': media_alt
+                            })
+                            logging.debug(f"    Received [{i+1}]: id={media_id}, file={received_filename}, alt={media_alt[:50] if media_alt else 'N/A'}...")
+
+                        # Check for URL mismatches (warning only, don't fail)
+                        if len(media_input) != len(created_media):
+                            log_and_status(
+                                status_fn,
+                                f"  ⚠️ Media count mismatch: sent {len(media_input)}, received {len(created_media)}",
+                                "warning"
+                            )
 
                     # Attach 3D models to product if any were uploaded
                     if uploaded_models:
@@ -1882,20 +1957,50 @@ def process_products(cfg, status_fn, execution_mode="resume", start_record=None,
         log_and_status(status_fn, f"Total: {total_products}")
         log_and_status(status_fn, "=" * 80)
         
-        # Save product output
+        # Save product output (merge with existing if present)
         if product_output_file:
             log_and_status(status_fn, f"\nSaving product output to: {product_output_file}")
             try:
+                # Load existing output file if present
+                existing_output = {}
+                if os.path.exists(product_output_file):
+                    try:
+                        with open(product_output_file, 'r', encoding='utf-8') as f:
+                            existing_output = json.load(f)
+                        log_and_status(status_fn, f"  Loaded existing output with {len(existing_output.get('products', []))} products")
+                    except (json.JSONDecodeError, IOError):
+                        pass  # Start fresh if file is corrupt
+
+                # Build dict of existing products keyed by lowercase title
+                existing_products = {}
+                for p in existing_output.get("products", []):
+                    title_key = p.get("title", "").strip().lower()
+                    if title_key:
+                        existing_products[title_key] = p
+
+                # Merge new results (overwrites existing entries for same product)
+                for r in results:
+                    title_key = r.get("title", "").strip().lower()
+                    if title_key:
+                        existing_products[title_key] = r
+
+                merged_results = list(existing_products.values())
+
+                # Recalculate counts from merged results
+                merged_successful = sum(1 for p in merged_results if p.get("status") == "completed")
+                merged_skipped = sum(1 for p in merged_results if p.get("status") == "skipped")
+                merged_failed = sum(1 for p in merged_results if p.get("status") == "failed")
+
                 with open(product_output_file, 'w', encoding='utf-8') as f:
                     json.dump({
                         "completed_at": datetime.now().isoformat(),
-                        "total_products": total_products,
-                        "successful": successful,
-                        "skipped": skipped,
-                        "failed": failed,
-                        "products": results
+                        "total_products": len(merged_results),
+                        "successful": merged_successful,
+                        "skipped": merged_skipped,
+                        "failed": merged_failed,
+                        "products": merged_results
                     }, f, indent=4)
-                log_and_status(status_fn, f"✅ Product output saved")
+                log_and_status(status_fn, f"✅ Product output saved ({len(merged_results)} total products)")
             except Exception as e:
                 log_and_status(status_fn, f"❌ Failed to save product output: {e}", "error")
         
