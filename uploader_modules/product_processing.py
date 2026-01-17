@@ -1151,11 +1151,11 @@ def process_products(cfg, status_fn, execution_mode="resume", start_record=None,
                     )
 
                     if uses_lifestyle_featured:
-                        # Find first lifestyle image
+                        # Find first lifestyle or hero image
                         lifestyle_idx = None
                         for idx, img in enumerate(sorted_images):
                             alt_text = img.get('alt', '').lower()
-                            if 'lifestyle' in alt_text:
+                            if 'lifestyle' in alt_text or 'hero' in alt_text:
                                 lifestyle_idx = idx
                                 break
 
