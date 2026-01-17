@@ -1151,23 +1151,36 @@ def process_products(cfg, status_fn, execution_mode="resume", start_record=None,
                     )
 
                     if uses_lifestyle_featured:
-                        # Find first lifestyle or hero image
-                        lifestyle_idx = None
+                        # Find all lifestyle/hero image indices
+                        lifestyle_indices = []
                         for idx, img in enumerate(sorted_images):
                             alt_text = img.get('alt', '').lower()
                             if 'lifestyle' in alt_text or 'hero' in alt_text:
-                                lifestyle_idx = idx
-                                break
+                                lifestyle_indices.append(idx)
+                                if len(lifestyle_indices) >= 2:
+                                    break  # Only need first two
 
-                        if lifestyle_idx is not None and lifestyle_idx > 0:
-                            # Move lifestyle image to first position
-                            lifestyle_img = sorted_images.pop(lifestyle_idx)
-                            sorted_images.insert(0, lifestyle_img)
-                            log_and_status(
-                                status_fn,
-                                f"  📷 Using lifestyle image as featured (collection thumbnail)"
-                            )
-                            logging.debug(f"  Moved lifestyle image from position {lifestyle_idx + 1} to 1")
+                        if lifestyle_indices:
+                            # Extract lifestyle/hero images (in reverse order to preserve indices)
+                            lifestyle_images = []
+                            for idx in sorted(lifestyle_indices, reverse=True):
+                                lifestyle_images.insert(0, sorted_images.pop(idx))
+
+                            # Insert at beginning: first lifestyle as featured, second as hover
+                            for i, img in enumerate(reversed(lifestyle_images)):
+                                sorted_images.insert(0, img)
+
+                            if len(lifestyle_images) >= 2:
+                                log_and_status(
+                                    status_fn,
+                                    f"  📷 Using lifestyle/hero images for featured and hover"
+                                )
+                            else:
+                                log_and_status(
+                                    status_fn,
+                                    f"  📷 Using lifestyle/hero image as featured (collection thumbnail)"
+                                )
+                            logging.debug(f"  Moved {len(lifestyle_images)} lifestyle/hero image(s) to front")
 
                     # Log sorted image order for debugging
                     logging.debug(f"  Sorted images for '{product_title}':")
