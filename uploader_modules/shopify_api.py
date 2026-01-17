@@ -1617,8 +1617,7 @@ def convert_menu_items_for_update(items):
 def sort_menu_items_by_taxonomy(items, get_order_fn, keep_prefix=True):
     """
     Sort menu items according to taxonomy order.
-    Non-taxonomy items at the start (like Home) are kept at the start.
-    Non-taxonomy items after taxonomy items are kept at the end.
+    "Home" always goes first, taxonomy items in order, other items at end.
 
     Args:
         items: List of menu item dictionaries
@@ -1634,33 +1633,35 @@ def sort_menu_items_by_taxonomy(items, get_order_fn, keep_prefix=True):
     # Get original order for comparison
     original_titles = [item.get("title", "") for item in items]
 
+    # Items that should always appear first (before taxonomy)
+    PRIORITY_ITEMS = ["Home"]
+
     # Separate into three groups:
-    # 1. prefix_items: non-taxonomy items before first taxonomy item (e.g., Home)
+    # 1. priority_items: Items like "Home" that should be first
     # 2. taxonomy_items: items in taxonomy (to be sorted)
-    # 3. suffix_items: non-taxonomy items after taxonomy items
-    prefix_items = []
+    # 3. suffix_items: other non-taxonomy items (Catalog, Contact, etc.)
+    priority_items = []
     taxonomy_items = []
     suffix_items = []
-    found_taxonomy = False
 
     for item in items:
-        order = get_order_fn(item.get("title", ""))
-        if order < 999:  # In taxonomy
-            found_taxonomy = True
+        title = item.get("title", "")
+        order = get_order_fn(title)
+
+        if title in PRIORITY_ITEMS:
+            priority_items.append(item)
+        elif order < 999:  # In taxonomy
             taxonomy_items.append((order, item))
-        elif not found_taxonomy:
-            # Non-taxonomy item before any taxonomy items
-            prefix_items.append(item)
         else:
-            # Non-taxonomy item after taxonomy items
+            # Non-taxonomy item goes at the end
             suffix_items.append(item)
 
     # Sort taxonomy items by order
     taxonomy_items.sort(key=lambda x: x[0])
     sorted_taxonomy = [item for _, item in taxonomy_items]
 
-    # Combine: prefix (Home, etc.) + sorted taxonomy + suffix
-    sorted_items = prefix_items + sorted_taxonomy + suffix_items
+    # Combine: priority (Home) + sorted taxonomy + suffix (Catalog, Contact)
+    sorted_items = priority_items + sorted_taxonomy + suffix_items
 
     # Check if order changed
     new_titles = [item.get("title", "") for item in sorted_items]
