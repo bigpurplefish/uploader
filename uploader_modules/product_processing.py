@@ -1143,6 +1143,32 @@ def process_products(cfg, status_fn, execution_mode="resume", start_record=None,
                     # Sort images by position to ensure correct ordering
                     sorted_images = sorted(images, key=lambda x: x.get('position', 999))
 
+                    # For Aggregates and Pavers and Hardscaping products,
+                    # use first lifestyle image as featured image (collection thumbnail)
+                    product_tags = product.get('tags', [])
+                    uses_lifestyle_featured = any(
+                        tag in product_tags for tag in ['Aggregates', 'Pavers and Hardscaping']
+                    )
+
+                    if uses_lifestyle_featured:
+                        # Find first lifestyle image
+                        lifestyle_idx = None
+                        for idx, img in enumerate(sorted_images):
+                            alt_text = img.get('alt', '').lower()
+                            if 'lifestyle' in alt_text:
+                                lifestyle_idx = idx
+                                break
+
+                        if lifestyle_idx is not None and lifestyle_idx > 0:
+                            # Move lifestyle image to first position
+                            lifestyle_img = sorted_images.pop(lifestyle_idx)
+                            sorted_images.insert(0, lifestyle_img)
+                            log_and_status(
+                                status_fn,
+                                f"  📷 Using lifestyle image as featured (collection thumbnail)"
+                            )
+                            logging.debug(f"  Moved lifestyle image from position {lifestyle_idx + 1} to 1")
+
                     # Log sorted image order for debugging
                     logging.debug(f"  Sorted images for '{product_title}':")
                     for i, img in enumerate(sorted_images):
