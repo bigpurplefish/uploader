@@ -1327,3 +1327,546 @@ def get_taxonomy_id(category_name, taxonomy_cache, api_url, headers, status_fn=N
             logging.warning(f"  ⚠️  No taxonomy match found for: {category_name}")
 
     return taxonomy_id, taxonomy_cache
+
+
+# =============================================================================
+# MENU MANAGEMENT FUNCTIONS
+# =============================================================================
+
+def get_menu_by_handle(handle, cfg, status_fn=None):
+    """
+    Get a menu by its handle (e.g., 'main-menu').
+
+    Args:
+        handle: Menu handle to find
+        cfg: Configuration dictionary
+        status_fn: Optional status update function
+
+    Returns:
+        Menu dictionary with id, handle, title, and items, or None if not found
+    """
+    try:
+        store_url = cfg.get("SHOPIFY_STORE_URL", "").strip()
+        access_token = cfg.get("SHOPIFY_ACCESS_TOKEN", "").strip()
+
+        if not store_url or not access_token:
+            logging.error("Shopify credentials not configured")
+            return None
+
+        store_url = store_url.replace("https://", "").replace("http://", "")
+        api_url = f"https://{store_url}/admin/api/2025-10/graphql.json"
+        headers = {
+            "Content-Type": "application/json",
+            "X-Shopify-Access-Token": access_token
+        }
+
+        # Query all menus and find by handle
+        query = """
+        query getMenus {
+          menus(first: 50) {
+            edges {
+              node {
+                id
+                handle
+                title
+                items {
+                  id
+                  title
+                  url
+                  type
+                  resourceId
+                  items {
+                    id
+                    title
+                    url
+                    type
+                    resourceId
+                    items {
+                      id
+                      title
+                      url
+                      type
+                      resourceId
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+        """
+
+        response = requests.post(
+            api_url,
+            json={"query": query},
+            headers=headers,
+            timeout=30
+        )
+        response.raise_for_status()
+        result = response.json()
+
+        if "errors" in result:
+            logging.error(f"GraphQL errors getting menus: {result['errors']}")
+            return None
+
+        menus = result.get("data", {}).get("menus", {}).get("edges", [])
+
+        for edge in menus:
+            menu = edge.get("node", {})
+            if menu.get("handle") == handle:
+                logging.info(f"Found menu '{handle}' with ID: {menu.get('id')}")
+                return menu
+
+        logging.warning(f"Menu with handle '{handle}' not found")
+        return None
+
+    except requests.exceptions.RequestException as e:
+        logging.error(f"Network error getting menu: {e}")
+        return None
+    except Exception as e:
+        logging.error(f"Unexpected error getting menu: {e}")
+        return None
+
+
+def update_menu(menu_id, title, items, cfg, status_fn=None):
+    """
+    Update a menu with new items.
+
+    Args:
+        menu_id: Shopify menu ID (GID format)
+        title: Menu title
+        items: List of menu item dictionaries
+        cfg: Configuration dictionary
+        status_fn: Optional status update function
+
+    Returns:
+        True if successful, False otherwise
+    """
+    try:
+        store_url = cfg.get("SHOPIFY_STORE_URL", "").strip()
+        access_token = cfg.get("SHOPIFY_ACCESS_TOKEN", "").strip()
+
+        if not store_url or not access_token:
+            logging.error("Shopify credentials not configured")
+            return False
+
+        store_url = store_url.replace("https://", "").replace("http://", "")
+        api_url = f"https://{store_url}/admin/api/2025-10/graphql.json"
+        headers = {
+            "Content-Type": "application/json",
+            "X-Shopify-Access-Token": access_token
+        }
+
+        mutation = """
+        mutation menuUpdate($id: ID!, $title: String!, $items: [MenuItemUpdateInput!]!) {
+          menuUpdate(id: $id, title: $title, items: $items) {
+            menu {
+              id
+              title
+              items {
+                id
+                title
+                url
+              }
+            }
+            userErrors {
+              field
+              message
+              code
+            }
+          }
+        }
+        """
+
+        variables = {
+            "id": menu_id,
+            "title": title,
+            "items": items
+        }
+
+        if status_fn:
+            log_and_status(status_fn, f"  Updating menu: {title}")
+        else:
+            logging.info(f"Updating menu: {title}")
+
+        response = requests.post(
+            api_url,
+            json={"query": mutation, "variables": variables},
+            headers=headers,
+            timeout=60
+        )
+        response.raise_for_status()
+        result = response.json()
+
+        if "errors" in result:
+            logging.error(f"GraphQL errors updating menu: {result['errors']}")
+            return False
+
+        user_errors = result.get("data", {}).get("menuUpdate", {}).get("userErrors", [])
+        if user_errors:
+            error_msg = "; ".join([f"{err.get('field')}: {err.get('message')}" for err in user_errors])
+            logging.error(f"Menu update user errors: {error_msg}")
+            if status_fn:
+                log_and_status(status_fn, f"  ❌ Menu update error: {error_msg}", "error")
+            return False
+
+        if status_fn:
+            log_and_status(status_fn, f"  ✅ Menu updated successfully")
+        else:
+            logging.info(f"Menu updated successfully")
+        return True
+
+    except requests.exceptions.RequestException as e:
+        logging.error(f"Network error updating menu: {e}")
+        return False
+    except Exception as e:
+        logging.error(f"Unexpected error updating menu: {e}")
+        return False
+
+
+def find_menu_item_by_title(items, title):
+    """
+    Find a menu item by title in a list of items.
+
+    Args:
+        items: List of menu item dictionaries
+        title: Title to search for (case-insensitive)
+
+    Returns:
+        Menu item dictionary if found, None otherwise
+    """
+    title_lower = title.lower().strip()
+    for item in items:
+        if item.get("title", "").lower().strip() == title_lower:
+            return item
+    return None
+
+
+def build_menu_item_for_collection(title, collection_handle, collection_id=None, nested_items=None):
+    """
+    Build a menu item dictionary for a collection.
+
+    Args:
+        title: Menu item title
+        collection_handle: Collection handle (without /collections/ prefix)
+        collection_id: Optional collection GID (e.g., gid://shopify/Collection/123)
+        nested_items: Optional list of nested menu items
+
+    Returns:
+        Menu item dictionary suitable for menu create/update
+    """
+    if collection_id:
+        # Use COLLECTION type with resourceId for proper Shopify linking
+        item = {
+            "title": title,
+            "type": "COLLECTION",
+            "resourceId": collection_id
+        }
+    else:
+        # Fall back to HTTP type with URL
+        item = {
+            "title": title,
+            "type": "HTTP",
+            "url": f"/collections/{collection_handle}"
+        }
+
+    if nested_items:
+        item["items"] = nested_items
+
+    return item
+
+
+def convert_menu_items_for_update(items):
+    """
+    Convert menu items from query format to update format.
+    Preserves existing item IDs for updates.
+
+    Args:
+        items: List of menu items from a menu query
+
+    Returns:
+        List of menu items in update format
+    """
+    update_items = []
+
+    for item in items:
+        update_item = {
+            "title": item.get("title"),
+            "type": item.get("type"),
+        }
+
+        # Include ID if present (for existing items)
+        if item.get("id"):
+            update_item["id"] = item.get("id")
+
+        # Include URL or resourceId based on type
+        if item.get("url"):
+            update_item["url"] = item.get("url")
+        if item.get("resourceId"):
+            update_item["resourceId"] = item.get("resourceId")
+
+        # Recursively convert nested items
+        if item.get("items"):
+            update_item["items"] = convert_menu_items_for_update(item.get("items"))
+
+        update_items.append(update_item)
+
+    return update_items
+
+
+def sort_menu_items_by_taxonomy(items, get_order_fn):
+    """
+    Sort menu items according to taxonomy order.
+    Items not in taxonomy are placed at the end in their original order.
+
+    Args:
+        items: List of menu item dictionaries
+        get_order_fn: Function that takes item title and returns order number
+
+    Returns:
+        Tuple of (sorted_items, was_reordered)
+    """
+    if not items:
+        return items, False
+
+    # Get original order for comparison
+    original_titles = [item.get("title", "") for item in items]
+
+    # Separate taxonomy items from non-taxonomy items
+    taxonomy_items = []
+    non_taxonomy_items = []
+
+    for item in items:
+        order = get_order_fn(item.get("title", ""))
+        if order < 999:  # In taxonomy
+            taxonomy_items.append((order, item))
+        else:
+            non_taxonomy_items.append(item)
+
+    # Sort taxonomy items by order
+    taxonomy_items.sort(key=lambda x: x[0])
+    sorted_taxonomy = [item for _, item in taxonomy_items]
+
+    # Combine: taxonomy items first (sorted), then non-taxonomy items (original order)
+    sorted_items = sorted_taxonomy + non_taxonomy_items
+
+    # Check if order changed
+    new_titles = [item.get("title", "") for item in sorted_items]
+    was_reordered = original_titles != new_titles
+
+    return sorted_items, was_reordered
+
+
+def ensure_menu_items_for_product(product, collections_data, cfg, status_fn=None):
+    """
+    Ensure that menu items exist for a product's taxonomy path.
+    Creates menu items for department, category, and subcategory if missing.
+    Also reorders existing items to match taxonomy order.
+
+    Args:
+        product: Product dictionary with product_type and tags
+        collections_data: Collections tracking data
+        cfg: Configuration dictionary
+        status_fn: Optional status update function
+
+    Returns:
+        True if menu was updated or already correct, False on error
+    """
+    from .taxonomy_data import (
+        get_department_order, get_category_order, get_subcategory_order,
+        TAXONOMY
+    )
+    from .utils import extract_category_subcategory
+
+    try:
+        # Extract taxonomy from product
+        department = product.get('product_type', '').strip()
+        category, subcategory = extract_category_subcategory(product)
+
+        if not department:
+            logging.warning("Product has no product_type, skipping menu update")
+            return True
+
+        if status_fn:
+            log_and_status(status_fn, f"\n  Checking menu items for: {department}")
+            if category:
+                log_and_status(status_fn, f"    Category: {category}")
+            if subcategory:
+                log_and_status(status_fn, f"    Subcategory: {subcategory}")
+
+        # Get the main menu
+        main_menu = get_menu_by_handle("main-menu", cfg, status_fn)
+        if not main_menu:
+            if status_fn:
+                log_and_status(status_fn, "  ⚠️  Main menu not found, skipping menu update", "warning")
+            return True  # Not a fatal error
+
+        menu_id = main_menu.get("id")
+        menu_title = main_menu.get("title", "Main Menu")
+        menu_items = main_menu.get("items", [])
+
+        # Track if we need to update
+        menu_modified = False
+
+        # Helper to get collection handle and ID from collections_data
+        def get_collection_info(name):
+            for col in collections_data.get("collections", []):
+                if col.get("name", "").lower() == name.lower():
+                    return col.get("handle"), col.get("id")
+            # Fallback: generate handle, no ID
+            return name.lower().replace(" ", "-").replace("&", "and"), None
+
+        # Find or create department menu item
+        dept_item = find_menu_item_by_title(menu_items, department)
+        dept_handle, dept_id = get_collection_info(department)
+
+        if not dept_item:
+            # Create department menu item
+            if status_fn:
+                log_and_status(status_fn, f"    Adding department to menu: {department}")
+
+            dept_item = build_menu_item_for_collection(department, dept_handle, dept_id, [])
+
+            # Insert in correct order based on taxonomy
+            dept_order = get_department_order(department)
+            insert_idx = 0
+            for idx, item in enumerate(menu_items):
+                item_order = get_department_order(item.get("title", ""))
+                if item_order > dept_order:
+                    break
+                # Skip non-department items (like Home, Catalog, Contact)
+                if item.get("title", "") in TAXONOMY:
+                    insert_idx = idx + 1
+
+            # If department not in taxonomy, add at end of departments
+            if department not in TAXONOMY:
+                for idx, item in enumerate(menu_items):
+                    if item.get("title", "") in TAXONOMY:
+                        insert_idx = idx + 1
+
+            menu_items.insert(insert_idx, dept_item)
+            menu_modified = True
+        else:
+            # Ensure dept_item has items list
+            if not dept_item.get("items"):
+                dept_item["items"] = []
+
+        # If we have a category, find or create it under department
+        if category:
+            cat_items = dept_item.get("items", [])
+            cat_item = find_menu_item_by_title(cat_items, category)
+            cat_handle, cat_id = get_collection_info(category)
+
+            if not cat_item:
+                # Create category menu item
+                if status_fn:
+                    log_and_status(status_fn, f"    Adding category to menu: {category}")
+
+                cat_item = build_menu_item_for_collection(category, cat_handle, cat_id, [])
+
+                # Insert in correct order based on taxonomy
+                cat_order = get_category_order(department, category)
+                insert_idx = len(cat_items)
+                for idx, item in enumerate(cat_items):
+                    item_order = get_category_order(department, item.get("title", ""))
+                    if item_order > cat_order:
+                        insert_idx = idx
+                        break
+
+                cat_items.insert(insert_idx, cat_item)
+                dept_item["items"] = cat_items
+                menu_modified = True
+            else:
+                # Ensure cat_item has items list
+                if not cat_item.get("items"):
+                    cat_item["items"] = []
+
+            # If we have a subcategory, find or create it under category
+            if subcategory:
+                subcat_items = cat_item.get("items", [])
+                subcat_item = find_menu_item_by_title(subcat_items, subcategory)
+                subcat_handle, subcat_id = get_collection_info(subcategory)
+
+                if not subcat_item:
+                    # Create subcategory menu item
+                    if status_fn:
+                        log_and_status(status_fn, f"    Adding subcategory to menu: {subcategory}")
+
+                    subcat_item = build_menu_item_for_collection(subcategory, subcat_handle, subcat_id)
+
+                    # Insert in correct order based on taxonomy
+                    subcat_order = get_subcategory_order(department, category, subcategory)
+                    insert_idx = len(subcat_items)
+                    for idx, item in enumerate(subcat_items):
+                        item_order = get_subcategory_order(department, category, item.get("title", ""))
+                        if item_order > subcat_order:
+                            insert_idx = idx
+                            break
+
+                    subcat_items.insert(insert_idx, subcat_item)
+                    cat_item["items"] = subcat_items
+                    menu_modified = True
+
+        # Check and fix ordering at all levels
+        # 1. Check department ordering in main menu
+        sorted_menu_items, dept_reordered = sort_menu_items_by_taxonomy(
+            menu_items, get_department_order
+        )
+        if dept_reordered:
+            if status_fn:
+                log_and_status(status_fn, f"    Reordering departments in menu")
+            menu_items[:] = sorted_menu_items
+            menu_modified = True
+
+        # 2. Check category ordering within the current department
+        if dept_item and dept_item.get("items"):
+            sorted_cat_items, cat_reordered = sort_menu_items_by_taxonomy(
+                dept_item.get("items", []),
+                lambda title: get_category_order(department, title)
+            )
+            if cat_reordered:
+                if status_fn:
+                    log_and_status(status_fn, f"    Reordering categories in {department}")
+                dept_item["items"] = sorted_cat_items
+                menu_modified = True
+
+        # 3. Check subcategory ordering within the current category
+        if category and cat_item and cat_item.get("items"):
+            sorted_subcat_items, subcat_reordered = sort_menu_items_by_taxonomy(
+                cat_item.get("items", []),
+                lambda title: get_subcategory_order(department, category, title)
+            )
+            if subcat_reordered:
+                if status_fn:
+                    log_and_status(status_fn, f"    Reordering subcategories in {category}")
+                cat_item["items"] = sorted_subcat_items
+                menu_modified = True
+
+        # Update menu if modified
+        if menu_modified:
+            if status_fn:
+                log_and_status(status_fn, f"  Updating navigation menu...")
+
+            # Convert menu items to update format
+            update_items = convert_menu_items_for_update(menu_items)
+
+            success = update_menu(menu_id, menu_title, update_items, cfg, status_fn)
+            if not success:
+                if status_fn:
+                    log_and_status(status_fn, f"  ❌ Failed to update menu", "error")
+                return False
+
+            if status_fn:
+                log_and_status(status_fn, f"  ✅ Navigation menu updated")
+        else:
+            if status_fn:
+                log_and_status(status_fn, f"  ✓ Menu items already exist and are in correct order")
+
+        return True
+
+    except Exception as e:
+        logging.error(f"Error ensuring menu items: {e}")
+        logging.exception("Full traceback:")
+        if status_fn:
+            log_and_status(status_fn, f"  ❌ Error updating menu: {e}", "error")
+        return False

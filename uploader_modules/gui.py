@@ -737,7 +737,43 @@ def build_gui():
         except Exception as e:
             logging.warning(f"Failed to save window geometry: {e}")
         app.quit()
-    
+
+    # Debounced window geometry saving
+    geometry_save_pending = {"after_id": None, "last_geometry": None}
+
+    def save_geometry_debounced():
+        """Actually save the geometry after debounce delay."""
+        try:
+            current_geometry = app.geometry()
+            # Only save if geometry actually changed
+            if current_geometry != geometry_save_pending["last_geometry"]:
+                cfg["WINDOW_GEOMETRY"] = current_geometry
+                save_config(cfg)
+                geometry_save_pending["last_geometry"] = current_geometry
+        except Exception as e:
+            logging.warning(f"Failed to save window geometry: {e}")
+        finally:
+            geometry_save_pending["after_id"] = None
+
+    def on_window_configure(event):
+        """Handle window resize/move with debounce."""
+        # Only respond to events on the main window, not child widgets
+        if event.widget != app:
+            return
+
+        # Cancel any pending save
+        if geometry_save_pending["after_id"] is not None:
+            app.after_cancel(geometry_save_pending["after_id"])
+
+        # Schedule a new save after 500ms debounce delay
+        geometry_save_pending["after_id"] = app.after(500, save_geometry_debounced)
+
+    # Initialize last_geometry with current value
+    geometry_save_pending["last_geometry"] = cfg.get("WINDOW_GEOMETRY", "900x800")
+
+    # Bind to Configure event (fires on resize and move)
+    app.bind("<Configure>", on_window_configure)
+
     exit_btn = tb.Button(
         button_frame,
         text="Exit",

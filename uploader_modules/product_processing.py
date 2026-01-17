@@ -20,7 +20,7 @@ from .shopify_api import (
     get_sales_channel_ids, get_default_location_id, search_collection,
     create_collection, publish_collection_to_channels, publish_product_to_channels,
     delete_shopify_product, create_metafield_definition,
-    upload_model_to_shopify, get_taxonomy_id
+    upload_model_to_shopify, get_taxonomy_id, ensure_menu_items_for_product
 )
 from .utils import (
     extract_category_subcategory, extract_unique_option_values,
@@ -734,6 +734,33 @@ def process_products(cfg, status_fn, execution_mode="resume", start_record=None,
         success, created, existing, failed = process_collections(products, cfg, status_fn)
         if not success:
             return  # Stop if collection creation failed
+
+        # Update navigation menu to include menu items for product taxonomy paths
+        log_and_status(status_fn, "\n" + "=" * 80)
+        log_and_status(status_fn, "UPDATING NAVIGATION MENU")
+        log_and_status(status_fn, "=" * 80 + "\n")
+
+        collections_data = load_collections()
+        menu_updates_success = 0
+        menu_updates_failed = 0
+
+        for product in products:
+            product_title = product.get('title', 'Unknown Product').strip()
+            try:
+                menu_success = ensure_menu_items_for_product(product, collections_data, cfg, status_fn)
+                if menu_success:
+                    menu_updates_success += 1
+                else:
+                    menu_updates_failed += 1
+                    log_and_status(status_fn, f"⚠️  Menu update incomplete for: {product_title}", "warning")
+            except Exception as e:
+                menu_updates_failed += 1
+                log_and_status(status_fn, f"⚠️  Menu update error for {product_title}: {str(e)}", "warning")
+
+        if menu_updates_failed == 0:
+            log_and_status(status_fn, f"✅ Navigation menu updated for all {menu_updates_success} products\n")
+        else:
+            log_and_status(status_fn, f"⚠️  Menu updates: {menu_updates_success} successful, {menu_updates_failed} with issues\n", "warning")
 
         # Ensure metafield definitions exist (auto-create if missing)
         success = ensure_metafield_definitions(products, cfg, status_fn)
