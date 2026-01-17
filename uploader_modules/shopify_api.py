@@ -1614,14 +1614,16 @@ def convert_menu_items_for_update(items):
     return update_items
 
 
-def sort_menu_items_by_taxonomy(items, get_order_fn):
+def sort_menu_items_by_taxonomy(items, get_order_fn, keep_prefix=True):
     """
     Sort menu items according to taxonomy order.
-    Items not in taxonomy are placed at the end in their original order.
+    Non-taxonomy items at the start (like Home) are kept at the start.
+    Non-taxonomy items after taxonomy items are kept at the end.
 
     Args:
         items: List of menu item dictionaries
         get_order_fn: Function that takes item title and returns order number
+        keep_prefix: If True, keep non-taxonomy items at start in their position
 
     Returns:
         Tuple of (sorted_items, was_reordered)
@@ -1632,23 +1634,33 @@ def sort_menu_items_by_taxonomy(items, get_order_fn):
     # Get original order for comparison
     original_titles = [item.get("title", "") for item in items]
 
-    # Separate taxonomy items from non-taxonomy items
+    # Separate into three groups:
+    # 1. prefix_items: non-taxonomy items before first taxonomy item (e.g., Home)
+    # 2. taxonomy_items: items in taxonomy (to be sorted)
+    # 3. suffix_items: non-taxonomy items after taxonomy items
+    prefix_items = []
     taxonomy_items = []
-    non_taxonomy_items = []
+    suffix_items = []
+    found_taxonomy = False
 
     for item in items:
         order = get_order_fn(item.get("title", ""))
         if order < 999:  # In taxonomy
+            found_taxonomy = True
             taxonomy_items.append((order, item))
+        elif not found_taxonomy:
+            # Non-taxonomy item before any taxonomy items
+            prefix_items.append(item)
         else:
-            non_taxonomy_items.append(item)
+            # Non-taxonomy item after taxonomy items
+            suffix_items.append(item)
 
     # Sort taxonomy items by order
     taxonomy_items.sort(key=lambda x: x[0])
     sorted_taxonomy = [item for _, item in taxonomy_items]
 
-    # Combine: taxonomy items first (sorted), then non-taxonomy items (original order)
-    sorted_items = sorted_taxonomy + non_taxonomy_items
+    # Combine: prefix (Home, etc.) + sorted taxonomy + suffix
+    sorted_items = prefix_items + sorted_taxonomy + suffix_items
 
     # Check if order changed
     new_titles = [item.get("title", "") for item in sorted_items]
@@ -1728,21 +1740,27 @@ def ensure_menu_items_for_product(product, collections_data, cfg, status_fn=None
             dept_item = build_menu_item_for_collection(department, dept_handle, dept_id, [])
 
             # Insert in correct order based on taxonomy
+            # First, find where taxonomy items start (skip non-taxonomy items like Home)
             dept_order = get_department_order(department)
-            insert_idx = 0
+            first_taxonomy_idx = len(menu_items)  # Default to end if no taxonomy items
+
             for idx, item in enumerate(menu_items):
-                item_order = get_department_order(item.get("title", ""))
+                if item.get("title", "") in TAXONOMY:
+                    first_taxonomy_idx = idx
+                    break
+
+            # Now find correct position among taxonomy items
+            insert_idx = first_taxonomy_idx
+            for idx in range(first_taxonomy_idx, len(menu_items)):
+                item = menu_items[idx]
+                item_title = item.get("title", "")
+                # Stop if we hit a non-taxonomy item (end of taxonomy section)
+                if item_title not in TAXONOMY:
+                    break
+                item_order = get_department_order(item_title)
                 if item_order > dept_order:
                     break
-                # Skip non-department items (like Home, Catalog, Contact)
-                if item.get("title", "") in TAXONOMY:
-                    insert_idx = idx + 1
-
-            # If department not in taxonomy, add at end of departments
-            if department not in TAXONOMY:
-                for idx, item in enumerate(menu_items):
-                    if item.get("title", "") in TAXONOMY:
-                        insert_idx = idx + 1
+                insert_idx = idx + 1
 
             menu_items.insert(insert_idx, dept_item)
             menu_modified = True
