@@ -20,13 +20,150 @@ from .shopify_api import (
     get_sales_channel_ids, get_default_location_id, search_collection,
     create_collection, publish_collection_to_channels, publish_product_to_channels,
     delete_shopify_product, create_metafield_definition,
-    upload_model_to_shopify, get_taxonomy_id, ensure_menu_items_for_product
+    upload_model_to_shopify, get_taxonomy_id, ensure_menu_items_for_product,
+    search_shopify_product, get_shopify_product_details, update_shopify_product,
+    update_shopify_variants, delete_shopify_variants, sync_product_media
 )
 from .utils import (
     extract_category_subcategory, extract_unique_option_values,
     key_to_label, validate_image_urls, validate_image_alt_tags_for_filtering,
     generate_image_filter_hashtags
 )
+
+
+# =============================================================================
+# HELPER FUNCTIONS FOR PRODUCT UPDATES
+# =============================================================================
+
+def options_are_compatible(input_options, shopify_options):
+    """
+    Check if the option structure in input matches Shopify's existing options.
+    Options are compatible if they have the same number and names (case-insensitive).
+
+    Args:
+        input_options: List of option names from input product
+        shopify_options: List of option dicts from Shopify product (with 'name' key)
+
+    Returns:
+        True if compatible, False otherwise
+    """
+    # Extract names from both
+    input_names = [opt.lower().strip() for opt in input_options if opt]
+    shopify_names = [opt.get('name', '').lower().strip() for opt in shopify_options]
+
+    # Must have same count
+    if len(input_names) != len(shopify_names):
+        return False
+
+    # Must have same names (order matters for Shopify)
+    return input_names == shopify_names
+
+
+def match_variants_by_sku(input_variants, shopify_variants):
+    """
+    Match input variants to existing Shopify variants by SKU.
+
+    Args:
+        input_variants: List of variant dictionaries from input data
+        shopify_variants: List of variant dictionaries from Shopify
+
+    Returns:
+        Dictionary with:
+        - 'to_update': List of tuples (input_variant, shopify_variant_id)
+        - 'to_create': List of input_variants that have no matching SKU in Shopify
+        - 'to_delete': List of shopify_variant_ids that have no matching SKU in input
+    """
+    result = {
+        'to_update': [],
+        'to_create': [],
+        'to_delete': []
+    }
+
+    # Build lookup by SKU
+    shopify_by_sku = {}
+    for variant in shopify_variants:
+        sku = variant.get('sku', '').strip()
+        if sku:
+            shopify_by_sku[sku] = variant
+
+    input_skus = set()
+
+    for input_variant in input_variants:
+        sku = input_variant.get('sku', '').strip()
+
+        if not sku:
+            # Variant without SKU can't be matched - treat as new
+            result['to_create'].append(input_variant)
+            continue
+
+        input_skus.add(sku)
+
+        if sku in shopify_by_sku:
+            # Match found - update this variant
+            shopify_variant = shopify_by_sku[sku]
+            result['to_update'].append((input_variant, shopify_variant.get('id')))
+        else:
+            # No match - create new variant
+            result['to_create'].append(input_variant)
+
+    # Find variants in Shopify that are not in input
+    for shopify_variant in shopify_variants:
+        sku = shopify_variant.get('sku', '').strip()
+        if sku and sku not in input_skus:
+            result['to_delete'].append(shopify_variant.get('id'))
+
+    return result
+
+
+def build_variant_update_input(input_variant, shopify_variant_id, shopify_variant=None):
+    """
+    Build the variant input for productVariantsBulkUpdate.
+
+    Args:
+        input_variant: Variant data from input
+        shopify_variant_id: ID of the existing Shopify variant
+        shopify_variant: Optional existing Shopify variant data for reference
+
+    Returns:
+        Dictionary suitable for productVariantsBulkUpdate
+    """
+    update_input = {
+        "id": shopify_variant_id
+    }
+
+    # Map fields from input to update format
+    if 'price' in input_variant:
+        update_input["price"] = str(input_variant['price'])
+
+    if 'compare_at_price' in input_variant and input_variant['compare_at_price']:
+        update_input["compareAtPrice"] = str(input_variant['compare_at_price'])
+
+    if 'sku' in input_variant:
+        update_input["sku"] = input_variant['sku']
+
+    if 'barcode' in input_variant:
+        update_input["barcode"] = input_variant['barcode']
+
+    if 'weight' in input_variant:
+        update_input["weight"] = input_variant['weight']
+        if 'weight_unit' in input_variant:
+            update_input["weightUnit"] = input_variant['weight_unit'].upper()
+
+    # Handle metafields
+    if 'metafields' in input_variant and input_variant['metafields']:
+        metafields_input = []
+        for mf in input_variant['metafields']:
+            mf_input = {
+                "namespace": mf.get('namespace', 'custom'),
+                "key": mf.get('key'),
+                "value": mf.get('value'),
+                "type": mf.get('type', 'single_line_text_field')
+            }
+            metafields_input.append(mf_input)
+        if metafields_input:
+            update_input["metafields"] = metafields_input
+
+    return update_input
 
 
 def process_collections(products, cfg, status_fn):
@@ -828,144 +965,267 @@ def process_products(cfg, status_fn, execution_mode="resume", start_record=None,
                     ui_msg=f"[{product_num}/{total_products}] {product_title[:50]}..."
                 )
                 
-                # Check restore point
-                restore_key = product_title.lower()
-                existing_restore = products_restore.get("products_dict", {}).get(restore_key)
-                
-                if existing_restore:
-                    shopify_id = existing_restore.get("shopify_id")
-                    product_created = existing_restore.get("product_created", False)
-                    variants_created = existing_restore.get("variants_created", False)
+                # Check if product exists in Shopify directly
+                existing_in_shopify = search_shopify_product(product_title, cfg)
 
-                    if product_created and variants_created:
-                        if existing_restore.get("status") == "completed":
-                            # In resume mode, skip completed products
-                            # In overwrite mode, delete and recreate them
-                            if execution_mode == "resume":
-                                log_and_status(
-                                    status_fn,
-                                    f"  ✓ Product already completed successfully. Skipping.",
-                                    ui_msg="  ✓ Already completed - skipping"
-                                )
-                                skipped += 1
+                if existing_in_shopify:
+                    shopify_id = existing_in_shopify.get("id")
+                    shopify_handle = existing_in_shopify.get("handle")
 
-                                add_result({
-                                    "title": product_title,
-                                    "shopify_id": shopify_id,
-                                    "status": "skipped",
-                                    "reason": "already_completed"
-                                })
-
-                                continue
-                            else:  # overwrite mode
-                                log_and_status(
-                                    status_fn,
-                                    f"  ⚠️  Product already completed. Overwrite mode: deleting and recreating.",
-                                    ui_msg="  ⚠️  Overwriting existing product"
-                                )
-                                log_and_status(
-                                    status_fn,
-                                    f"  Deleting product: {shopify_id}",
-                                    ui_msg="  Deleting existing product..."
-                                )
-
-                                if not delete_shopify_product(shopify_id, cfg):
-                                    error_msg = "Failed to delete existing product"
-                                    log_and_status(status_fn, f"  ❌ {error_msg}", "error")
-
-                                    # Save restore point with error
-                                    result_dict = {
-                                        "title": product_title,
-                                        "status": "failed",
-                                        "error": error_msg,
-                                        "failed_stage": "product_deletion"
-                                    }
-                                    add_result(result_dict)
-                                    products_restore = update_product_in_restore(products_restore, result_dict)
-                                    save_products(products_restore)
-
-                                    # STOP IMMEDIATELY
-                                    log_and_status(status_fn, "\n" + "=" * 80)
-                                    log_and_status(status_fn, "❌ PRODUCT DELETION FAILED - STOPPING", "error")
-                                    log_and_status(status_fn, "=" * 80)
-                                    return
-
-                                log_and_status(status_fn, "  ✅ Deleted existing product")
-                                time.sleep(0.5)
-                        else:
-                            log_and_status(
-                                status_fn,
-                                f"  Found incomplete restore point for: {product_title}",
-                                ui_msg="  Restarting from failure point"
-                            )
-                            log_and_status(status_fn, f"  Previous status: {existing_restore.get('status')}")
-                            log_and_status(
-                                status_fn,
-                                f"  Will delete and recreate product: {shopify_id}",
-                                ui_msg="  Deleting for recreation..."
-                            )
-
-                            if not delete_shopify_product(shopify_id, cfg):
-                                error_msg = "Failed to delete existing product for recreation"
-                                log_and_status(status_fn, f"  ❌ {error_msg}", "error")
-
-                                # Save restore point with error
-                                result_dict = {
-                                    "title": product_title,
-                                    "status": "failed",
-                                    "error": error_msg,
-                                    "failed_stage": "product_deletion"
-                                }
-                                add_result(result_dict)
-                                products_restore = update_product_in_restore(products_restore, result_dict)
-                                save_products(products_restore)
-
-                                # STOP IMMEDIATELY
-                                log_and_status(status_fn, "\n" + "=" * 80)
-                                log_and_status(status_fn, "❌ PRODUCT DELETION FAILED - STOPPING", "error")
-                                log_and_status(status_fn, "=" * 80)
-                                return
-
-                            log_and_status(status_fn, "  ✅ Deleted existing product")
-                            time.sleep(0.5)
-
-                    elif product_created and not variants_created:
-                        # Product was created but variants failed - delete and recreate
+                    if execution_mode == "resume":
+                        # In resume mode, skip products that exist in Shopify
                         log_and_status(
                             status_fn,
-                            f"  ⚠️  Product created but variants failed. Deleting to retry.",
-                            ui_msg="  ⚠️  Retrying failed variant creation"
+                            f"  ✓ Product exists in Shopify. Skipping.",
+                            ui_msg="  ✓ Exists in Shopify - skipping"
                         )
-                        log_and_status(status_fn, f"  Previous error: {existing_restore.get('error', 'Unknown')}")
+                        skipped += 1
+
+                        add_result({
+                            "title": product_title,
+                            "shopify_id": shopify_id,
+                            "handle": shopify_handle,
+                            "status": "skipped",
+                            "reason": "exists_in_shopify"
+                        })
+
+                        continue
+                    else:  # overwrite mode
+                        # In overwrite mode, UPDATE existing product to preserve ID, URL, reviews, etc.
                         log_and_status(
                             status_fn,
-                            f"  Deleting product: {shopify_id}",
-                            ui_msg="  Deleting for recreation..."
+                            f"  ⚠️  Product exists in Shopify. Overwrite mode: updating in place.",
+                            ui_msg="  ⚠️  Updating existing product"
                         )
 
-                        if not delete_shopify_product(shopify_id, cfg):
-                            error_msg = "Failed to delete product with failed variants"
+                        # Step 1: Get full product details from Shopify
+                        log_and_status(status_fn, f"  Fetching product details...")
+                        shopify_product = get_shopify_product_details(shopify_id, cfg, status_fn)
+
+                        if not shopify_product:
+                            error_msg = "Failed to get product details from Shopify"
                             log_and_status(status_fn, f"  ❌ {error_msg}", "error")
 
-                            # Save restore point with error
                             result_dict = {
                                 "title": product_title,
                                 "status": "failed",
                                 "error": error_msg,
-                                "failed_stage": "product_deletion"
+                                "failed_stage": "product_details_fetch"
                             }
                             add_result(result_dict)
                             products_restore = update_product_in_restore(products_restore, result_dict)
                             save_products(products_restore)
+                            failed += 1
+                            continue
 
-                            # STOP IMMEDIATELY
-                            log_and_status(status_fn, "\n" + "=" * 80)
-                            log_and_status(status_fn, "❌ PRODUCT DELETION FAILED - STOPPING", "error")
-                            log_and_status(status_fn, "=" * 80)
-                            return
+                        # Step 2: Build product update input
+                        description = product.get('descriptionHtml') or product.get('body_html', '')
+                        tags = product.get('tags', [])
+                        if isinstance(tags, str):
+                            tags = [t.strip() for t in tags.split(',') if t.strip()]
+                        elif isinstance(tags, list):
+                            tags = [str(t).strip() for t in tags if t and str(t).strip()]
+                        else:
+                            tags = []
 
-                        log_and_status(status_fn, "  ✅ Deleted existing product")
+                        product_update_input = {
+                            "title": product.get('title'),
+                            "descriptionHtml": description,
+                            "vendor": product.get('vendor', ''),
+                            "productType": product.get('product_type', ''),
+                            "status": "ACTIVE"
+                        }
+
+                        if tags:
+                            product_update_input["tags"] = tags
+
+                        # Get taxonomy ID
+                        taxonomy_id = product.get('shopify_category_id')
+                        product_category_field = product.get('product_category', '').strip()
+                        if not taxonomy_id and product_category_field:
+                            taxonomy_id, taxonomy_cache = get_taxonomy_id(
+                                product_category_field, taxonomy_cache, api_url, headers, status_fn
+                            )
+
+                        if taxonomy_id:
+                            product_update_input["category"] = taxonomy_id
+
+                        # Step 3: Update product-level fields
+                        log_and_status(status_fn, f"  Updating product fields...")
+                        update_result = update_shopify_product(shopify_id, product_update_input, cfg, status_fn)
+
+                        if not update_result:
+                            error_msg = "Failed to update product fields"
+                            log_and_status(status_fn, f"  ❌ {error_msg}", "error")
+
+                            result_dict = {
+                                "title": product_title,
+                                "status": "failed",
+                                "error": error_msg,
+                                "failed_stage": "product_update"
+                            }
+                            add_result(result_dict)
+                            products_restore = update_product_in_restore(products_restore, result_dict)
+                            save_products(products_restore)
+                            failed += 1
+                            continue
+
+                        # Step 4: Check if option structure is compatible for variant updates
+                        input_options = list(extract_unique_option_values(product).keys())
+                        shopify_options = shopify_product.get('options', [])
+
+                        if options_are_compatible(input_options, shopify_options):
+                            # Options match - proceed with variant updates
+                            log_and_status(status_fn, f"  Option structure is compatible. Updating variants...")
+
+                            # Match variants by SKU
+                            input_variants = product.get('variants', [])
+                            shopify_variants = shopify_product.get('variants', [])
+                            variant_match = match_variants_by_sku(input_variants, shopify_variants)
+
+                            log_and_status(status_fn,
+                                f"  Variant matching: {len(variant_match['to_update'])} to update, "
+                                f"{len(variant_match['to_create'])} to create, "
+                                f"{len(variant_match['to_delete'])} to delete"
+                            )
+
+                            # Step 4a: Update existing variants
+                            if variant_match['to_update']:
+                                variants_to_update = []
+                                for input_var, shopify_var_id in variant_match['to_update']:
+                                    update_input = build_variant_update_input(input_var, shopify_var_id)
+                                    variants_to_update.append(update_input)
+
+                                if not update_shopify_variants(shopify_id, variants_to_update, cfg, status_fn):
+                                    log_and_status(status_fn, f"  ⚠️  Some variants failed to update", "warning")
+
+                            # Step 4b: Delete removed variants
+                            if variant_match['to_delete']:
+                                if not delete_shopify_variants(shopify_id, variant_match['to_delete'], cfg, status_fn):
+                                    log_and_status(status_fn, f"  ⚠️  Some variants failed to delete", "warning")
+
+                            # Step 4c: Create new variants (if any)
+                            if variant_match['to_create']:
+                                log_and_status(status_fn, f"  Creating {len(variant_match['to_create'])} new variant(s)...")
+                                # Build variant input for productVariantsBulkCreate
+                                new_variants_input = []
+                                for var in variant_match['to_create']:
+                                    variant_input = {
+                                        "price": str(var.get('price', '0')),
+                                        "sku": var.get('sku', ''),
+                                    }
+                                    if var.get('compare_at_price'):
+                                        variant_input["compareAtPrice"] = str(var['compare_at_price'])
+                                    if var.get('barcode'):
+                                        variant_input["barcode"] = var['barcode']
+                                    if var.get('weight'):
+                                        variant_input["weight"] = var['weight']
+                                        variant_input["weightUnit"] = var.get('weight_unit', 'POUNDS').upper()
+
+                                    # Build optionValues
+                                    option_values = []
+                                    if var.get('option1'):
+                                        option_values.append({"optionName": input_options[0] if input_options else "Title", "name": var['option1']})
+                                    if var.get('option2') and len(input_options) > 1:
+                                        option_values.append({"optionName": input_options[1], "name": var['option2']})
+                                    if var.get('option3') and len(input_options) > 2:
+                                        option_values.append({"optionName": input_options[2], "name": var['option3']})
+
+                                    if option_values:
+                                        variant_input["optionValues"] = option_values
+
+                                    new_variants_input.append(variant_input)
+
+                                # Use productVariantsBulkCreate mutation
+                                create_variants_mutation = """
+                                mutation productVariantsBulkCreate($productId: ID!, $variants: [ProductVariantsBulkInput!]!) {
+                                  productVariantsBulkCreate(productId: $productId, variants: $variants) {
+                                    productVariants {
+                                      id
+                                      sku
+                                    }
+                                    userErrors {
+                                      field
+                                      message
+                                    }
+                                  }
+                                }
+                                """
+                                create_vars = {
+                                    "productId": shopify_id,
+                                    "variants": new_variants_input
+                                }
+
+                                try:
+                                    response = requests.post(
+                                        api_url,
+                                        json={"query": create_variants_mutation, "variables": create_vars},
+                                        headers=headers,
+                                        timeout=60
+                                    )
+                                    response.raise_for_status()
+                                    result = response.json()
+
+                                    user_errors = result.get("data", {}).get("productVariantsBulkCreate", {}).get("userErrors", [])
+                                    if user_errors:
+                                        error_msg = "; ".join([f"{e.get('field')}: {e.get('message')}" for e in user_errors])
+                                        log_and_status(status_fn, f"  ⚠️  New variant creation errors: {error_msg}", "warning")
+                                    else:
+                                        created_count = len(result.get("data", {}).get("productVariantsBulkCreate", {}).get("productVariants", []))
+                                        log_and_status(status_fn, f"  ✅ Created {created_count} new variant(s)")
+                                except Exception as e:
+                                    log_and_status(status_fn, f"  ⚠️  Error creating new variants: {e}", "warning")
+
+                        else:
+                            # Option structure differs - skip variant updates
+                            log_and_status(status_fn,
+                                f"  ⚠️  Option structure differs. Updating product fields only, skipping variants.",
+                                "warning"
+                            )
+                            log_and_status(status_fn,
+                                f"    Input options: {input_options}",
+                            )
+                            log_and_status(status_fn,
+                                f"    Shopify options: {[o.get('name') for o in shopify_options]}",
+                            )
+
+                        # Step 5: Sync media (images)
+                        input_images = product.get('images', [])
+                        existing_media = shopify_product.get('media', [])
+
+                        if input_images:
+                            log_and_status(status_fn, f"  Syncing media...")
+                            sync_product_media(shopify_id, input_images, existing_media, cfg, status_fn)
+
+                        # Update successful - record result and continue to next product
+                        log_and_status(status_fn, f"  ✅ Product updated successfully: {shopify_handle}")
+                        successful += 1
+
+                        result_dict = {
+                            "title": product_title,
+                            "shopify_id": shopify_id,
+                            "handle": shopify_handle,
+                            "status": "updated"
+                        }
+                        add_result(result_dict)
+                        products_restore = update_product_in_restore(products_restore, result_dict)
+                        save_products(products_restore)
+
                         time.sleep(0.5)
+                        continue  # Skip to next product (don't run the create flow)
+
+                # If product doesn't exist in Shopify but has a restore point,
+                # the restore data is stale (product may have been manually deleted)
+                # Just log and proceed with fresh creation
+                if not existing_in_shopify:
+                    restore_key = product_title.lower()
+                    existing_restore = products_restore.get("products_dict", {}).get(restore_key)
+                    if existing_restore:
+                        log_and_status(
+                            status_fn,
+                            f"  Note: Local restore data exists but product not in Shopify. Creating fresh.",
+                            ui_msg="  Creating new product..."
+                        )
 
                 # Create or recreate product
                 log_and_status(status_fn, "  Creating product in Shopify...")

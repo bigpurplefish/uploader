@@ -488,6 +488,780 @@ def delete_shopify_product(product_id, cfg):
 
 
 
+def search_shopify_product(title, cfg):
+    """
+    Search Shopify for a product by exact title match.
+
+    Args:
+        title: Product title to search for
+        cfg: Configuration dictionary
+
+    Returns:
+        Dictionary with 'id', 'handle', and 'title' if found, None otherwise
+    """
+    try:
+        store_url = cfg.get("SHOPIFY_STORE_URL", "").strip()
+        access_token = cfg.get("SHOPIFY_ACCESS_TOKEN", "").strip()
+
+        if not store_url or not access_token:
+            logging.error("Shopify credentials not configured for product search")
+            return None
+
+        store_url = store_url.replace("https://", "").replace("http://", "")
+
+        api_url = f"https://{store_url}/admin/api/2025-10/graphql.json"
+        headers = {
+            "Content-Type": "application/json",
+            "X-Shopify-Access-Token": access_token
+        }
+
+        query = """
+        query searchProduct($query: String!) {
+          products(first: 5, query: $query) {
+            edges {
+              node {
+                id
+                title
+                handle
+              }
+            }
+          }
+        }
+        """
+
+        # Use exact title match with quotes
+        variables = {
+            "query": f'title:"{title}"'
+        }
+
+        response = requests.post(
+            api_url,
+            json={"query": query, "variables": variables},
+            headers=headers,
+            timeout=30
+        )
+        response.raise_for_status()
+        result = response.json()
+
+        if "errors" in result:
+            logging.error(f"GraphQL errors searching product: {result['errors']}")
+            return None
+
+        edges = result.get("data", {}).get("products", {}).get("edges", [])
+
+        # Find exact match (case-insensitive)
+        for edge in edges:
+            node = edge.get("node", {})
+            if node.get("title", "").lower() == title.lower():
+                return {
+                    "id": node.get("id"),
+                    "handle": node.get("handle"),
+                    "title": node.get("title")
+                }
+
+        return None
+
+    except requests.exceptions.RequestException as e:
+        logging.error(f"Network error searching product: {e}")
+        return None
+    except Exception as e:
+        logging.error(f"Unexpected error searching product: {e}")
+        return None
+
+
+def get_shopify_product_details(product_id, cfg, status_fn=None):
+    """
+    Get detailed product info including variants and options for updates.
+
+    Args:
+        product_id: Shopify product ID (GID format)
+        cfg: Configuration dictionary
+        status_fn: Optional status update function
+
+    Returns:
+        Dictionary with id, title, options, variants, media, or None on error
+    """
+    try:
+        store_url = cfg.get("SHOPIFY_STORE_URL", "").strip()
+        access_token = cfg.get("SHOPIFY_ACCESS_TOKEN", "").strip()
+
+        if not store_url or not access_token:
+            logging.error("Shopify credentials not configured for product details")
+            return None
+
+        store_url = store_url.replace("https://", "").replace("http://", "")
+
+        api_url = f"https://{store_url}/admin/api/2025-10/graphql.json"
+        headers = {
+            "Content-Type": "application/json",
+            "X-Shopify-Access-Token": access_token
+        }
+
+        query = """
+        query getProduct($id: ID!) {
+          product(id: $id) {
+            id
+            title
+            handle
+            descriptionHtml
+            vendor
+            productType
+            status
+            tags
+            options {
+              id
+              name
+              values
+            }
+            variants(first: 100) {
+              edges {
+                node {
+                  id
+                  sku
+                  price
+                  compareAtPrice
+                  barcode
+                  weight
+                  weightUnit
+                  inventoryQuantity
+                  selectedOptions {
+                    name
+                    value
+                  }
+                  metafields(first: 20) {
+                    edges {
+                      node {
+                        id
+                        namespace
+                        key
+                        value
+                        type
+                      }
+                    }
+                  }
+                }
+              }
+            }
+            media(first: 100) {
+              edges {
+                node {
+                  id
+                  mediaContentType
+                  ... on MediaImage {
+                    image {
+                      url
+                      altText
+                    }
+                  }
+                  ... on Model3d {
+                    sources {
+                      url
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+        """
+
+        variables = {"id": product_id}
+
+        response = requests.post(
+            api_url,
+            json={"query": query, "variables": variables},
+            headers=headers,
+            timeout=30
+        )
+        response.raise_for_status()
+        result = response.json()
+
+        if "errors" in result:
+            logging.error(f"GraphQL errors getting product details: {result['errors']}")
+            return None
+
+        product_data = result.get("data", {}).get("product")
+        if not product_data:
+            logging.warning(f"Product not found: {product_id}")
+            return None
+
+        # Transform variants from edges format
+        variants = []
+        for edge in product_data.get("variants", {}).get("edges", []):
+            node = edge.get("node", {})
+            variant = {
+                "id": node.get("id"),
+                "sku": node.get("sku"),
+                "price": node.get("price"),
+                "compareAtPrice": node.get("compareAtPrice"),
+                "barcode": node.get("barcode"),
+                "weight": node.get("weight"),
+                "weightUnit": node.get("weightUnit"),
+                "inventoryQuantity": node.get("inventoryQuantity"),
+                "selectedOptions": node.get("selectedOptions", []),
+                "metafields": []
+            }
+            # Transform metafields
+            for mf_edge in node.get("metafields", {}).get("edges", []):
+                mf_node = mf_edge.get("node", {})
+                variant["metafields"].append({
+                    "id": mf_node.get("id"),
+                    "namespace": mf_node.get("namespace"),
+                    "key": mf_node.get("key"),
+                    "value": mf_node.get("value"),
+                    "type": mf_node.get("type")
+                })
+            variants.append(variant)
+
+        # Transform media from edges format
+        media = []
+        for edge in product_data.get("media", {}).get("edges", []):
+            node = edge.get("node", {})
+            media_item = {
+                "id": node.get("id"),
+                "mediaContentType": node.get("mediaContentType")
+            }
+            if node.get("image"):
+                media_item["url"] = node.get("image", {}).get("url")
+                media_item["altText"] = node.get("image", {}).get("altText")
+            if node.get("sources"):
+                media_item["sources"] = node.get("sources")
+            media.append(media_item)
+
+        return {
+            "id": product_data.get("id"),
+            "title": product_data.get("title"),
+            "handle": product_data.get("handle"),
+            "descriptionHtml": product_data.get("descriptionHtml"),
+            "vendor": product_data.get("vendor"),
+            "productType": product_data.get("productType"),
+            "status": product_data.get("status"),
+            "tags": product_data.get("tags", []),
+            "options": product_data.get("options", []),
+            "variants": variants,
+            "media": media
+        }
+
+    except requests.exceptions.RequestException as e:
+        logging.error(f"Network error getting product details: {e}")
+        return None
+    except Exception as e:
+        logging.error(f"Unexpected error getting product details: {e}")
+        return None
+
+
+def update_shopify_product(product_id, product_input, cfg, status_fn=None):
+    """
+    Update an existing product's fields in Shopify.
+
+    Args:
+        product_id: Shopify product ID (GID format)
+        product_input: Dictionary with fields to update (title, descriptionHtml, tags, etc.)
+        cfg: Configuration dictionary
+        status_fn: Optional status update function
+
+    Returns:
+        Dictionary with 'id' and 'handle' on success, None on error
+    """
+    try:
+        store_url = cfg.get("SHOPIFY_STORE_URL", "").strip()
+        access_token = cfg.get("SHOPIFY_ACCESS_TOKEN", "").strip()
+
+        if not store_url or not access_token:
+            logging.error("Shopify credentials not configured for product update")
+            return None
+
+        store_url = store_url.replace("https://", "").replace("http://", "")
+
+        api_url = f"https://{store_url}/admin/api/2025-10/graphql.json"
+        headers = {
+            "Content-Type": "application/json",
+            "X-Shopify-Access-Token": access_token
+        }
+
+        # ProductInput mutation for API 2025-10
+        mutation = """
+        mutation productUpdate($input: ProductInput!) {
+          productUpdate(input: $input) {
+            product {
+              id
+              handle
+              title
+            }
+            userErrors {
+              field
+              message
+            }
+          }
+        }
+        """
+
+        # Build input with product ID
+        update_input = {"id": product_id}
+        update_input.update(product_input)
+
+        variables = {"input": update_input}
+
+        if status_fn:
+            log_and_status(status_fn, f"  Updating product: {product_id}")
+        else:
+            logging.info(f"Updating product: {product_id}")
+
+        response = requests.post(
+            api_url,
+            json={"query": mutation, "variables": variables},
+            headers=headers,
+            timeout=60
+        )
+        response.raise_for_status()
+        result = response.json()
+
+        logging.debug(f"productUpdate response: {json.dumps(result, indent=2)}")
+
+        if "errors" in result:
+            logging.error(f"GraphQL errors updating product: {result['errors']}")
+            if status_fn:
+                log_and_status(status_fn, f"  ❌ GraphQL error: {result['errors']}", "error")
+            return None
+
+        user_errors = result.get("data", {}).get("productUpdate", {}).get("userErrors", [])
+        if user_errors:
+            error_msg = "; ".join([f"{err.get('field')}: {err.get('message')}" for err in user_errors])
+            logging.error(f"Product update user errors: {error_msg}")
+            if status_fn:
+                log_and_status(status_fn, f"  ❌ Update error: {error_msg}", "error")
+            return None
+
+        product = result.get("data", {}).get("productUpdate", {}).get("product", {})
+
+        if product and product.get("id"):
+            if status_fn:
+                log_and_status(status_fn, f"  ✅ Product updated: {product.get('handle')}")
+            return {
+                "id": product.get("id"),
+                "handle": product.get("handle"),
+                "title": product.get("title")
+            }
+        else:
+            logging.error("No product data returned from update")
+            return None
+
+    except requests.exceptions.RequestException as e:
+        logging.error(f"Network error updating product: {e}")
+        if status_fn:
+            log_and_status(status_fn, f"  ❌ Network error: {e}", "error")
+        return None
+    except Exception as e:
+        logging.error(f"Unexpected error updating product: {e}")
+        if status_fn:
+            log_and_status(status_fn, f"  ❌ Unexpected error: {e}", "error")
+        return None
+
+
+def update_shopify_variants(product_id, variants, cfg, status_fn=None):
+    """
+    Update existing variants using productVariantsBulkUpdate mutation.
+
+    Args:
+        product_id: Shopify product ID (GID format)
+        variants: List of variant dictionaries with 'id' and fields to update
+                  Each variant must have 'id' (Shopify variant ID)
+        cfg: Configuration dictionary
+        status_fn: Optional status update function
+
+    Returns:
+        True on success, False on error
+    """
+    if not variants:
+        logging.info("No variants to update")
+        return True
+
+    try:
+        store_url = cfg.get("SHOPIFY_STORE_URL", "").strip()
+        access_token = cfg.get("SHOPIFY_ACCESS_TOKEN", "").strip()
+
+        if not store_url or not access_token:
+            logging.error("Shopify credentials not configured for variant update")
+            return False
+
+        store_url = store_url.replace("https://", "").replace("http://", "")
+
+        api_url = f"https://{store_url}/admin/api/2025-10/graphql.json"
+        headers = {
+            "Content-Type": "application/json",
+            "X-Shopify-Access-Token": access_token
+        }
+
+        mutation = """
+        mutation productVariantsBulkUpdate($productId: ID!, $variants: [ProductVariantsBulkInput!]!) {
+          productVariantsBulkUpdate(productId: $productId, variants: $variants) {
+            productVariants {
+              id
+              sku
+              price
+            }
+            userErrors {
+              field
+              message
+            }
+          }
+        }
+        """
+
+        variables = {
+            "productId": product_id,
+            "variants": variants
+        }
+
+        if status_fn:
+            log_and_status(status_fn, f"  Updating {len(variants)} variant(s)...")
+        else:
+            logging.info(f"Updating {len(variants)} variants for product {product_id}")
+
+        response = requests.post(
+            api_url,
+            json={"query": mutation, "variables": variables},
+            headers=headers,
+            timeout=60
+        )
+        response.raise_for_status()
+        result = response.json()
+
+        logging.debug(f"productVariantsBulkUpdate response: {json.dumps(result, indent=2)}")
+
+        if "errors" in result:
+            logging.error(f"GraphQL errors updating variants: {result['errors']}")
+            if status_fn:
+                log_and_status(status_fn, f"  ❌ GraphQL error: {result['errors']}", "error")
+            return False
+
+        user_errors = result.get("data", {}).get("productVariantsBulkUpdate", {}).get("userErrors", [])
+        if user_errors:
+            error_msg = "; ".join([f"{err.get('field')}: {err.get('message')}" for err in user_errors])
+            logging.error(f"Variant update user errors: {error_msg}")
+            if status_fn:
+                log_and_status(status_fn, f"  ❌ Variant update error: {error_msg}", "error")
+            return False
+
+        updated_variants = result.get("data", {}).get("productVariantsBulkUpdate", {}).get("productVariants", [])
+        if status_fn:
+            log_and_status(status_fn, f"  ✅ Updated {len(updated_variants)} variant(s)")
+        else:
+            logging.info(f"Successfully updated {len(updated_variants)} variants")
+
+        return True
+
+    except requests.exceptions.RequestException as e:
+        logging.error(f"Network error updating variants: {e}")
+        if status_fn:
+            log_and_status(status_fn, f"  ❌ Network error: {e}", "error")
+        return False
+    except Exception as e:
+        logging.error(f"Unexpected error updating variants: {e}")
+        if status_fn:
+            log_and_status(status_fn, f"  ❌ Unexpected error: {e}", "error")
+        return False
+
+
+def delete_shopify_variants(product_id, variant_ids, cfg, status_fn=None):
+    """
+    Delete variants using productVariantsBulkDelete mutation.
+
+    Args:
+        product_id: Shopify product ID (GID format)
+        variant_ids: List of variant IDs to delete
+        cfg: Configuration dictionary
+        status_fn: Optional status update function
+
+    Returns:
+        True on success, False on error
+    """
+    if not variant_ids:
+        logging.info("No variants to delete")
+        return True
+
+    try:
+        store_url = cfg.get("SHOPIFY_STORE_URL", "").strip()
+        access_token = cfg.get("SHOPIFY_ACCESS_TOKEN", "").strip()
+
+        if not store_url or not access_token:
+            logging.error("Shopify credentials not configured for variant deletion")
+            return False
+
+        store_url = store_url.replace("https://", "").replace("http://", "")
+
+        api_url = f"https://{store_url}/admin/api/2025-10/graphql.json"
+        headers = {
+            "Content-Type": "application/json",
+            "X-Shopify-Access-Token": access_token
+        }
+
+        mutation = """
+        mutation productVariantsBulkDelete($productId: ID!, $variantsIds: [ID!]!) {
+          productVariantsBulkDelete(productId: $productId, variantsIds: $variantsIds) {
+            product {
+              id
+            }
+            userErrors {
+              field
+              message
+            }
+          }
+        }
+        """
+
+        variables = {
+            "productId": product_id,
+            "variantsIds": variant_ids
+        }
+
+        if status_fn:
+            log_and_status(status_fn, f"  Deleting {len(variant_ids)} variant(s)...")
+        else:
+            logging.info(f"Deleting {len(variant_ids)} variants from product {product_id}")
+
+        response = requests.post(
+            api_url,
+            json={"query": mutation, "variables": variables},
+            headers=headers,
+            timeout=60
+        )
+        response.raise_for_status()
+        result = response.json()
+
+        logging.debug(f"productVariantsBulkDelete response: {json.dumps(result, indent=2)}")
+
+        if "errors" in result:
+            logging.error(f"GraphQL errors deleting variants: {result['errors']}")
+            if status_fn:
+                log_and_status(status_fn, f"  ❌ GraphQL error: {result['errors']}", "error")
+            return False
+
+        user_errors = result.get("data", {}).get("productVariantsBulkDelete", {}).get("userErrors", [])
+        if user_errors:
+            error_msg = "; ".join([f"{err.get('field')}: {err.get('message')}" for err in user_errors])
+            logging.error(f"Variant deletion user errors: {error_msg}")
+            if status_fn:
+                log_and_status(status_fn, f"  ❌ Variant deletion error: {error_msg}", "error")
+            return False
+
+        if status_fn:
+            log_and_status(status_fn, f"  ✅ Deleted {len(variant_ids)} variant(s)")
+        else:
+            logging.info(f"Successfully deleted {len(variant_ids)} variants")
+
+        return True
+
+    except requests.exceptions.RequestException as e:
+        logging.error(f"Network error deleting variants: {e}")
+        if status_fn:
+            log_and_status(status_fn, f"  ❌ Network error: {e}", "error")
+        return False
+    except Exception as e:
+        logging.error(f"Unexpected error deleting variants: {e}")
+        if status_fn:
+            log_and_status(status_fn, f"  ❌ Unexpected error: {e}", "error")
+        return False
+
+
+def sync_product_media(product_id, input_media, existing_media, cfg, status_fn=None):
+    """
+    Synchronize product media between input and existing Shopify product.
+    Deletes removed media and adds new media.
+
+    Args:
+        product_id: Shopify product ID (GID format)
+        input_media: List of media items from input data (images array)
+        existing_media: List of existing media from get_shopify_product_details()
+        cfg: Configuration dictionary
+        status_fn: Optional status update function
+
+    Returns:
+        True on success, False on error
+    """
+    try:
+        store_url = cfg.get("SHOPIFY_STORE_URL", "").strip()
+        access_token = cfg.get("SHOPIFY_ACCESS_TOKEN", "").strip()
+
+        if not store_url or not access_token:
+            logging.error("Shopify credentials not configured for media sync")
+            return False
+
+        store_url = store_url.replace("https://", "").replace("http://", "")
+
+        api_url = f"https://{store_url}/admin/api/2025-10/graphql.json"
+        headers = {
+            "Content-Type": "application/json",
+            "X-Shopify-Access-Token": access_token
+        }
+
+        # Build sets of URLs for comparison
+        # Input media URLs (normalized)
+        input_urls = set()
+        for media in input_media:
+            if isinstance(media, dict):
+                url = media.get('src') or media.get('url')
+            else:
+                url = media
+            if url:
+                # Normalize URL (remove query params for comparison)
+                base_url = url.split('?')[0]
+                input_urls.add(base_url)
+
+        # Existing media URLs
+        existing_by_url = {}  # url -> media_id
+        for media in existing_media:
+            url = media.get('url')
+            if url:
+                base_url = url.split('?')[0]
+                existing_by_url[base_url] = media.get('id')
+
+        # Determine what to delete and what to add
+        existing_urls = set(existing_by_url.keys())
+
+        # URLs in existing but not in input -> delete
+        to_delete_urls = existing_urls - input_urls
+        to_delete_ids = [existing_by_url[url] for url in to_delete_urls if existing_by_url.get(url)]
+
+        # URLs in input but not in existing -> add
+        to_add_urls = input_urls - existing_urls
+
+        if status_fn:
+            log_and_status(status_fn, f"  Media sync: {len(to_delete_ids)} to delete, {len(to_add_urls)} to add")
+        else:
+            logging.info(f"Media sync for {product_id}: {len(to_delete_ids)} to delete, {len(to_add_urls)} to add")
+
+        # Delete removed media
+        if to_delete_ids:
+            delete_mutation = """
+            mutation productDeleteMedia($productId: ID!, $mediaIds: [ID!]!) {
+              productDeleteMedia(productId: $productId, mediaIds: $mediaIds) {
+                deletedMediaIds
+                userErrors {
+                  field
+                  message
+                }
+              }
+            }
+            """
+
+            delete_variables = {
+                "productId": product_id,
+                "mediaIds": to_delete_ids
+            }
+
+            response = requests.post(
+                api_url,
+                json={"query": delete_mutation, "variables": delete_variables},
+                headers=headers,
+                timeout=60
+            )
+            response.raise_for_status()
+            result = response.json()
+
+            logging.debug(f"productDeleteMedia response: {json.dumps(result, indent=2)}")
+
+            if "errors" in result:
+                logging.error(f"GraphQL errors deleting media: {result['errors']}")
+                if status_fn:
+                    log_and_status(status_fn, f"  ⚠️  Error deleting media: {result['errors']}", "warning")
+                # Continue with add even if delete fails
+
+            user_errors = result.get("data", {}).get("productDeleteMedia", {}).get("userErrors", [])
+            if user_errors:
+                error_msg = "; ".join([f"{err.get('field')}: {err.get('message')}" for err in user_errors])
+                logging.warning(f"Media deletion user errors: {error_msg}")
+                # Continue with add
+
+            deleted_count = len(result.get("data", {}).get("productDeleteMedia", {}).get("deletedMediaIds", []))
+            if status_fn:
+                log_and_status(status_fn, f"  ✅ Deleted {deleted_count} media item(s)")
+
+        # Add new media
+        if to_add_urls:
+            # Build media input for productCreateMedia
+            media_input = []
+            for media in input_media:
+                if isinstance(media, dict):
+                    url = media.get('src') or media.get('url')
+                    alt = media.get('alt', '')
+                else:
+                    url = media
+                    alt = ''
+
+                if url:
+                    base_url = url.split('?')[0]
+                    if base_url in to_add_urls:
+                        media_input.append({
+                            "originalSource": url,
+                            "alt": alt,
+                            "mediaContentType": "IMAGE"
+                        })
+
+            if media_input:
+                create_mutation = """
+                mutation productCreateMedia($productId: ID!, $media: [CreateMediaInput!]!) {
+                  productCreateMedia(productId: $productId, media: $media) {
+                    media {
+                      id
+                      mediaContentType
+                    }
+                    userErrors {
+                      field
+                      message
+                    }
+                  }
+                }
+                """
+
+                create_variables = {
+                    "productId": product_id,
+                    "media": media_input
+                }
+
+                response = requests.post(
+                    api_url,
+                    json={"query": create_mutation, "variables": create_variables},
+                    headers=headers,
+                    timeout=120
+                )
+                response.raise_for_status()
+                result = response.json()
+
+                logging.debug(f"productCreateMedia response: {json.dumps(result, indent=2)}")
+
+                if "errors" in result:
+                    logging.error(f"GraphQL errors creating media: {result['errors']}")
+                    if status_fn:
+                        log_and_status(status_fn, f"  ❌ Error creating media: {result['errors']}", "error")
+                    return False
+
+                user_errors = result.get("data", {}).get("productCreateMedia", {}).get("userErrors", [])
+                if user_errors:
+                    error_msg = "; ".join([f"{err.get('field')}: {err.get('message')}" for err in user_errors])
+                    logging.error(f"Media creation user errors: {error_msg}")
+                    if status_fn:
+                        log_and_status(status_fn, f"  ❌ Media creation error: {error_msg}", "error")
+                    return False
+
+                created_count = len(result.get("data", {}).get("productCreateMedia", {}).get("media", []))
+                if status_fn:
+                    log_and_status(status_fn, f"  ✅ Added {created_count} media item(s)")
+
+        return True
+
+    except requests.exceptions.RequestException as e:
+        logging.error(f"Network error syncing media: {e}")
+        if status_fn:
+            log_and_status(status_fn, f"  ❌ Network error: {e}", "error")
+        return False
+    except Exception as e:
+        logging.error(f"Unexpected error syncing media: {e}")
+        if status_fn:
+            log_and_status(status_fn, f"  ❌ Unexpected error: {e}", "error")
+        return False
+
+
 def search_collection(name, cfg):
     """
     Search for a collection by name in Shopify.
