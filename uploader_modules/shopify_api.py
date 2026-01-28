@@ -569,6 +569,98 @@ def search_shopify_product(title, cfg):
         return None
 
 
+def search_shopify_product_by_sku(skus, cfg):
+    """
+    Search Shopify for a product by variant SKU.
+
+    Args:
+        skus: List of SKUs to search for (uses first valid SKU)
+        cfg: Configuration dictionary
+
+    Returns:
+        Dictionary with 'id', 'handle', 'title', 'matched_sku' if found, None otherwise
+    """
+    try:
+        # Filter to non-empty SKUs
+        valid_skus = [s.strip() for s in skus if s and s.strip()]
+        if not valid_skus:
+            return None
+
+        store_url = cfg.get("SHOPIFY_STORE_URL", "").strip()
+        access_token = cfg.get("SHOPIFY_ACCESS_TOKEN", "").strip()
+
+        if not store_url or not access_token:
+            logging.error("Shopify credentials not configured for SKU search")
+            return None
+
+        store_url = store_url.replace("https://", "").replace("http://", "")
+
+        api_url = f"https://{store_url}/admin/api/2025-10/graphql.json"
+        headers = {
+            "Content-Type": "application/json",
+            "X-Shopify-Access-Token": access_token
+        }
+
+        # Search using first valid SKU
+        sku_to_search = valid_skus[0]
+
+        query = """
+        query searchProductBySku($query: String!) {
+          productVariants(first: 1, query: $query) {
+            edges {
+              node {
+                sku
+                product {
+                  id
+                  title
+                  handle
+                }
+              }
+            }
+          }
+        }
+        """
+
+        variables = {
+            "query": f'sku:"{sku_to_search}"'
+        }
+
+        response = requests.post(
+            api_url,
+            json={"query": query, "variables": variables},
+            headers=headers,
+            timeout=30
+        )
+        response.raise_for_status()
+        result = response.json()
+
+        if "errors" in result:
+            logging.error(f"GraphQL errors searching by SKU: {result['errors']}")
+            return None
+
+        edges = result.get("data", {}).get("productVariants", {}).get("edges", [])
+
+        if edges:
+            node = edges[0].get("node", {})
+            product = node.get("product", {})
+            if product:
+                return {
+                    "id": product.get("id"),
+                    "handle": product.get("handle"),
+                    "title": product.get("title"),
+                    "matched_sku": node.get("sku")
+                }
+
+        return None
+
+    except requests.exceptions.RequestException as e:
+        logging.error(f"Network error searching product by SKU: {e}")
+        return None
+    except Exception as e:
+        logging.error(f"Unexpected error searching product by SKU: {e}")
+        return None
+
+
 def get_shopify_product_details(product_id, cfg, status_fn=None):
     """
     Get detailed product info including variants and options for updates.
@@ -621,9 +713,15 @@ def get_shopify_product_details(product_id, cfg, status_fn=None):
                   price
                   compareAtPrice
                   barcode
-                  weight
-                  weightUnit
                   inventoryQuantity
+                  inventoryItem {
+                    measurement {
+                      weight {
+                        value
+                        unit
+                      }
+                    }
+                  }
                   selectedOptions {
                     name
                     value
@@ -689,14 +787,18 @@ def get_shopify_product_details(product_id, cfg, status_fn=None):
         variants = []
         for edge in product_data.get("variants", {}).get("edges", []):
             node = edge.get("node", {})
+            # Extract weight from inventoryItem.measurement.weight
+            inventory_item = node.get("inventoryItem") or {}
+            measurement = inventory_item.get("measurement") or {}
+            weight_data = measurement.get("weight") or {}
             variant = {
                 "id": node.get("id"),
                 "sku": node.get("sku"),
                 "price": node.get("price"),
                 "compareAtPrice": node.get("compareAtPrice"),
                 "barcode": node.get("barcode"),
-                "weight": node.get("weight"),
-                "weightUnit": node.get("weightUnit"),
+                "weight": weight_data.get("value"),
+                "weightUnit": weight_data.get("unit"),
                 "inventoryQuantity": node.get("inventoryQuantity"),
                 "selectedOptions": node.get("selectedOptions", []),
                 "metafields": []
@@ -780,6 +882,7 @@ def update_shopify_product(product_id, product_input, cfg, status_fn=None):
         }
 
         # ProductInput mutation for API 2025-10
+        # Note: productUpdate uses ProductInput with ID embedded in the input object
         mutation = """
         mutation productUpdate($input: ProductInput!) {
           productUpdate(input: $input) {
@@ -796,7 +899,7 @@ def update_shopify_product(product_id, product_input, cfg, status_fn=None):
         }
         """
 
-        # Build input with product ID
+        # Build input with product ID embedded
         update_input = {"id": product_id}
         update_input.update(product_input)
 

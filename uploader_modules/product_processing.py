@@ -21,8 +21,8 @@ from .shopify_api import (
     create_collection, publish_collection_to_channels, publish_product_to_channels,
     delete_shopify_product, create_metafield_definition,
     upload_model_to_shopify, get_taxonomy_id, ensure_menu_items_for_product,
-    search_shopify_product, get_shopify_product_details, update_shopify_product,
-    update_shopify_variants, delete_shopify_variants, sync_product_media
+    search_shopify_product, search_shopify_product_by_sku, get_shopify_product_details,
+    update_shopify_product, update_shopify_variants, delete_shopify_variants, sync_product_media
 )
 from .utils import (
     extract_category_subcategory, extract_unique_option_values,
@@ -115,6 +115,210 @@ def match_variants_by_sku(input_variants, shopify_variants):
     return result
 
 
+def extract_skus_from_product(product):
+    """
+    Extract non-empty SKUs from a product's variants.
+
+    Args:
+        product: Product dictionary with 'variants' list
+
+    Returns:
+        List of non-empty, stripped SKU strings
+    """
+    return [
+        v.get('sku', '').strip()
+        for v in product.get('variants', [])
+        if v.get('sku', '').strip()
+    ]
+
+
+def build_variant_create_input_for_existing_product(variant, input_options):
+    """
+    Build variant input for productVariantsBulkCreate when adding to existing product.
+
+    Args:
+        variant: Variant data from input
+        input_options: List of option names from input product
+
+    Returns:
+        Dictionary suitable for productVariantsBulkCreate
+    """
+    variant_input = {
+        "price": str(variant.get('price', '0')),
+    }
+
+    if variant.get('compare_at_price'):
+        variant_input["compareAtPrice"] = str(variant['compare_at_price'])
+
+    if variant.get('barcode'):
+        variant_input["barcode"] = variant['barcode']
+
+    # SKU and weight go through inventoryItem (API 2025-10)
+    inventory_item = {}
+    if variant.get('sku'):
+        inventory_item["sku"] = variant['sku']
+
+    if variant.get('weight'):
+        weight_unit = variant.get('weight_unit', 'POUNDS').upper()
+        weight_unit_map = {
+            'LB': 'POUNDS', 'LBS': 'POUNDS', 'POUND': 'POUNDS', 'POUNDS': 'POUNDS',
+            'KG': 'KILOGRAMS', 'KILOGRAM': 'KILOGRAMS', 'KILOGRAMS': 'KILOGRAMS',
+            'G': 'GRAMS', 'GRAM': 'GRAMS', 'GRAMS': 'GRAMS',
+            'OZ': 'OUNCES', 'OUNCE': 'OUNCES', 'OUNCES': 'OUNCES',
+        }
+        normalized_unit = weight_unit_map.get(weight_unit, 'POUNDS')
+        inventory_item["measurement"] = {
+            "weight": {
+                "value": float(variant['weight']),
+                "unit": normalized_unit
+            }
+        }
+
+    if inventory_item:
+        variant_input["inventoryItem"] = inventory_item
+
+    # Build optionValues
+    option_values = []
+    if variant.get('option1'):
+        option_values.append({
+            "optionName": input_options[0] if input_options else "Title",
+            "name": variant['option1']
+        })
+    if variant.get('option2') and len(input_options) > 1:
+        option_values.append({
+            "optionName": input_options[1],
+            "name": variant['option2']
+        })
+    if variant.get('option3') and len(input_options) > 2:
+        option_values.append({
+            "optionName": input_options[2],
+            "name": variant['option3']
+        })
+
+    if option_values:
+        variant_input["optionValues"] = option_values
+
+    return variant_input
+
+
+def add_missing_variants_to_product(product, shopify_id, cfg, api_url, headers, status_fn=None):
+    """
+    Add missing variants to an existing Shopify product (additive only).
+
+    Args:
+        product: Input product data
+        shopify_id: Shopify product ID
+        cfg: Configuration dictionary
+        api_url: Shopify GraphQL API URL
+        headers: API request headers
+        status_fn: Optional status update function
+
+    Returns:
+        Dictionary with:
+        - 'success': True if operation completed (even if no variants added)
+        - 'variants_added': Count of variants created
+        - 'variants_skipped': Count of variants that already existed
+        - 'error': Error message if failed
+        - 'option_incompatible': True if options structure differs
+    """
+    result = {
+        'success': False,
+        'variants_added': 0,
+        'variants_skipped': 0,
+        'error': None,
+        'option_incompatible': False
+    }
+
+    try:
+        # Step 1: Fetch Shopify product details
+        shopify_product = get_shopify_product_details(shopify_id, cfg, status_fn)
+        if not shopify_product:
+            result['error'] = "Failed to fetch product details from Shopify"
+            return result
+
+        # Step 2: Check option compatibility
+        input_options = product.get('options', [])
+        if isinstance(input_options, str):
+            input_options = [input_options]
+
+        shopify_options = shopify_product.get('options', [])
+
+        if not options_are_compatible(input_options, shopify_options):
+            result['option_incompatible'] = True
+            result['success'] = True  # Not an error, just incompatible
+            return result
+
+        # Step 3: Match variants by SKU
+        input_variants = product.get('variants', [])
+        shopify_variants = shopify_product.get('variants', [])
+
+        variant_match = match_variants_by_sku(input_variants, shopify_variants)
+
+        # Step 4: Check if there are any variants to create
+        if not variant_match['to_create']:
+            # All variants already exist
+            result['success'] = True
+            result['variants_skipped'] = len(input_variants)
+            return result
+
+        # Step 5: Build variant inputs for missing variants
+        new_variants_input = []
+        for var in variant_match['to_create']:
+            variant_input = build_variant_create_input_for_existing_product(var, input_options)
+            new_variants_input.append(variant_input)
+
+        # Step 6: Create missing variants
+        create_variants_mutation = """
+        mutation productVariantsBulkCreate($productId: ID!, $variants: [ProductVariantsBulkInput!]!) {
+          productVariantsBulkCreate(productId: $productId, variants: $variants) {
+            productVariants {
+              id
+              sku
+            }
+            userErrors {
+              field
+              message
+            }
+          }
+        }
+        """
+
+        create_vars = {
+            "productId": shopify_id,
+            "variants": new_variants_input
+        }
+
+        response = requests.post(
+            api_url,
+            json={"query": create_variants_mutation, "variables": create_vars},
+            headers=headers,
+            timeout=60
+        )
+        response.raise_for_status()
+        api_result = response.json()
+
+        user_errors = api_result.get("data", {}).get("productVariantsBulkCreate", {}).get("userErrors", [])
+        if user_errors:
+            error_msg = "; ".join([f"{e.get('field')}: {e.get('message')}" for e in user_errors])
+            result['error'] = f"Variant creation errors: {error_msg}"
+            return result
+
+        created_variants = api_result.get("data", {}).get("productVariantsBulkCreate", {}).get("productVariants", [])
+        result['success'] = True
+        result['variants_added'] = len(created_variants)
+        result['variants_skipped'] = len(variant_match['to_update'])
+
+        return result
+
+    except requests.exceptions.RequestException as e:
+        result['error'] = f"Network error: {e}"
+        return result
+    except Exception as e:
+        result['error'] = f"Unexpected error: {e}"
+        logging.error(f"Error adding missing variants: {e}")
+        return result
+
+
 def build_variant_update_input(input_variant, shopify_variant_id, shopify_variant=None):
     """
     Build the variant input for productVariantsBulkUpdate.
@@ -138,16 +342,46 @@ def build_variant_update_input(input_variant, shopify_variant_id, shopify_varian
     if 'compare_at_price' in input_variant and input_variant['compare_at_price']:
         update_input["compareAtPrice"] = str(input_variant['compare_at_price'])
 
-    if 'sku' in input_variant:
-        update_input["sku"] = input_variant['sku']
-
     if 'barcode' in input_variant:
         update_input["barcode"] = input_variant['barcode']
 
+    # SKU and weight must go through inventoryItem (API 2025-10)
+    # Structure: inventoryItem.sku and inventoryItem.measurement.weight
+    inventory_item = {}
+
+    if 'sku' in input_variant:
+        inventory_item["sku"] = input_variant['sku']
+
     if 'weight' in input_variant:
-        update_input["weight"] = input_variant['weight']
-        if 'weight_unit' in input_variant:
-            update_input["weightUnit"] = input_variant['weight_unit'].upper()
+        # Weight unit mapping: convert common formats to Shopify WeightUnit enum
+        weight_unit = input_variant.get('weight_unit', 'POUNDS').upper()
+        # Normalize weight unit to Shopify enum values
+        weight_unit_map = {
+            'LB': 'POUNDS',
+            'LBS': 'POUNDS',
+            'POUND': 'POUNDS',
+            'POUNDS': 'POUNDS',
+            'KG': 'KILOGRAMS',
+            'KILOGRAM': 'KILOGRAMS',
+            'KILOGRAMS': 'KILOGRAMS',
+            'G': 'GRAMS',
+            'GRAM': 'GRAMS',
+            'GRAMS': 'GRAMS',
+            'OZ': 'OUNCES',
+            'OUNCE': 'OUNCES',
+            'OUNCES': 'OUNCES',
+        }
+        normalized_unit = weight_unit_map.get(weight_unit, 'POUNDS')
+
+        inventory_item["measurement"] = {
+            "weight": {
+                "value": float(input_variant['weight']),
+                "unit": normalized_unit
+            }
+        }
+
+    if inventory_item:
+        update_input["inventoryItem"] = inventory_item
 
     # Handle metafields
     if 'metafields' in input_variant and input_variant['metafields']:
@@ -965,29 +1199,103 @@ def process_products(cfg, status_fn, execution_mode="resume", start_record=None,
                     ui_msg=f"[{product_num}/{total_products}] {product_title[:50]}..."
                 )
                 
-                # Check if product exists in Shopify directly
-                existing_in_shopify = search_shopify_product(product_title, cfg)
+                # Check if product exists in Shopify
+                # First try SKU-based matching (more reliable), then fall back to title
+                product_skus = extract_skus_from_product(product)
+                if product_skus:
+                    existing_in_shopify = search_shopify_product_by_sku(product_skus, cfg)
+                    if existing_in_shopify:
+                        log_and_status(status_fn, f"  Found by SKU: {existing_in_shopify.get('matched_sku')}")
+                else:
+                    existing_in_shopify = None
+
+                # Fall back to title search if no SKU match
+                if not existing_in_shopify:
+                    existing_in_shopify = search_shopify_product(product_title, cfg)
 
                 if existing_in_shopify:
                     shopify_id = existing_in_shopify.get("id")
                     shopify_handle = existing_in_shopify.get("handle")
 
                     if execution_mode == "resume":
-                        # In resume mode, skip products that exist in Shopify
+                        # In resume mode, check for missing variants and add them
                         log_and_status(
                             status_fn,
-                            f"  ✓ Product exists in Shopify. Skipping.",
-                            ui_msg="  ✓ Exists in Shopify - skipping"
+                            f"  Product exists in Shopify. Checking for missing variants...",
+                            ui_msg="  Checking for missing variants..."
                         )
-                        skipped += 1
 
-                        add_result({
-                            "title": product_title,
-                            "shopify_id": shopify_id,
-                            "handle": shopify_handle,
-                            "status": "skipped",
-                            "reason": "exists_in_shopify"
-                        })
+                        # Add missing variants (additive only)
+                        variant_result = add_missing_variants_to_product(
+                            product, shopify_id, cfg, api_url, headers, status_fn
+                        )
+
+                        if variant_result['option_incompatible']:
+                            # Options structure differs - can't add variants
+                            log_and_status(
+                                status_fn,
+                                f"  ⚠️  Option structure incompatible. Skipping.",
+                                ui_msg="  ⚠️  Options incompatible - skipping"
+                            )
+                            skipped += 1
+                            add_result({
+                                "title": product_title,
+                                "shopify_id": shopify_id,
+                                "handle": shopify_handle,
+                                "status": "skipped",
+                                "reason": "option_incompatible"
+                            })
+                            continue
+
+                        if variant_result['error']:
+                            # Error adding variants
+                            log_and_status(
+                                status_fn,
+                                f"  ❌ Error adding variants: {variant_result['error']}",
+                                "error"
+                            )
+                            failed += 1
+                            add_result({
+                                "title": product_title,
+                                "shopify_id": shopify_id,
+                                "handle": shopify_handle,
+                                "status": "failed",
+                                "error": variant_result['error'],
+                                "failed_stage": "add_missing_variants"
+                            })
+                            continue
+
+                        if variant_result['variants_added'] > 0:
+                            # Added missing variants
+                            log_and_status(
+                                status_fn,
+                                f"  ✅ Added {variant_result['variants_added']} missing variant(s)",
+                                ui_msg=f"  ✅ Added {variant_result['variants_added']} variant(s)"
+                            )
+                            successful += 1
+                            add_result({
+                                "title": product_title,
+                                "shopify_id": shopify_id,
+                                "handle": shopify_handle,
+                                "status": "updated",
+                                "reason": "added_missing_variants",
+                                "variants_added": variant_result['variants_added']
+                            })
+                        else:
+                            # All variants already exist
+                            log_and_status(
+                                status_fn,
+                                f"  ✓ All variants exist. Skipping.",
+                                ui_msg="  ✓ Complete - skipping"
+                            )
+                            skipped += 1
+                            add_result({
+                                "title": product_title,
+                                "shopify_id": shopify_id,
+                                "handle": shopify_handle,
+                                "status": "skipped",
+                                "reason": "all_variants_exist"
+                            })
 
                         continue
                     else:  # overwrite mode
@@ -1112,15 +1420,33 @@ def process_products(cfg, status_fn, execution_mode="resume", start_record=None,
                                 for var in variant_match['to_create']:
                                     variant_input = {
                                         "price": str(var.get('price', '0')),
-                                        "sku": var.get('sku', ''),
                                     }
                                     if var.get('compare_at_price'):
                                         variant_input["compareAtPrice"] = str(var['compare_at_price'])
                                     if var.get('barcode'):
                                         variant_input["barcode"] = var['barcode']
+
+                                    # SKU and weight go through inventoryItem (API 2025-10)
+                                    inventory_item = {}
+                                    if var.get('sku'):
+                                        inventory_item["sku"] = var['sku']
                                     if var.get('weight'):
-                                        variant_input["weight"] = var['weight']
-                                        variant_input["weightUnit"] = var.get('weight_unit', 'POUNDS').upper()
+                                        weight_unit = var.get('weight_unit', 'POUNDS').upper()
+                                        weight_unit_map = {
+                                            'LB': 'POUNDS', 'LBS': 'POUNDS', 'POUND': 'POUNDS', 'POUNDS': 'POUNDS',
+                                            'KG': 'KILOGRAMS', 'KILOGRAM': 'KILOGRAMS', 'KILOGRAMS': 'KILOGRAMS',
+                                            'G': 'GRAMS', 'GRAM': 'GRAMS', 'GRAMS': 'GRAMS',
+                                            'OZ': 'OUNCES', 'OUNCE': 'OUNCES', 'OUNCES': 'OUNCES',
+                                        }
+                                        normalized_unit = weight_unit_map.get(weight_unit, 'POUNDS')
+                                        inventory_item["measurement"] = {
+                                            "weight": {
+                                                "value": float(var['weight']),
+                                                "unit": normalized_unit
+                                            }
+                                        }
+                                    if inventory_item:
+                                        variant_input["inventoryItem"] = inventory_item
 
                                     # Build optionValues
                                     option_values = []
