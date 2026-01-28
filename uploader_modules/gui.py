@@ -448,6 +448,46 @@ def build_gui():
 
     execution_mode_var.trace_add("write", on_execution_mode_change)
 
+    # Delete Log Before Run checkbox
+    row += 1
+
+    label_frame = tb.Frame(processing_tab)
+    label_frame.grid(row=row, column=0, sticky="w", padx=5, pady=5)
+
+    tb.Label(label_frame, text="Delete Log Before Run", anchor="w").pack(side="left")
+    help_icon = tb.Label(label_frame, text=" ⓘ ", font=("Arial", 9),
+                         foreground="#5BC0DE", cursor="hand2")
+    help_icon.pack(side="left")
+    tb.Label(label_frame, text=":", anchor="w").pack(side="left")
+
+    tooltip_text = (
+        "When enabled, the log file will be automatically\n"
+        "deleted before each processing run.\n\n"
+        "This helps keep log files manageable and\n"
+        "makes it easier to review logs for the current run."
+    )
+    ToolTip(help_icon, text=tooltip_text, bootstyle="info")
+
+    delete_log_before_run_var = tb.BooleanVar(value=cfg.get("DELETE_LOG_BEFORE_RUN", False))
+
+    delete_log_checkbox = tb.Checkbutton(
+        processing_tab,
+        text="Enable",
+        variable=delete_log_before_run_var,
+        bootstyle="success-round-toggle"
+    )
+    delete_log_checkbox.grid(row=row, column=1, sticky="w", padx=5, pady=5)
+
+    def on_delete_log_change(*args):
+        """Auto-save delete log setting to config."""
+        try:
+            cfg["DELETE_LOG_BEFORE_RUN"] = delete_log_before_run_var.get()
+            save_config(cfg)
+        except Exception:
+            pass
+
+    delete_log_before_run_var.trace_add("write", on_delete_log_change)
+
     # Start Record field
     row += 1
 
@@ -641,6 +681,16 @@ def build_gui():
             return
 
         clear_status()
+
+        # Delete log file before run if setting is enabled
+        if cfg.get("DELETE_LOG_BEFORE_RUN", False):
+            log_file_path = cfg.get("LOG_FILE", "")
+            if log_file_path and os.path.exists(log_file_path):
+                try:
+                    os.remove(log_file_path)
+                    status(f"🗑️ Deleted log file: {os.path.basename(log_file_path)}")
+                except Exception as e:
+                    status(f"⚠️ Could not delete log file: {e}")
 
         start_btn.config(state="disabled")
         validate_btn.config(state="disabled")
