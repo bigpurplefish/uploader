@@ -240,6 +240,9 @@ def add_missing_variants_to_product(product, shopify_id, cfg, api_url, headers, 
         input_options = product.get('options', [])
         if isinstance(input_options, str):
             input_options = [input_options]
+        elif input_options and isinstance(input_options[0], dict):
+            # Options can be list of dicts like [{"name": "Size", "values": [...]}]
+            input_options = [opt.get('name', '') for opt in input_options if opt.get('name')]
 
         shopify_options = shopify_product.get('options', [])
 
