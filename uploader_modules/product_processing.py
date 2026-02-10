@@ -106,11 +106,46 @@ def match_variants_by_sku(input_variants, shopify_variants):
             # No match - create new variant
             result['to_create'].append(input_variant)
 
-    # Find variants in Shopify that are not in input
+    # Find variants in Shopify that are not in input (by SKU)
     for shopify_variant in shopify_variants:
         sku = shopify_variant.get('sku', '').strip()
         if sku and sku not in input_skus:
             result['to_delete'].append(shopify_variant.get('id'))
+
+    # Secondary pass: match remaining unmatched by option values
+    # This handles cases where SKUs changed but option values (e.g. Birchwood/Sq Ft) stayed the same
+    if result['to_create'] and result['to_delete']:
+        unmatched_input = list(result['to_create'])
+        unmatched_shopify_ids = set(result['to_delete'])
+
+        # Build option-value lookup for unmatched Shopify variants
+        shopify_by_options = {}
+        for sv in shopify_variants:
+            sv_id = sv.get('id')
+            if sv_id not in unmatched_shopify_ids:
+                continue
+            opts = []
+            for opt in sv.get('selectedOptions', []):
+                val = opt.get('value', '').strip().lower()
+                if val:
+                    opts.append(val)
+            if opts:
+                shopify_by_options[tuple(opts)] = sv
+
+        for input_var in unmatched_input:
+            input_opts = []
+            for key in ['option1', 'option2', 'option3']:
+                val = input_var.get(key, '').strip()
+                if val:
+                    input_opts.append(val.lower())
+            if not input_opts:
+                continue
+            opt_key = tuple(input_opts)
+            if opt_key in shopify_by_options:
+                sv = shopify_by_options.pop(opt_key)
+                result['to_update'].append((input_var, sv.get('id')))
+                result['to_create'].remove(input_var)
+                result['to_delete'].remove(sv.get('id'))
 
     return result
 
@@ -1400,6 +1435,8 @@ def process_products(cfg, status_fn, execution_mode="resume", start_record=None,
                                 f"{len(variant_match['to_delete'])} to delete"
                             )
 
+                            variant_ops_failed = False
+
                             # Step 4a: Update existing variants
                             if variant_match['to_update']:
                                 variants_to_update = []
@@ -1410,12 +1447,8 @@ def process_products(cfg, status_fn, execution_mode="resume", start_record=None,
                                 if not update_shopify_variants(shopify_id, variants_to_update, cfg, status_fn):
                                     log_and_status(status_fn, f"  ⚠️  Some variants failed to update", "warning")
 
-                            # Step 4b: Delete removed variants
-                            if variant_match['to_delete']:
-                                if not delete_shopify_variants(shopify_id, variant_match['to_delete'], cfg, status_fn):
-                                    log_and_status(status_fn, f"  ⚠️  Some variants failed to delete", "warning")
-
-                            # Step 4c: Create new variants (if any)
+                            # Step 4b: Create new variants BEFORE deleting old ones
+                            # Creating first preserves product options; deleting first can reset them
                             if variant_match['to_create']:
                                 log_and_status(status_fn, f"  Creating {len(variant_match['to_create'])} new variant(s)...")
                                 # Build variant input for productVariantsBulkCreate
@@ -1498,12 +1531,36 @@ def process_products(cfg, status_fn, execution_mode="resume", start_record=None,
                                     user_errors = result.get("data", {}).get("productVariantsBulkCreate", {}).get("userErrors", [])
                                     if user_errors:
                                         error_msg = "; ".join([f"{e.get('field')}: {e.get('message')}" for e in user_errors])
-                                        log_and_status(status_fn, f"  ⚠️  New variant creation errors: {error_msg}", "warning")
+                                        log_and_status(status_fn, f"  ❌ Variant creation failed: {error_msg}", "error")
+                                        variant_ops_failed = True
                                     else:
                                         created_count = len(result.get("data", {}).get("productVariantsBulkCreate", {}).get("productVariants", []))
                                         log_and_status(status_fn, f"  ✅ Created {created_count} new variant(s)")
                                 except Exception as e:
-                                    log_and_status(status_fn, f"  ⚠️  Error creating new variants: {e}", "warning")
+                                    log_and_status(status_fn, f"  ❌ Error creating new variants: {e}", "error")
+                                    variant_ops_failed = True
+
+                            # If variant creation failed, don't delete old variants and mark as failed
+                            if variant_ops_failed:
+                                log_and_status(status_fn, f"  ❌ Skipping variant deletion due to creation failure", "error")
+                                result_dict = {
+                                    "title": product_title,
+                                    "shopify_id": shopify_id,
+                                    "handle": shopify_handle,
+                                    "status": "failed",
+                                    "error": "Variant creation failed",
+                                    "failed_stage": "variant_create"
+                                }
+                                add_result(result_dict)
+                                products_restore = update_product_in_restore(products_restore, result_dict)
+                                save_products(products_restore)
+                                failed += 1
+                                continue
+
+                            # Step 4c: Delete removed variants (only after successful creation)
+                            if variant_match['to_delete']:
+                                if not delete_shopify_variants(shopify_id, variant_match['to_delete'], cfg, status_fn):
+                                    log_and_status(status_fn, f"  ⚠️  Some variants failed to delete", "warning")
 
                         else:
                             # Option structure differs - skip variant updates
