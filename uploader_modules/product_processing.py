@@ -1419,6 +1419,7 @@ def process_products(cfg, status_fn, execution_mode="resume", start_record=None,
                         # Step 4: Check if option structure is compatible for variant updates
                         input_options = list(extract_unique_option_values(product).keys())
                         shopify_options = shopify_product.get('options', [])
+                        needs_recreate = False
 
                         if options_are_compatible(input_options, shopify_options):
                             # Options match - proceed with variant updates
@@ -1563,9 +1564,10 @@ def process_products(cfg, status_fn, execution_mode="resume", start_record=None,
                                     log_and_status(status_fn, f"  ⚠️  Some variants failed to delete", "warning")
 
                         else:
-                            # Option structure differs - skip variant updates
+                            # Option structure incompatible — delete product so it can be recreated
+                            needs_recreate = True
                             log_and_status(status_fn,
-                                f"  ⚠️  Option structure differs. Updating product fields only, skipping variants.",
+                                f"  ⚠️  Option structure incompatible. Deleting product for recreation.",
                                 "warning"
                             )
                             log_and_status(status_fn,
@@ -1574,31 +1576,49 @@ def process_products(cfg, status_fn, execution_mode="resume", start_record=None,
                             log_and_status(status_fn,
                                 f"    Shopify options: {[o.get('name') for o in shopify_options]}",
                             )
+                            if delete_shopify_product(shopify_id, cfg):
+                                log_and_status(status_fn, f"  ✅ Product deleted. Will recreate with correct options.")
+                            else:
+                                log_and_status(status_fn, f"  ❌ Failed to delete product for recreation", "error")
+                                result_dict = {
+                                    "title": product_title,
+                                    "shopify_id": shopify_id,
+                                    "handle": shopify_handle,
+                                    "status": "failed",
+                                    "error": "Failed to delete product for option structure recreation",
+                                    "failed_stage": "product_delete_for_recreate"
+                                }
+                                add_result(result_dict)
+                                products_restore = update_product_in_restore(products_restore, result_dict)
+                                save_products(products_restore)
+                                failed += 1
+                                continue
 
-                        # Step 5: Sync media (images)
-                        input_images = product.get('images', [])
-                        existing_media = shopify_product.get('media', [])
+                        if not needs_recreate:
+                            # Step 5: Sync media (images)
+                            input_images = product.get('images', [])
+                            existing_media = shopify_product.get('media', [])
 
-                        if input_images:
-                            log_and_status(status_fn, f"  Syncing media...")
-                            sync_product_media(shopify_id, input_images, existing_media, cfg, status_fn)
+                            if input_images:
+                                log_and_status(status_fn, f"  Syncing media...")
+                                sync_product_media(shopify_id, input_images, existing_media, cfg, status_fn)
 
-                        # Update successful - record result and continue to next product
-                        log_and_status(status_fn, f"  ✅ Product updated successfully: {shopify_handle}")
-                        successful += 1
+                            # Update successful - record result and continue to next product
+                            log_and_status(status_fn, f"  ✅ Product updated successfully: {shopify_handle}")
+                            successful += 1
 
-                        result_dict = {
-                            "title": product_title,
-                            "shopify_id": shopify_id,
-                            "handle": shopify_handle,
-                            "status": "updated"
-                        }
-                        add_result(result_dict)
-                        products_restore = update_product_in_restore(products_restore, result_dict)
-                        save_products(products_restore)
+                            result_dict = {
+                                "title": product_title,
+                                "shopify_id": shopify_id,
+                                "handle": shopify_handle,
+                                "status": "updated"
+                            }
+                            add_result(result_dict)
+                            products_restore = update_product_in_restore(products_restore, result_dict)
+                            save_products(products_restore)
 
-                        time.sleep(0.5)
-                        continue  # Skip to next product (don't run the create flow)
+                            time.sleep(0.5)
+                            continue  # Skip to next product (don't run the create flow)
 
                 # If product doesn't exist in Shopify but has a restore point,
                 # the restore data is stale (product may have been manually deleted)
