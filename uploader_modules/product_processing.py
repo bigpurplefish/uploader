@@ -1243,7 +1243,17 @@ def process_products(cfg, status_fn, execution_mode="resume", start_record=None,
                 if product_skus:
                     existing_in_shopify = search_shopify_product_by_sku(product_skus, cfg)
                     if existing_in_shopify:
-                        log_and_status(status_fn, f"  Found by SKU: {existing_in_shopify.get('matched_sku')}")
+                        matched_title = existing_in_shopify.get('title', '')
+                        if matched_title.strip().lower() != product_title.strip().lower():
+                            log_and_status(
+                                status_fn,
+                                f"  ⚠️  SKU {existing_in_shopify.get('matched_sku')} matched different product: "
+                                f"'{matched_title}' (expected '{product_title}'). Treating as new product.",
+                                "warning"
+                            )
+                            existing_in_shopify = None
+                        else:
+                            log_and_status(status_fn, f"  Found by SKU: {existing_in_shopify.get('matched_sku')}")
                 else:
                     existing_in_shopify = None
 
