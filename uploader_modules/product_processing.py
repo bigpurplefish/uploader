@@ -20,14 +20,15 @@ from .shopify_api import (
     get_sales_channel_ids, get_default_location_id, search_collection,
     create_collection, publish_collection_to_channels, publish_product_to_channels,
     delete_shopify_product, create_metafield_definition,
-    upload_model_to_shopify, get_taxonomy_id, ensure_menu_items_for_product,
+    upload_model_to_shopify, upload_video_to_shopify, get_taxonomy_id, ensure_menu_items_for_product,
     search_shopify_product, search_shopify_product_by_sku, get_shopify_product_details,
-    update_shopify_product, update_shopify_variants, delete_shopify_variants, sync_product_media
+    update_shopify_product, update_shopify_variants, delete_shopify_variants, sync_product_media,
+    poll_media_ready, append_media_to_variants
 )
 from .utils import (
     extract_category_subcategory, extract_unique_option_values,
     key_to_label, validate_image_urls, validate_image_alt_tags_for_filtering,
-    generate_image_filter_hashtags
+    generate_image_filter_hashtags, parse_hashtags_from_alt, match_image_to_variant
 )
 
 
@@ -134,10 +135,13 @@ def match_variants_by_sku(input_variants, shopify_variants):
 
         for input_var in unmatched_input:
             input_opts = []
-            for key in ['option1', 'option2', 'option3']:
+            for i in range(1, 10):
+                key = f'option{i}'
                 val = input_var.get(key, '').strip()
                 if val:
                     input_opts.append(val.lower())
+                elif i > 3:
+                    break
             if not input_opts:
                 continue
             opt_key = tuple(input_opts)
@@ -214,21 +218,14 @@ def build_variant_create_input_for_existing_product(variant, input_options):
 
     # Build optionValues
     option_values = []
-    if variant.get('option1'):
-        option_values.append({
-            "optionName": input_options[0] if input_options else "Title",
-            "name": variant['option1']
-        })
-    if variant.get('option2') and len(input_options) > 1:
-        option_values.append({
-            "optionName": input_options[1],
-            "name": variant['option2']
-        })
-    if variant.get('option3') and len(input_options) > 2:
-        option_values.append({
-            "optionName": input_options[2],
-            "name": variant['option3']
-        })
+    for i in range(len(input_options)):
+        option_key = f'option{i+1}'
+        option_value = variant.get(option_key)
+        if option_value:
+            option_values.append({
+                "optionName": input_options[i],
+                "name": str(option_value)
+            })
 
     if option_values:
         variant_input["optionValues"] = option_values
@@ -1497,12 +1494,14 @@ def process_products(cfg, status_fn, execution_mode="resume", start_record=None,
 
                                     # Build optionValues
                                     option_values = []
-                                    if var.get('option1'):
-                                        option_values.append({"optionName": input_options[0] if input_options else "Title", "name": var['option1']})
-                                    if var.get('option2') and len(input_options) > 1:
-                                        option_values.append({"optionName": input_options[1], "name": var['option2']})
-                                    if var.get('option3') and len(input_options) > 2:
-                                        option_values.append({"optionName": input_options[2], "name": var['option3']})
+                                    for i in range(len(input_options)):
+                                        option_key = f'option{i+1}'
+                                        option_value = var.get(option_key)
+                                        if option_value:
+                                            option_values.append({
+                                                "optionName": input_options[i],
+                                                "name": str(option_value)
+                                            })
 
                                     if option_values:
                                         variant_input["optionValues"] = option_values
@@ -1806,6 +1805,31 @@ def process_products(cfg, status_fn, execution_mode="resume", start_record=None,
                             else:
                                 log_and_status(status_fn, f"    ⚠️ Failed to upload {source_format.upper()} (no resourceUrl returned)", "warning")
 
+                # Upload VIDEO media if present
+                uploaded_videos = []
+                for media_item in product.get('media', []):
+                    if media_item.get('media_content_type') == 'VIDEO':
+                        sources = media_item.get('sources', [])
+                        alt_text = media_item.get('alt', '')
+                        for source in sources:
+                            video_url = source.get('url')
+                            source_format = source.get('format', 'mp4').lower()
+                            if not video_url:
+                                continue
+                            filename = f"{vendor}_{product_name}_{unique_id}.{source_format}"
+                            log_and_status(status_fn, f"    Uploading {source_format.upper()} video as: {filename}")
+                            resource_url, _ = upload_video_to_shopify(video_url, filename, cfg, status_fn)
+                            if resource_url:
+                                uploaded_videos.append({
+                                    'cdn_url': resource_url,
+                                    'alt': alt_text,
+                                    'position': media_item.get('position', 999),
+                                    'format': source_format
+                                })
+                                log_and_status(status_fn, f"    ✅ Video file uploaded")
+                            else:
+                                log_and_status(status_fn, f"    ⚠️ Failed to upload video (no resourceUrl returned)", "warning")
+
                 # Add images to media input
                 images = product.get('images', [])
 
@@ -2085,6 +2109,69 @@ def process_products(cfg, status_fn, execution_mode="resume", start_record=None,
                             log_and_status(status_fn, f"  ⚠️ Error attaching models: {e}", "warning")
                             logging.exception("Full traceback:")
 
+                    # Attach videos to product if any were uploaded
+                    if uploaded_videos:
+                        log_and_status(status_fn, f"  Attaching {len(uploaded_videos)} video(s) to product...")
+
+                        video_media_inputs = []
+                        for video in uploaded_videos:
+                            video_media_inputs.append({
+                                "originalSource": video['cdn_url'],
+                                "alt": video['alt'],
+                                "mediaContentType": "VIDEO"
+                            })
+
+                        attach_video_mutation = """
+                        mutation productCreateMedia($media: [CreateMediaInput!]!, $productId: ID!) {
+                          productCreateMedia(media: $media, productId: $productId) {
+                            media {
+                              ... on Video {
+                                id
+                                alt
+                              }
+                            }
+                            mediaUserErrors {
+                              field
+                              message
+                            }
+                            userErrors {
+                              field
+                              message
+                            }
+                          }
+                        }
+                        """
+
+                        attach_video_variables = {
+                            "productId": shopify_product_id,
+                            "media": video_media_inputs
+                        }
+
+                        try:
+                            attach_response = requests.post(
+                                api_url,
+                                json={"query": attach_video_mutation, "variables": attach_video_variables},
+                                headers=headers,
+                                timeout=60
+                            )
+                            attach_response.raise_for_status()
+                            attach_result = attach_response.json()
+
+                            logging.debug(f"productCreateMedia (video) response: {json.dumps(attach_result, indent=2)}")
+
+                            mutation_data = attach_result.get("data", {}).get("productCreateMedia", {})
+                            user_errors = mutation_data.get("userErrors", [])
+                            media_user_errors = mutation_data.get("mediaUserErrors", [])
+
+                            if "errors" in attach_result or user_errors or media_user_errors:
+                                all_errors = attach_result.get("errors", []) + user_errors + media_user_errors
+                                log_and_status(status_fn, f"  ⚠️ Failed to attach videos: {all_errors}", "warning")
+                            else:
+                                log_and_status(status_fn, f"  ✅ Attached {len(uploaded_videos)} video(s) to product")
+                        except Exception as e:
+                            log_and_status(status_fn, f"  ⚠️ Error attaching videos: {e}", "warning")
+                            logging.exception("Full traceback:")
+
                     # Save restore point after product creation
                     restore_data = {
                         "title": product_title,
@@ -2357,6 +2444,10 @@ def process_products(cfg, status_fn, execution_mode="resume", start_record=None,
                             productVariants {
                               id
                               sku
+                              selectedOptions {
+                                name
+                                value
+                              }
                               inventoryItem {
                                 id
                               }
@@ -2488,6 +2579,70 @@ def process_products(cfg, status_fn, execution_mode="resume", start_record=None,
                             restore_data["variant_ids"] = created_variant_ids
                             products_restore = update_product_in_restore(products_restore, restore_data)
                             save_products(products_restore)
+
+                            # ========== VARIANT-MEDIA ASSOCIATION ==========
+                            # Link images to specific variants using alt text hashtags
+                            try:
+                                sorted_images = product.get('images', [])
+                                has_hashtags = any(
+                                    isinstance(img, dict) and '#' in img.get('alt', '')
+                                    for img in sorted_images
+                                )
+
+                                if has_hashtags and created_variants:
+                                    log_and_status(status_fn, f"  Associating images with variants...")
+
+                                    # Poll media until ready
+                                    media_items = poll_media_ready(shopify_product_id, cfg, status_fn=status_fn)
+
+                                    if media_items:
+                                        # Build variant-media mapping
+                                        variant_media_map = {}  # variant_id -> [media_ids]
+                                        matched_count = 0
+
+                                        for media in media_items:
+                                            if media.get('status') != 'READY':
+                                                continue
+                                            media_alt = media.get('alt', '')
+                                            if not media_alt or '#' not in media_alt:
+                                                continue
+
+                                            hashtag_values = parse_hashtags_from_alt(media_alt)
+                                            if not hashtag_values:
+                                                continue
+
+                                            variant_id = match_image_to_variant(hashtag_values, created_variants)
+                                            if variant_id:
+                                                if variant_id not in variant_media_map:
+                                                    variant_media_map[variant_id] = []
+                                                variant_media_map[variant_id].append(media['id'])
+                                                matched_count += 1
+                                                logging.debug(f"    Matched media {media['id']} -> variant {variant_id}")
+
+                                        if variant_media_map:
+                                            success = append_media_to_variants(
+                                                shopify_product_id, variant_media_map, cfg, status_fn
+                                            )
+                                            if success:
+                                                log_and_status(
+                                                    status_fn,
+                                                    f"  ✅ Associated {matched_count} images with {len(variant_media_map)} variants"
+                                                )
+                                            else:
+                                                log_and_status(
+                                                    status_fn,
+                                                    f"  ⚠️ Variant-media association API call failed",
+                                                    "warning"
+                                                )
+                                        else:
+                                            logging.debug("No image-variant matches found via hashtags")
+                                    else:
+                                        logging.debug("No media items returned from polling")
+
+                            except Exception as e:
+                                logging.warning(f"Non-fatal error in variant-media association: {e}")
+                                if status_fn:
+                                    log_and_status(status_fn, f"  ⚠️ Image-variant association skipped: {e}", "warning")
 
                             # Set inventory quantities using inventorySetQuantities mutation
                             # This is more reliable than inventoryQuantities in productVariantsBulkCreate

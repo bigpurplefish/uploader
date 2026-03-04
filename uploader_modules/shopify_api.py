@@ -1365,6 +1365,169 @@ def sync_product_media(product_id, input_media, existing_media, cfg, status_fn=N
         return False
 
 
+def poll_media_ready(product_id, cfg, max_attempts=10, interval=2, status_fn=None):
+    """Poll product media until all items have READY fileStatus.
+
+    Args:
+        product_id: Shopify product GID
+        cfg: Configuration dictionary
+        max_attempts: Maximum polling attempts
+        interval: Seconds between polls
+        status_fn: Optional status update function
+
+    Returns:
+        List of media dicts with 'id', 'alt', 'status' keys, or empty list on failure
+    """
+    import time
+
+    store_url = cfg['SHOPIFY_STORE_URL'].replace("https://", "").replace("http://", "")
+    api_url = f"https://{store_url}/admin/api/2025-10/graphql.json"
+    headers = {
+        "Content-Type": "application/json",
+        "X-Shopify-Access-Token": cfg["SHOPIFY_ACCESS_TOKEN"]
+    }
+
+    query = """
+    query productMedia($productId: ID!) {
+      product(id: $productId) {
+        media(first: 250) {
+          edges {
+            node {
+              ... on MediaImage {
+                id
+                alt
+                fileStatus
+              }
+            }
+          }
+        }
+      }
+    }
+    """
+
+    media_items = []
+
+    for attempt in range(max_attempts):
+        try:
+            response = requests.post(
+                api_url,
+                json={"query": query, "variables": {"productId": product_id}},
+                headers=headers,
+                timeout=30
+            )
+            response.raise_for_status()
+            result = response.json()
+
+            edges = result.get("data", {}).get("product", {}).get("media", {}).get("edges", [])
+            media_items = []
+            all_ready = True
+
+            for edge in edges:
+                node = edge.get("node") or {}
+                if not node.get("id"):
+                    continue
+                status = node.get("fileStatus", "PROCESSING")
+                media_items.append({
+                    "id": node["id"],
+                    "alt": node.get("alt", ""),
+                    "status": status
+                })
+                if status != "READY":
+                    all_ready = False
+
+            if all_ready and media_items:
+                logging.debug(f"All {len(media_items)} media items READY after {attempt + 1} attempts")
+                return media_items
+
+            if attempt < max_attempts - 1:
+                logging.debug(f"Media not ready (attempt {attempt + 1}/{max_attempts}), waiting {interval}s...")
+                time.sleep(interval)
+
+        except Exception as e:
+            logging.warning(f"Error polling media status (attempt {attempt + 1}): {e}")
+            if attempt < max_attempts - 1:
+                time.sleep(interval)
+
+    logging.warning(f"Media not ready after {max_attempts} attempts")
+    if status_fn:
+        log_and_status(status_fn, f"  ⚠️ Media not ready after {max_attempts * interval}s, skipping variant association", "warning")
+    return media_items if media_items else []
+
+
+def append_media_to_variants(product_id, variant_media_map, cfg, status_fn=None):
+    """Call productVariantAppendMedia to associate images with variants.
+
+    Args:
+        product_id: Shopify product GID
+        variant_media_map: Dict mapping variant GID → list of media GIDs
+        cfg: Configuration dictionary
+        status_fn: Optional status update function
+
+    Returns:
+        True on success, False on failure
+    """
+    store_url = cfg['SHOPIFY_STORE_URL'].replace("https://", "").replace("http://", "")
+    api_url = f"https://{store_url}/admin/api/2025-10/graphql.json"
+    headers = {
+        "Content-Type": "application/json",
+        "X-Shopify-Access-Token": cfg["SHOPIFY_ACCESS_TOKEN"]
+    }
+
+    mutation = """
+    mutation productVariantAppendMedia($productId: ID!, $variantMedia: [ProductVariantAppendMediaInput!]!) {
+      productVariantAppendMedia(productId: $productId, variantMedia: $variantMedia) {
+        product {
+          id
+        }
+        userErrors {
+          field
+          message
+        }
+      }
+    }
+    """
+
+    variant_media_input = []
+    for variant_id, media_ids in variant_media_map.items():
+        variant_media_input.append({
+            "variantId": variant_id,
+            "mediaIds": media_ids
+        })
+
+    variables = {
+        "productId": product_id,
+        "variantMedia": variant_media_input
+    }
+
+    try:
+        response = requests.post(
+            api_url,
+            json={"query": mutation, "variables": variables},
+            headers=headers,
+            timeout=30
+        )
+        response.raise_for_status()
+        result = response.json()
+
+        if "errors" in result:
+            logging.warning(f"GraphQL errors in variant media append: {result['errors']}")
+            return False
+
+        user_errors = result.get("data", {}).get("productVariantAppendMedia", {}).get("userErrors", [])
+        if user_errors:
+            error_msg = "; ".join([f"{err.get('field')}: {err.get('message')}" for err in user_errors])
+            logging.warning(f"Variant media append user errors: {error_msg}")
+            return False
+
+        return True
+
+    except Exception as e:
+        logging.warning(f"Failed to append media to variants: {e}")
+        if status_fn:
+            log_and_status(status_fn, f"  ⚠️ Failed to associate images with variants: {e}", "warning")
+        return False
+
+
 def search_collection(name, cfg):
     """
     Search for a collection by name in Shopify.
@@ -1913,6 +2076,148 @@ def upload_model_to_shopify(model_url, filename, cfg, status_fn=None):
             log_and_status(status_fn, f"Unexpected error uploading model: {e}", "error")
         else:
             logging.error(f"Unexpected error uploading model: {e}")
+        return None, None
+
+
+def upload_video_to_shopify(video_url, filename, cfg, status_fn=None):
+    """
+    Upload a video to Shopify using API 2025-10 staged upload process.
+
+    Args:
+        video_url: URL of the video file to upload
+        filename: Filename for the video
+        cfg: Configuration dictionary
+        status_fn: Optional status update function
+
+    Returns:
+        Tuple of (resource_url, None) if successful, (None, None) otherwise
+    """
+    try:
+        store_url = cfg.get("SHOPIFY_STORE_URL", "").strip()
+        access_token = cfg.get("SHOPIFY_ACCESS_TOKEN", "").strip()
+
+        if not store_url or not access_token:
+            if status_fn:
+                log_and_status(status_fn, "Shopify credentials not configured for video upload", "error")
+            else:
+                logging.error("Shopify credentials not configured for video upload")
+            return None, None
+
+        store_url = store_url.replace("https://", "").replace("http://", "")
+
+        api_url = f"https://{store_url}/admin/api/2025-10/graphql.json"
+        headers = {
+            "Content-Type": "application/json",
+            "X-Shopify-Access-Token": access_token
+        }
+
+        # Determine MIME type from filename
+        ext = filename.rsplit('.', 1)[-1].lower() if '.' in filename else 'mp4'
+        mime_map = {'mp4': 'video/mp4', 'mov': 'video/quicktime', 'webm': 'video/webm'}
+        mime_type = mime_map.get(ext, 'video/mp4')
+
+        # Step 1: Download video from source
+        if status_fn:
+            log_and_status(status_fn, f"  Step 1: Downloading video from {video_url}")
+        else:
+            logging.info(f"Step 1: Downloading video from {video_url}")
+        video_response = requests.get(video_url, timeout=300)
+        video_response.raise_for_status()
+        video_data = video_response.content
+        file_size = len(video_data)
+
+        # Step 2: Create staged upload
+        if status_fn:
+            log_and_status(status_fn, f"  Step 2: Creating staged upload for {filename} ({file_size} bytes)")
+        else:
+            logging.info(f"Step 2: Creating staged upload for {filename} ({file_size} bytes)")
+
+        staged_upload_mutation = """
+        mutation stagedUploadsCreate($input: [StagedUploadInput!]!) {
+          stagedUploadsCreate(input: $input) {
+            stagedTargets {
+              url
+              resourceUrl
+              parameters {
+                name
+                value
+              }
+            }
+            userErrors {
+              field
+              message
+            }
+          }
+        }
+        """
+
+        variables = {
+            "input": [
+                {
+                    "resource": "VIDEO",
+                    "filename": filename,
+                    "mimeType": mime_type,
+                    "fileSize": str(file_size),
+                    "httpMethod": "POST"
+                }
+            ]
+        }
+
+        response = requests.post(
+            api_url,
+            json={"query": staged_upload_mutation, "variables": variables},
+            headers=headers,
+            timeout=60
+        )
+        response.raise_for_status()
+        result = response.json()
+
+        if "errors" in result or result.get("data", {}).get("stagedUploadsCreate", {}).get("userErrors"):
+            if status_fn:
+                log_and_status(status_fn, f"Failed to create staged upload for video: {result}", "error")
+            else:
+                logging.error(f"Failed to create staged upload for video: {result}")
+            return None, None
+
+        staged_target = result.get("data", {}).get("stagedUploadsCreate", {}).get("stagedTargets", [None])[0]
+        if not staged_target:
+            if status_fn:
+                log_and_status(status_fn, "No staged target returned for video", "error")
+            else:
+                logging.error("No staged target returned for video")
+            return None, None
+
+        upload_url = staged_target.get("url")
+        resource_url = staged_target.get("resourceUrl")
+        parameters = {p["name"]: p["value"] for p in staged_target.get("parameters", [])}
+
+        # Step 3: Upload to staged URL
+        if status_fn:
+            log_and_status(status_fn, f"  Step 3: Uploading video to staged URL")
+        else:
+            logging.info(f"Step 3: Uploading video to staged URL")
+        files = {'file': (filename, video_data, mime_type)}
+        upload_response = requests.post(upload_url, data=parameters, files=files, timeout=300)
+        upload_response.raise_for_status()
+
+        if status_fn:
+            log_and_status(status_fn, f"  ✅ Video uploaded to Shopify staging (resourceUrl: {resource_url})")
+        else:
+            logging.info(f"Video uploaded successfully: {resource_url}")
+
+        return resource_url, None
+
+    except requests.exceptions.RequestException as e:
+        if status_fn:
+            log_and_status(status_fn, f"Network error uploading video: {e}", "error")
+        else:
+            logging.error(f"Network error uploading video: {e}")
+        return None, None
+    except Exception as e:
+        if status_fn:
+            log_and_status(status_fn, f"Unexpected error uploading video: {e}", "error")
+        else:
+            logging.error(f"Unexpected error uploading video: {e}")
         return None, None
 
 

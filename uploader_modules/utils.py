@@ -108,8 +108,9 @@ def extract_unique_option_values(product):
                 option_values_map[option_name] = set()
 
     # Collect all unique values from variants
+    num_options = len(product.get('options', []))
     for variant in product.get('variants', []):
-        for i in range(1, 4):  # option1, option2, option3
+        for i in range(1, num_options + 1):  # option1 through optionN
             option_key = f'option{i}'
             if option_key in variant and variant[option_key]:
                 # Find the corresponding option name
@@ -255,6 +256,107 @@ def generate_image_filter_hashtags(options_dict):
                 hashtags.append(f"#{formatted_value}")
 
     return "".join(hashtags)
+
+
+def parse_hashtags_from_alt(alt_text):
+    """Extract hashtag values from image alt text.
+
+    Handles multiple formats:
+    - "SEO description #3/8\"#Ton" → ["3/8\"", "Ton"]
+    - "Description #SHALE_GREY#SMOOTH#MODULAR_SIZE" → ["SHALE_GREY", "SMOOTH", "MODULAR_SIZE"]
+    - "#3/8\" #Ton" (legacy space-separated) → ["3/8\"", "Ton"]
+    - "Blue Stone #3/4 inch. #3/4\"#Ton" → ["3/4\"", "Ton"] (stray # in descriptive text)
+
+    Handles stray '#' characters in the descriptive text portion by scanning
+    backwards from the end of the string to find the real hashtag block. In
+    the concatenated block each '#' (except the first) is immediately preceded
+    by a non-space character. The first '#' preceded by a space (or at
+    position 0) marks the start of the block.
+
+    Args:
+        alt_text: Image alt text string
+
+    Returns:
+        List of hashtag values (without # prefix), or empty list if none found
+    """
+    if not alt_text or '#' not in alt_text:
+        return []
+
+    # Legacy / pure-hashtag format: entire string starts with '#'
+    # e.g. "#SHALE_GREY #SMOOTH #MODULAR_SIZE" or "#SHALE_GREY#SMOOTH#MODULAR_SIZE"
+    if alt_text.startswith('#'):
+        hashtag_part = alt_text
+        if ' #' in hashtag_part[1:]:
+            return [t.strip().lstrip('#') for t in hashtag_part.split(' ') if t.strip().startswith('#')]
+        else:
+            return [t for t in hashtag_part.split('#') if t]
+
+    # Find all '#' positions, then walk backwards to locate the block start.
+    # A '#' that is part of the concatenated trailing block is either:
+    #   - the very first '#' in the block (preceded by a space or beginning of string), or
+    #   - immediately preceded by a non-space character (concatenated onto the prior value).
+    # A '#' in the descriptive text is always preceded by a space (sentence fragment).
+    positions = [i for i, ch in enumerate(alt_text) if ch == '#']
+
+    block_start = None
+    for pos in reversed(positions):
+        if pos == 0 or alt_text[pos - 1] == ' ':
+            # Space (or string start) before this '#' → start of the hashtag block
+            block_start = pos
+            break
+        # Non-space before '#' → concatenated continuation, keep walking back
+
+    if block_start is None:
+        return []
+
+    hashtag_part = alt_text[block_start:]
+
+    # Detect format within the extracted block
+    if ' #' in hashtag_part[1:]:
+        # Space-separated: "#3/8\" #Ton"
+        return [t.strip().lstrip('#') for t in hashtag_part.split(' ') if t.strip().startswith('#')]
+    else:
+        # Concatenated: "#SHALE_GREY#SMOOTH#MODULAR_SIZE"
+        return [t for t in hashtag_part.split('#') if t]
+
+
+def match_image_to_variant(hashtag_values, variants):
+    """Match parsed hashtag values to a variant's option values.
+
+    Tries exact match first, then normalized match via format_value_for_filter_tag().
+
+    Args:
+        hashtag_values: List of hashtag values from parse_hashtags_from_alt()
+        variants: List of variant dicts with 'selectedOptions' containing [{'name': ..., 'value': ...}]
+
+    Returns:
+        Variant GID (id field) if matched, None otherwise
+    """
+    if not hashtag_values or not variants:
+        return None
+
+    for variant in variants:
+        selected_options = variant.get('selectedOptions', [])
+        if not selected_options:
+            continue
+
+        option_values = [opt.get('value', '') for opt in selected_options]
+
+        # Skip if option count doesn't match hashtag count
+        if len(option_values) != len(hashtag_values):
+            continue
+
+        # Try exact match
+        if all(h == v for h, v in zip(hashtag_values, option_values)):
+            return variant.get('id')
+
+        # Try normalized match (both sides through format_value_for_filter_tag)
+        normalized_hashtags = [format_value_for_filter_tag(h) for h in hashtag_values]
+        normalized_options = [format_value_for_filter_tag(v) for v in option_values]
+        if all(h == v for h, v in zip(normalized_hashtags, normalized_options)):
+            return variant.get('id')
+
+    return None
 
 
 def validate_image_alt_tags_for_filtering(products):

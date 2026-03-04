@@ -69,6 +69,7 @@ Each option object defines a product variant dimension:
 |-------|------|-------------|
 | `option2` | string | Value for second option (if applicable) |
 | `option3` | string | Value for third option (if applicable) |
+| `option4` | string | Value for fourth option (if applicable, e.g., Unit of Sale) |
 | `cost` | string | Cost of goods (as string) |
 | `barcode` | string | Barcode/UPC |
 | `compare_at_price` | string/null | Original price for sale display |
@@ -248,6 +249,6 @@ For backwards compatibility, the following legacy field names are also supported
 
 1. **Required fields**: `title`, `variants` (with at least one variant)
 2. **URL validation**: All image URLs must be Shopify CDN URLs
-3. **Option consistency**: Variant `option1`/`option2`/`option3` must match defined options
+3. **Option consistency**: Variant `option1`/`option2`/`option3`/`option4` must match defined options
 4. **Price format**: Prices should be strings (e.g., `"29.99"`)
 5. **Weight units**: Must be valid Shopify units (`lb`, `kg`, `oz`, `g`)
