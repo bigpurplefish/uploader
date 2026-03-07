@@ -1762,6 +1762,11 @@ def process_products(cfg, status_fn, execution_mode="resume", start_record=None,
 
                 # Process 3D models from media array
                 uploaded_models = []
+                # Prepare filename components for media uploads (3D models and videos)
+                vendor = product.get('vendor', 'Unknown').strip().replace(' ', '_')
+                product_name = product_title.replace(' ', '_')
+                import uuid
+
                 for media_item in product.get('media', []):
                     if media_item.get('media_content_type') == 'MODEL_3D':
                         log_and_status(status_fn, f"  Uploading 3D model sources for product...")
@@ -1771,12 +1776,7 @@ def process_products(cfg, status_fn, execution_mode="resume", start_record=None,
                         alt_text = media_item.get('alt', '')
                         position = media_item.get('position', 999)
 
-                        # Prepare filename components
-                        vendor = product.get('vendor', 'Unknown').strip().replace(' ', '_')
-                        product_name = product_title.replace(' ', '_')
-
                         # Generate unique ID for this model (8-character hex)
-                        import uuid
                         unique_id = uuid.uuid4().hex[:8]
 
                         for source in sources:
@@ -1811,6 +1811,7 @@ def process_products(cfg, status_fn, execution_mode="resume", start_record=None,
                     if media_item.get('media_content_type') == 'VIDEO':
                         sources = media_item.get('sources', [])
                         alt_text = media_item.get('alt', '')
+                        unique_id = uuid.uuid4().hex[:8]
                         for source in sources:
                             video_url = source.get('url')
                             source_format = source.get('format', 'mp4').lower()
