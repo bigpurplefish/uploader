@@ -167,9 +167,9 @@ Input JSON → URL Validation → Collections Processing → Products Processing
    - Collections are searched first (by exact title match) to avoid duplicates
 
 3. **Bulk Operations Pattern**
-   - Uses `productVariantsBulkCreate` instead of individual variant mutations
+   - New products: uses `productSet` to create product + all variants in a single call
+   - Existing products (overwrite path): uses `productVariantsBulkCreate` for variant updates
    - Reduces API calls by ~70% compared to one-by-one variant creation
-   - Single mutation creates all variants for a product at once
 
 4. **Staged Upload for 3D Models**
    - Three-step process: request staged target → upload file → create file record
@@ -254,6 +254,10 @@ f"https://{SHOPIFY_STORE_URL}/admin/api/2025-10/graphql.json"
 
 ## Critical Implementation Details
 
+**IMPORTANT**: Always use `productSet` for product creation, never `productCreate`.
+`productSet` creates product + variants in a single call using `ProductSetInput`.
+Note: Shopify enforces a hard 3-option limit per product on all plans (both REST and GraphQL).
+
 ### Product Creation Flow
 
 The `process_products()` function (line 1346) orchestrates:
@@ -264,10 +268,10 @@ The `process_products()` function (line 1346) orchestrates:
    - Extract taxonomy (category/subcategory)
    - Search Shopify taxonomy for category ID
    - Upload 3D models if present
-   - Build product input with all fields
-   - Create product via `productCreate` mutation
+   - Build product input with all fields including variants
+   - Create product + variants via `productSet` mutation (single call)
+   - Attach images via `productCreateMedia`
    - Publish to sales channels if configured
-   - Create variants via `productVariantsBulkCreate`
    - Save state after each product
 4. **Generate output**: Write results to output JSON
 
@@ -284,7 +288,9 @@ The `process_collections()` function (line 815):
 
 ### Variant Creation (Critical)
 
-**Important**: Uses `productVariantsBulkCreate` mutation (API 2025-10):
+**New products**: Variants are created as part of the `productSet` mutation — no separate variant creation step. The `variants` array is included directly in the `ProductSetInput`.
+
+**Existing products (overwrite path)**: Uses `productVariantsBulkCreate` mutation (API 2025-10):
 - Takes array of variant inputs
 - All variants created in single API call
 - Each variant needs `optionValues` array matching product options
@@ -337,7 +343,7 @@ Products should arrive from the categorizer project with the following structure
 
 ### Modifying Product Input Structure
 
-**Key constraint**: Must match `ProductCreateInput` type in API 2025-10
+**Key constraint**: Must match `ProductSetInput` type in API 2025-10
 
 Critical fields:
 - `title` (String, required)
@@ -464,7 +470,7 @@ This repository contains Liquid templates, JavaScript, CSS for debugging and ref
 
 3. **Image URLs**: Must be pre-uploaded to Shopify CDN. Script doesn't upload images (only 3D models).
 
-4. **Variant Limits**: Shopify limits products to 100 variants per product.
+4. **Variant Limits**: Shopify supports up to 2048 variants per product (GraphQL API 2025-10).
 
 5. **API Version Support**: 2025-10 supported until October 2026. Plan to upgrade when new stable versions release.
 
@@ -474,23 +480,26 @@ This repository contains Liquid templates, JavaScript, CSS for debugging and ref
 
 ### API 2025-10 Changes
 
-- Uses `ProductCreateInput` (not deprecated `ProductInput`)
-- Parameter name is `product` (not `input`)
+- Uses `productSet` (not `productCreate`) for new product creation — see Critical Implementation Details
+- Uses `ProductSetInput` (not deprecated `ProductInput` or `ProductCreateInput`)
+- Parameter name is `input` with `$synchronous: Boolean!` flag (not just `$product`)
 - Uses `descriptionHtml` (not `bodyHTML`)
 - Uses `productOptions` (not `options`)
-- Uses `productVariantsBulkCreate` for all variant operations
+- Uses `productVariantsBulkCreate` only for updating variants on existing products
 
 ### GraphQL Mutation Signatures
 
-**Product**:
+**Product (new product creation)**:
 ```graphql
-mutation productCreate($product: ProductCreateInput!, $media: [CreateMediaInput!])
+mutation productSet($synchronous: Boolean!, $input: ProductSetInput!)
 ```
 
-**Variants**:
+**Variants (existing product update/overwrite path only)**:
 ```graphql
 mutation productVariantsBulkCreate($productId: ID!, $variants: [ProductVariantsBulkInput!]!)
 ```
+
+**Note**: `productVariantsBulkCreate` is NOT used when creating new products. Variants for new products are included in the `productSet` input directly.
 
 **Collections**:
 ```graphql

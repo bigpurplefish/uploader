@@ -216,13 +216,49 @@ def temp_products_json(temp_dir, sample_products):
 
 @pytest.fixture
 def mock_shopify_product_create():
-    """Mock successful Shopify product create response."""
+    """Mock successful Shopify product create response (legacy - for update path tests)."""
     return {
         "data": {
             "productCreate": {
                 "product": {
                     "id": "gid://shopify/Product/7891234567890",
                     "title": "Test Product"
+                },
+                "userErrors": []
+            }
+        }
+    }
+
+
+@pytest.fixture
+def mock_shopify_product_set():
+    """Mock successful Shopify productSet response (new creation path)."""
+    return {
+        "data": {
+            "productSet": {
+                "product": {
+                    "id": "gid://shopify/Product/7891234567890",
+                    "title": "Test Product",
+                    "handle": "test-product",
+                    "media": {
+                        "edges": []
+                    },
+                    "variants": {
+                        "edges": [
+                            {
+                                "node": {
+                                    "id": "gid://shopify/ProductVariant/123",
+                                    "sku": "TEST-001",
+                                    "selectedOptions": [
+                                        {"name": "Color", "value": "Red"}
+                                    ],
+                                    "inventoryItem": {
+                                        "id": "gid://shopify/InventoryItem/456"
+                                    }
+                                }
+                            }
+                        ]
+                    }
                 },
                 "userErrors": []
             }

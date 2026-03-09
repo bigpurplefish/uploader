@@ -140,7 +140,7 @@ def match_variants_by_sku(input_variants, shopify_variants):
                 val = input_var.get(key, '').strip()
                 if val:
                     input_opts.append(val.lower())
-                elif i > 3:
+                else:
                     break
             if not input_opts:
                 continue
@@ -1707,9 +1707,10 @@ def process_products(cfg, status_fn, execution_mode="resume", start_record=None,
                 
                 if option_values_map:
                     product_options = []
-                    for option_name, value_set in option_values_map.items():
+                    for idx, (option_name, value_set) in enumerate(option_values_map.items()):
                         product_options.append({
                             "name": option_name,
+                            "position": idx + 1,
                             "values": [{"name": value} for value in sorted(value_set)]
                         })
                     
@@ -1865,12 +1866,191 @@ def process_products(cfg, status_fn, execution_mode="resume", start_record=None,
 
                 # Note: 3D models will be attached to the product after creation
                 # using productCreateMedia mutation (they can't be added during productCreate)
-                
-                # Create product mutation (API 2025-10)
-                # Returns media details to verify correct image association
-                create_product_mutation = """
-                mutation productCreate($product: ProductCreateInput!, $media: [CreateMediaInput!]) {
-                  productCreate(product: $product, media: $media) {
+
+                # ========== BUILD VARIANT INPUTS ==========
+                # Variant inputs must be built BEFORE the productSet mutation call
+                # since variants are now embedded in ProductSetInput
+                variants = product.get('variants', [])
+                variant_results = []
+
+                if not variants:
+                    log_and_status(
+                        status_fn,
+                        "  No variants found in product data",
+                        "warning"
+                    )
+                    # Mark product as failed if no variants
+                    result_dict = {
+                        "title": product_title,
+                        "status": "failed",
+                        "error": "No variants in product data",
+                        "failed_stage": "variant_validation",
+                        "product_created": False,
+                        "variants_created": False
+                    }
+                    add_result(result_dict)
+                    products_restore = update_product_in_restore(products_restore, result_dict)
+                    save_products(products_restore)
+
+                    log_and_status(status_fn, "\n" + "=" * 80)
+                    log_and_status(status_fn, "NO VARIANTS - STOPPING", "error")
+                    log_and_status(status_fn, "=" * 80)
+                    return
+
+                log_and_status(
+                    status_fn,
+                    f"  Preparing {len(variants)} variants...",
+                    ui_msg=f"  Preparing variants..."
+                )
+
+                variant_inputs = []
+                option_names = [opt.get('name') for opt in product.get('options', []) if isinstance(opt, dict)]
+
+                for var_idx, variant in enumerate(variants):
+                    try:
+                        variant_input = {
+                            "price": str(variant.get('price', '0')),
+                            "barcode": variant.get('barcode', ''),
+                            "inventoryPolicy": "DENY",
+                            "taxable": variant.get('taxable', True),
+                        }
+
+                        # Set SKU, inventory tracking, requiresShipping, and weight via inventoryItem (API 2025-10 structure)
+                        sku_value = variant.get('sku', '')
+                        inventory_item = {
+                            "tracked": True,
+                            "requiresShipping": True
+                        }
+
+                        if sku_value:
+                            inventory_item["sku"] = sku_value
+
+                        # Handle weight via inventoryItem.measurement.weight (API 2025-10 structure)
+                        if 'weight' in variant and variant['weight']:
+                            try:
+                                weight_value = float(variant['weight'])
+                                # Map weight_unit to Shopify WeightUnit enum (POUNDS, OUNCES, KILOGRAMS, GRAMS)
+                                weight_unit_map = {
+                                    'lb': 'POUNDS',
+                                    'lbs': 'POUNDS',
+                                    'LB': 'POUNDS',
+                                    'pound': 'POUNDS',
+                                    'pounds': 'POUNDS',
+                                    'oz': 'OUNCES',
+                                    'ounce': 'OUNCES',
+                                    'ounces': 'OUNCES',
+                                    'kg': 'KILOGRAMS',
+                                    'kilogram': 'KILOGRAMS',
+                                    'kilograms': 'KILOGRAMS',
+                                    'g': 'GRAMS',
+                                    'gram': 'GRAMS',
+                                    'grams': 'GRAMS',
+                                }
+                                input_unit = variant.get('weight_unit', 'lb')
+                                weight_unit = weight_unit_map.get(input_unit, 'POUNDS')
+
+                                inventory_item["measurement"] = {
+                                    "weight": {
+                                        "value": weight_value,
+                                        "unit": weight_unit
+                                    }
+                                }
+                            except (ValueError, TypeError):
+                                pass
+
+                        variant_input["inventoryItem"] = inventory_item
+
+                        if 'compare_at_price' in variant and variant['compare_at_price']:
+                            variant_input["compareAtPrice"] = str(variant['compare_at_price'])
+
+                        # Build optionValues (API 2025-10 format)
+                        option_values = []
+
+                        for i in range(len(option_names)):
+                            option_name = option_names[i]
+                            option_key = f'option{i+1}'
+                            option_value = variant.get(option_key)
+
+                            if option_value:
+                                option_values.append({
+                                    "optionName": option_name,
+                                    "name": str(option_value)
+                                })
+
+                        if option_values:
+                            variant_input['optionValues'] = option_values
+
+                        # Note: Inventory quantities are now set via inventorySetQuantities mutation
+                        # after variant creation for better reliability (see code below)
+
+                        # Add variant metafields with key mapping
+                        # Map input file keys to Shopify metafield definition keys
+                        # Note: weight and dimensions are handled as standard Shopify fields, not metafields
+                        VARIANT_METAFIELD_KEY_MAPPING = {
+                            # Input key -> Shopify key
+                            'model_number': 'model_number',
+                            'size_info': 'size_info',
+                            'color_swatch_image': 'color_swatch_image',
+                            'texture_swatch_image': 'texture_swatch_image',
+                            'finish_swatch_image': 'finish_swatch_image',
+                        }
+
+                        var_metafields = []
+                        for mf in variant.get('metafields', []):
+                            input_key = mf.get('key')
+                            # Map the key if a mapping exists, otherwise use original
+                            shopify_key = VARIANT_METAFIELD_KEY_MAPPING.get(input_key, input_key)
+
+                            var_metafields.append({
+                                "namespace": mf.get('namespace'),
+                                "key": shopify_key,
+                                "value": mf.get('value'),
+                                "type": mf.get('type')
+                            })
+
+                            # Log if key was mapped
+                            if input_key != shopify_key:
+                                logging.debug(f"    Mapped variant metafield key: '{input_key}' -> '{shopify_key}'")
+
+                        if var_metafields:
+                            variant_input['metafields'] = var_metafields
+
+                        variant_inputs.append(variant_input)
+
+                    except Exception as e:
+                        error_msg = f"Error preparing variant {var_idx+1}: {e}"
+                        logging.error(error_msg)
+                        log_and_status(status_fn, f"  {error_msg}", "error")
+
+                        # Save restore point with error
+                        result_dict = {
+                            "title": product_title,
+                            "status": "failed",
+                            "error": error_msg,
+                            "failed_stage": "variant_preparation",
+                            "product_created": False,
+                            "variants_created": False
+                        }
+                        add_result(result_dict)
+                        products_restore = update_product_in_restore(products_restore, result_dict)
+                        save_products(products_restore)
+
+                        # STOP IMMEDIATELY
+                        log_and_status(status_fn, "\n" + "=" * 80)
+                        log_and_status(status_fn, "VARIANT PREPARATION FAILED - STOPPING", "error")
+                        log_and_status(status_fn, "=" * 80)
+                        return
+
+                # Embed variants in product input for productSet
+                if variant_inputs:
+                    product_input["variants"] = variant_inputs
+
+                # ========== CREATE PRODUCT WITH VARIANTS (productSet) ==========
+                # productSet creates product + variants in a single mutation
+                # Images are attached separately via productCreateMedia after creation
+                product_set_mutation = """
+                mutation productSet($synchronous: Boolean!, $input: ProductSetInput!) {
+                  productSet(synchronous: $synchronous, input: $input) {
                     product {
                       id
                       title
@@ -1889,6 +2069,21 @@ def process_products(cfg, status_fn, execution_mode="resume", start_record=None,
                           }
                         }
                       }
+                      variants(first: 250) {
+                        edges {
+                          node {
+                            id
+                            sku
+                            selectedOptions {
+                              name
+                              value
+                            }
+                            inventoryItem {
+                              id
+                            }
+                          }
+                        }
+                      }
                     }
                     userErrors {
                       field
@@ -1897,14 +2092,14 @@ def process_products(cfg, status_fn, execution_mode="resume", start_record=None,
                   }
                 }
                 """
-                
+
                 variables = {
-                    "product": product_input,
-                    "media": media_input if media_input else None
+                    "synchronous": True,
+                    "input": product_input
                 }
 
-                log_and_status(status_fn, f"  Creating product with title: {product_input['title']}")
-                logging.debug(f"Product input: {json.dumps(product_input, indent=2)}")
+                log_and_status(status_fn, f"  Creating product with {len(variant_inputs)} variants: {product_input['title']}")
+                logging.debug(f"Product input (with variants): {json.dumps(product_input, indent=2)}")
 
                 # Log media input for debugging image association issues
                 if media_input:
@@ -1915,11 +2110,11 @@ def process_products(cfg, status_fn, execution_mode="resume", start_record=None,
                         filename = src.split('/')[-1].split('?')[0] if src else 'N/A'
                         logging.debug(f"  [{i+1}] file={filename}, alt={alt[:60] if alt else 'N/A'}...")
 
-                # Make API request
+                # Make API request (productSet creates product + variants in one call)
                 try:
                     response = requests.post(
                         api_url,
-                        json={"query": create_product_mutation, "variables": variables},
+                        json={"query": product_set_mutation, "variables": variables},
                         headers=headers,
                         timeout=60
                     )
@@ -1951,11 +2146,11 @@ def process_products(cfg, status_fn, execution_mode="resume", start_record=None,
                         return
                     
                     # Check for user errors
-                    user_errors = result.get("data", {}).get("productCreate", {}).get("userErrors", [])
+                    user_errors = result.get("data", {}).get("productSet", {}).get("userErrors", [])
                     if user_errors:
                         error_msg = "; ".join([f"{err.get('field')}: {err.get('message')}" for err in user_errors])
                         logging.error(f"Product creation user errors: {error_msg}")
-                        log_and_status(status_fn, f"  ❌ Product creation errors: {error_msg}", "error")
+                        log_and_status(status_fn, f"  Product creation errors: {error_msg}", "error")
                         
                         # Save restore point with error
                         result_dict = {
@@ -1976,7 +2171,7 @@ def process_products(cfg, status_fn, execution_mode="resume", start_record=None,
                         return
                     
                     # Extract product data
-                    created_product = result.get("data", {}).get("productCreate", {}).get("product", {})
+                    created_product = result.get("data", {}).get("productSet", {}).get("product", {})
                     shopify_product_id = created_product.get("id")
                     product_handle = created_product.get("handle")
                     
@@ -2009,40 +2204,76 @@ def process_products(cfg, status_fn, execution_mode="resume", start_record=None,
                         ui_msg="  ✅ Product created"
                     )
 
-                    # Verify media was created correctly
-                    created_media = created_product.get("media", {}).get("edges", [])
-                    if created_media and media_input:
-                        logging.debug(f"  Media verification for '{product_title}':")
-                        logging.debug(f"    Sent {len(media_input)} images, received {len(created_media)} media items")
+                    # Attach images to product via productCreateMedia
+                    # (productSet does not accept media inline, so images are attached after creation)
+                    if media_input:
+                        log_and_status(status_fn, f"  Attaching {len(media_input)} image(s) to product...")
 
-                        # Compare sent URLs with received URLs
-                        sent_urls = [m.get('originalSource', '') for m in media_input]
-                        received_media_info = []
+                        attach_images_mutation = """
+                        mutation productCreateMedia($media: [CreateMediaInput!]!, $productId: ID!) {
+                          productCreateMedia(media: $media, productId: $productId) {
+                            media {
+                              ... on MediaImage {
+                                id
+                                alt
+                                image {
+                                  url
+                                  originalSrc
+                                }
+                              }
+                            }
+                            mediaUserErrors {
+                              field
+                              message
+                            }
+                            userErrors {
+                              field
+                              message
+                            }
+                          }
+                        }
+                        """
 
-                        for i, edge in enumerate(created_media):
-                            node = edge.get("node") or {}
-                            image_data = node.get("image") or {}
-                            media_id = node.get("id", "N/A")
-                            media_alt = node.get("alt") or ""
-                            original_src = image_data.get("originalSrc") or ""
+                        attach_images_variables = {
+                            "productId": shopify_product_id,
+                            "media": media_input
+                        }
 
-                            # Extract filename for comparison
-                            received_filename = original_src.split('/')[-1].split('?')[0] if original_src else 'N/A'
-                            received_media_info.append({
-                                'position': i + 1,
-                                'id': media_id,
-                                'filename': received_filename,
-                                'alt': media_alt
-                            })
-                            logging.debug(f"    Received [{i+1}]: id={media_id}, file={received_filename}, alt={media_alt[:50] if media_alt else 'N/A'}...")
-
-                        # Check for URL mismatches (warning only, don't fail)
-                        if len(media_input) != len(created_media):
-                            log_and_status(
-                                status_fn,
-                                f"  ⚠️ Media count mismatch: sent {len(media_input)}, received {len(created_media)}",
-                                "warning"
+                        try:
+                            attach_response = requests.post(
+                                api_url,
+                                json={"query": attach_images_mutation, "variables": attach_images_variables},
+                                headers=headers,
+                                timeout=60
                             )
+                            attach_response.raise_for_status()
+                            attach_result = attach_response.json()
+
+                            logging.debug(f"productCreateMedia (images) response: {json.dumps(attach_result, indent=2)}")
+
+                            mutation_data = attach_result.get("data", {}).get("productCreateMedia", {})
+                            img_user_errors = mutation_data.get("userErrors", [])
+                            img_media_errors = mutation_data.get("mediaUserErrors", [])
+
+                            if "errors" in attach_result or img_user_errors or img_media_errors:
+                                all_errors = attach_result.get("errors", []) + img_user_errors + img_media_errors
+                                log_and_status(status_fn, f"  Failed to attach images: {all_errors}", "warning")
+                            else:
+                                created_media = mutation_data.get("media", [])
+                                log_and_status(status_fn, f"  Attached {len(created_media)} image(s) to product")
+
+                                # Log media details for debugging
+                                for i, m in enumerate(created_media):
+                                    if m:
+                                        media_id = m.get("id", "N/A")
+                                        media_alt = m.get("alt") or ""
+                                        image_data = m.get("image") or {}
+                                        original_src = image_data.get("originalSrc") or ""
+                                        received_filename = original_src.split('/')[-1].split('?')[0] if original_src else 'N/A'
+                                        logging.debug(f"    [{i+1}]: id={media_id}, file={received_filename}, alt={media_alt[:50] if media_alt else 'N/A'}...")
+                        except Exception as e:
+                            log_and_status(status_fn, f"  Error attaching images: {e}", "warning")
+                            logging.exception("Full traceback:")
 
                     # Attach 3D models to product if any were uploaded
                     if uploaded_models:
@@ -2173,14 +2404,58 @@ def process_products(cfg, status_fn, execution_mode="resume", start_record=None,
                             log_and_status(status_fn, f"  ⚠️ Error attaching videos: {e}", "warning")
                             logging.exception("Full traceback:")
 
-                    # Save restore point after product creation
+                    # Extract created variants from productSet response (connection format)
+                    created_variants_edges = created_product.get("variants", {}).get("edges", [])
+                    created_variants = [edge.get("node", {}) for edge in created_variants_edges]
+
+                    if not created_variants:
+                        error_msg = "No variants returned from productSet API"
+                        logging.error(error_msg)
+                        log_and_status(status_fn, f"  {error_msg}", "error")
+
+                        # Save restore point with error
+                        result_dict = {
+                            "title": product_title,
+                            "shopify_id": shopify_product_id,
+                            "status": "failed",
+                            "error": error_msg,
+                            "failed_stage": "variant_creation",
+                            "product_created": True,
+                            "variants_created": False
+                        }
+                        add_result(result_dict)
+                        products_restore = update_product_in_restore(products_restore, result_dict)
+                        save_products(products_restore)
+
+                        # STOP IMMEDIATELY
+                        log_and_status(status_fn, "\n" + "=" * 80)
+                        log_and_status(status_fn, "VARIANT CREATION FAILED - STOPPING", "error")
+                        log_and_status(status_fn, "=" * 80)
+                        return
+
+                    log_and_status(
+                        status_fn,
+                        f"  Created {len(created_variants)} variants",
+                        ui_msg="  Variants created"
+                    )
+
+                    # Extract variant IDs for output
+                    created_variant_ids = [
+                        {"id": v.get("id"), "sku": v.get("sku")}
+                        for v in created_variants
+                        if v.get("id")
+                    ]
+
+                    # Save restore point after product + variant creation
                     restore_data = {
                         "title": product_title,
                         "status": "in_progress",
                         "shopify_id": shopify_product_id,
                         "handle": product_handle,
                         "product_created": True,
-                        "variants_created": False,
+                        "variants_created": True,
+                        "variant_count": len(created_variants),
+                        "variant_ids": created_variant_ids,
                         "published": False,
                         "category": category,
                         "subcategory": subcategory,
@@ -2259,199 +2534,93 @@ def process_products(cfg, status_fn, execution_mode="resume", start_record=None,
                     log_and_status(status_fn, "=" * 80)
                     return
                 
-                # Create variants
-                variants = product.get('variants', [])
-                variant_results = []
-
-                if not variants:
-                    log_and_status(
-                        status_fn,
-                        "  ⚠️  No variants found in product data",
-                        "warning"
+                # ========== VARIANT-MEDIA ASSOCIATION ==========
+                # Link images to specific variants using alt text hashtags
+                try:
+                    sorted_images = product.get('images', [])
+                    has_hashtags = any(
+                        isinstance(img, dict) and '#' in img.get('alt', '')
+                        for img in sorted_images
                     )
-                    # Mark product as failed if no variants
-                    result_dict = {
-                        "title": product_title,
-                        "shopify_id": shopify_product_id,
-                        "status": "failed",
-                        "error": "No variants in product data",
-                        "failed_stage": "variant_validation",
-                        "product_created": True,
-                        "variants_created": False
-                    }
-                    add_result(result_dict)
-                    products_restore = update_product_in_restore(products_restore, result_dict)
-                    save_products(products_restore)
 
-                    log_and_status(status_fn, "\n" + "=" * 80)
-                    log_and_status(status_fn, "❌ NO VARIANTS - STOPPING", "error")
-                    log_and_status(status_fn, "=" * 80)
-                    return
+                    if has_hashtags and created_variants:
+                        log_and_status(status_fn, f"  Associating images with variants...")
 
-                if variants:
-                    log_and_status(
-                        status_fn,
-                        f"  Creating {len(variants)} variants...",
-                        ui_msg=f"  Creating variants..."
-                    )
-                    
-                    variant_inputs = []
-                    option_names = [opt.get('name') for opt in product.get('options', []) if isinstance(opt, dict)]
-                    
-                    for var_idx, variant in enumerate(variants):
-                        try:
-                            variant_input = {
-                                "price": str(variant.get('price', '0')),
-                                "barcode": variant.get('barcode', ''),
-                                "inventoryPolicy": "DENY",
-                                "taxable": variant.get('taxable', True),
-                            }
-                            
-                            # Set SKU, inventory tracking, requiresShipping, and weight via inventoryItem (API 2025-10 structure)
-                            sku_value = variant.get('sku', '')
-                            inventory_item = {
-                                "tracked": True,
-                                "requiresShipping": True  # ✅ All products require shipping
-                            }
+                        # Poll media until ready
+                        media_items = poll_media_ready(shopify_product_id, cfg, status_fn=status_fn)
 
-                            if sku_value:
-                                inventory_item["sku"] = sku_value
+                        if media_items:
+                            # Build variant-media mapping
+                            variant_media_map = {}  # variant_id -> [media_ids]
+                            matched_count = 0
 
-                            # Handle weight via inventoryItem.measurement.weight (API 2025-10 structure)
-                            if 'weight' in variant and variant['weight']:
-                                try:
-                                    weight_value = float(variant['weight'])
-                                    # Map weight_unit to Shopify WeightUnit enum (POUNDS, OUNCES, KILOGRAMS, GRAMS)
-                                    weight_unit_map = {
-                                        'lb': 'POUNDS',
-                                        'lbs': 'POUNDS',
-                                        'LB': 'POUNDS',
-                                        'pound': 'POUNDS',
-                                        'pounds': 'POUNDS',
-                                        'oz': 'OUNCES',
-                                        'ounce': 'OUNCES',
-                                        'ounces': 'OUNCES',
-                                        'kg': 'KILOGRAMS',
-                                        'kilogram': 'KILOGRAMS',
-                                        'kilograms': 'KILOGRAMS',
-                                        'g': 'GRAMS',
-                                        'gram': 'GRAMS',
-                                        'grams': 'GRAMS',
-                                    }
-                                    input_unit = variant.get('weight_unit', 'lb')
-                                    weight_unit = weight_unit_map.get(input_unit, 'POUNDS')
+                            for media in media_items:
+                                if media.get('status') != 'READY':
+                                    continue
+                                media_alt = media.get('alt', '')
+                                if not media_alt or '#' not in media_alt:
+                                    continue
 
-                                    inventory_item["measurement"] = {
-                                        "weight": {
-                                            "value": weight_value,
-                                            "unit": weight_unit
-                                        }
-                                    }
-                                except (ValueError, TypeError):
-                                    pass
+                                hashtag_values = parse_hashtags_from_alt(media_alt)
+                                if not hashtag_values:
+                                    continue
 
-                            variant_input["inventoryItem"] = inventory_item
+                                variant_id = match_image_to_variant(hashtag_values, created_variants)
+                                if variant_id:
+                                    if variant_id not in variant_media_map:
+                                        variant_media_map[variant_id] = []
+                                    variant_media_map[variant_id].append(media['id'])
+                                    matched_count += 1
+                                    logging.debug(f"    Matched media {media['id']} -> variant {variant_id}")
 
-                            if 'compare_at_price' in variant and variant['compare_at_price']:
-                                variant_input["compareAtPrice"] = str(variant['compare_at_price'])
-                            
-                            # Build optionValues (API 2025-10 format)
-                            option_values = []
-                            
-                            for i in range(len(option_names)):
-                                option_name = option_names[i]
-                                option_key = f'option{i+1}'
-                                option_value = variant.get(option_key)
-                                
-                                if option_value:
-                                    option_values.append({
-                                        "optionName": option_name,
-                                        "name": str(option_value)
-                                    })
-                            
-                            if option_values:
-                                variant_input['optionValues'] = option_values
+                            if variant_media_map:
+                                success = append_media_to_variants(
+                                    shopify_product_id, variant_media_map, cfg, status_fn
+                                )
+                                if success:
+                                    log_and_status(
+                                        status_fn,
+                                        f"  Associated {matched_count} images with {len(variant_media_map)} variants"
+                                    )
+                                else:
+                                    log_and_status(
+                                        status_fn,
+                                        f"  Variant-media association API call failed",
+                                        "warning"
+                                    )
+                            else:
+                                logging.debug("No image-variant matches found via hashtags")
+                        else:
+                            logging.debug("No media items returned from polling")
 
-                            # Note: Inventory quantities are now set via inventorySetQuantities mutation
-                            # after variant creation for better reliability (see code below)
+                except Exception as e:
+                    logging.warning(f"Non-fatal error in variant-media association: {e}")
+                    if status_fn:
+                        log_and_status(status_fn, f"  Image-variant association skipped: {e}", "warning")
 
-                            # Add variant metafields with key mapping
-                            # Map input file keys to Shopify metafield definition keys
-                            # Note: weight and dimensions are handled as standard Shopify fields, not metafields
-                            VARIANT_METAFIELD_KEY_MAPPING = {
-                                # Input key -> Shopify key
-                                'model_number': 'model_number',
-                                'size_info': 'size_info',
-                                'color_swatch_image': 'color_swatch_image',
-                                'texture_swatch_image': 'texture_swatch_image',
-                                'finish_swatch_image': 'finish_swatch_image',
-                            }
+                # Set inventory quantities using inventorySetQuantities mutation
+                if inventory_quantity and location_id:
+                    log_and_status(status_fn, f"  Setting inventory quantities...")
 
-                            var_metafields = []
-                            for mf in variant.get('metafields', []):
-                                input_key = mf.get('key')
-                                # Map the key if a mapping exists, otherwise use original
-                                shopify_key = VARIANT_METAFIELD_KEY_MAPPING.get(input_key, input_key)
+                    # Build quantities input for all variants
+                    inventory_quantities_input = []
+                    for variant in created_variants:
+                        inventory_item = variant.get("inventoryItem", {})
+                        inventory_item_id = inventory_item.get("id") if inventory_item else None
 
-                                var_metafields.append({
-                                    "namespace": mf.get('namespace'),
-                                    "key": shopify_key,
-                                    "value": mf.get('value'),
-                                    "type": mf.get('type')
-                                })
+                        if inventory_item_id:
+                            inventory_quantities_input.append({
+                                "inventoryItemId": inventory_item_id,
+                                "locationId": location_id,
+                                "quantity": inventory_quantity
+                            })
 
-                                # Log if key was mapped
-                                if input_key != shopify_key:
-                                    logging.debug(f"    Mapped variant metafield key: '{input_key}' -> '{shopify_key}'")
-                            
-                            if var_metafields:
-                                variant_input['metafields'] = var_metafields
-                            
-                            variant_inputs.append(variant_input)
-                            
-                        except Exception as e:
-                            error_msg = f"Error preparing variant {var_idx+1}: {e}"
-                            logging.error(error_msg)
-                            log_and_status(status_fn, f"  ❌ {error_msg}", "error")
-                            
-                            # Save restore point with error
-                            result_dict = {
-                                "title": product_title,
-                                "shopify_id": shopify_product_id,
-                                "status": "failed",
-                                "error": error_msg,
-                                "failed_stage": "variant_preparation",
-                                "product_created": True,
-                                "variants_created": False
-                            }
-                            add_result(result_dict)
-                            products_restore = update_product_in_restore(products_restore, result_dict)
-                            save_products(products_restore)
-                            
-                            # STOP IMMEDIATELY
-                            log_and_status(status_fn, "\n" + "=" * 80)
-                            log_and_status(status_fn, "❌ VARIANT PREPARATION FAILED - STOPPING", "error")
-                            log_and_status(status_fn, "=" * 80)
-                            return
-                    
-                    # Create variants in bulk (API 2025-10)
-                    # ✅ CRITICAL FIX: Use REMOVE_STANDALONE_VARIANT strategy to avoid duplicates
-                    # When productOptions are provided, Shopify auto-creates a default variant
-                    # This strategy removes it before creating our variants
-                    if variant_inputs:
-                        create_variants_mutation = """
-                        mutation productVariantsBulkCreate($productId: ID!, $strategy: ProductVariantsBulkCreateStrategy, $variants: [ProductVariantsBulkInput!]!) {
-                          productVariantsBulkCreate(productId: $productId, strategy: $strategy, variants: $variants) {
-                            productVariants {
+                    if inventory_quantities_input:
+                        set_inventory_mutation = """
+                        mutation inventorySetQuantities($input: InventorySetQuantitiesInput!) {
+                          inventorySetQuantities(input: $input) {
+                            inventoryAdjustmentGroup {
                               id
-                              sku
-                              selectedOptions {
-                                name
-                                value
-                              }
-                              inventoryItem {
-                                id
-                              }
                             }
                             userErrors {
                               field
@@ -2460,309 +2629,42 @@ def process_products(cfg, status_fn, execution_mode="resume", start_record=None,
                           }
                         }
                         """
-                        
-                        variant_variables = {
-                            "productId": shopify_product_id,
-                            "strategy": "REMOVE_STANDALONE_VARIANT",  # ✅ Remove auto-created default variant
-                            "variants": variant_inputs
+
+                        inventory_variables = {
+                            "input": {
+                                "name": "available",
+                                "reason": "correction",
+                                "ignoreCompareQuantity": True,
+                                "quantities": inventory_quantities_input
+                            }
                         }
 
-                        log_and_status(status_fn, f"  Creating {len(variant_inputs)} variants in bulk with REMOVE_STANDALONE_VARIANT strategy")
-                        logging.debug(f"Variant inputs: {json.dumps(variant_inputs, indent=2)}")
-                        
                         try:
-                            response = requests.post(
+                            inv_response = requests.post(
                                 api_url,
-                                json={"query": create_variants_mutation, "variables": variant_variables},
+                                json={"query": set_inventory_mutation, "variables": inventory_variables},
                                 headers=headers,
                                 timeout=60
                             )
-                            response.raise_for_status()
-                            result = response.json()
-                            
-                            # Check for GraphQL errors
-                            if "errors" in result:
-                                error_msg = f"GraphQL errors: {result['errors']}"
-                                logging.error(error_msg)
-                                log_and_status(status_fn, f"  ❌ {error_msg}", "error")
-                                
-                                # Save restore point with error
-                                result_dict = {
-                                    "title": product_title,
-                                    "shopify_id": shopify_product_id,
-                                    "status": "failed",
-                                    "error": error_msg,
-                                    "failed_stage": "variant_creation",
-                                    "product_created": True,
-                                    "variants_created": False
-                                }
-                                add_result(result_dict)
-                                products_restore = update_product_in_restore(products_restore, result_dict)
-                                save_products(products_restore)
-                                
-                                # STOP IMMEDIATELY
-                                log_and_status(status_fn, "\n" + "=" * 80)
-                                log_and_status(status_fn, "❌ VARIANT CREATION FAILED - STOPPING", "error")
-                                log_and_status(status_fn, "=" * 80)
-                                return
-                            
-                            # Check for user errors
-                            user_errors = result.get("data", {}).get("productVariantsBulkCreate", {}).get("userErrors", [])
-                            if user_errors:
-                                error_msg = "; ".join([f"{err.get('field')}: {err.get('message')}" for err in user_errors])
-                                logging.error(f"Variant creation user errors: {error_msg}")
-                                log_and_status(status_fn, f"  ❌ Variant creation errors: {error_msg}", "error")
-                                
-                                # Save restore point with error
-                                result_dict = {
-                                    "title": product_title,
-                                    "shopify_id": shopify_product_id,
-                                    "status": "failed",
-                                    "error": error_msg,
-                                    "failed_stage": "variant_creation",
-                                    "product_created": True,
-                                    "variants_created": False
-                                }
-                                add_result(result_dict)
-                                products_restore = update_product_in_restore(products_restore, result_dict)
-                                save_products(products_restore)
-                                
-                                # STOP IMMEDIATELY
-                                log_and_status(status_fn, "\n" + "=" * 80)
-                                log_and_status(status_fn, "❌ VARIANT CREATION FAILED - STOPPING", "error")
-                                log_and_status(status_fn, "=" * 80)
-                                return
-                            
-                            # Extract created variants
-                            created_variants = result.get("data", {}).get("productVariantsBulkCreate", {}).get("productVariants", [])
-                            
-                            if not created_variants:
-                                error_msg = "No variants returned from API"
-                                logging.error(error_msg)
-                                log_and_status(status_fn, f"  ❌ {error_msg}", "error")
-                                
-                                # Save restore point with error
-                                result_dict = {
-                                    "title": product_title,
-                                    "shopify_id": shopify_product_id,
-                                    "status": "failed",
-                                    "error": error_msg,
-                                    "failed_stage": "variant_creation",
-                                    "product_created": True,
-                                    "variants_created": False
-                                }
-                                add_result(result_dict)
-                                products_restore = update_product_in_restore(products_restore, result_dict)
-                                save_products(products_restore)
-                                
-                                # STOP IMMEDIATELY
-                                log_and_status(status_fn, "\n" + "=" * 80)
-                                log_and_status(status_fn, "❌ VARIANT CREATION FAILED - STOPPING", "error")
-                                log_and_status(status_fn, "=" * 80)
-                                return
-                            
-                            log_and_status(
-                                status_fn,
-                                f"  ✅ Created {len(created_variants)} variants",
-                                ui_msg="  ✅ Variants created"
-                            )
+                            inv_response.raise_for_status()
+                            inv_result = inv_response.json()
 
-                            # Extract variant IDs for output
-                            created_variant_ids = [
-                                {"id": v.get("id"), "sku": v.get("sku")}
-                                for v in created_variants
-                                if v.get("id")
-                            ]
+                            # Check for errors
+                            if "errors" in inv_result:
+                                logging.warning(f"GraphQL errors setting inventory: {inv_result['errors']}")
+                                log_and_status(status_fn, f"  Warning: Could not set inventory quantities", "warning")
+                            else:
+                                inv_user_errors = inv_result.get("data", {}).get("inventorySetQuantities", {}).get("userErrors", [])
+                                if inv_user_errors:
+                                    error_msgs = "; ".join([f"{e.get('field')}: {e.get('message')}" for e in inv_user_errors])
+                                    logging.warning(f"Inventory user errors: {error_msgs}")
+                                    log_and_status(status_fn, f"  Warning: {error_msgs}", "warning")
+                                else:
+                                    log_and_status(status_fn, f"  Set inventory quantity to {inventory_quantity} for {len(inventory_quantities_input)} variants")
 
-                            # Update restore point with successful variant creation
-                            restore_data["variants_created"] = True
-                            restore_data["variant_count"] = len(created_variants)
-                            restore_data["variant_ids"] = created_variant_ids
-                            products_restore = update_product_in_restore(products_restore, restore_data)
-                            save_products(products_restore)
-
-                            # ========== VARIANT-MEDIA ASSOCIATION ==========
-                            # Link images to specific variants using alt text hashtags
-                            try:
-                                sorted_images = product.get('images', [])
-                                has_hashtags = any(
-                                    isinstance(img, dict) and '#' in img.get('alt', '')
-                                    for img in sorted_images
-                                )
-
-                                if has_hashtags and created_variants:
-                                    log_and_status(status_fn, f"  Associating images with variants...")
-
-                                    # Poll media until ready
-                                    media_items = poll_media_ready(shopify_product_id, cfg, status_fn=status_fn)
-
-                                    if media_items:
-                                        # Build variant-media mapping
-                                        variant_media_map = {}  # variant_id -> [media_ids]
-                                        matched_count = 0
-
-                                        for media in media_items:
-                                            if media.get('status') != 'READY':
-                                                continue
-                                            media_alt = media.get('alt', '')
-                                            if not media_alt or '#' not in media_alt:
-                                                continue
-
-                                            hashtag_values = parse_hashtags_from_alt(media_alt)
-                                            if not hashtag_values:
-                                                continue
-
-                                            variant_id = match_image_to_variant(hashtag_values, created_variants)
-                                            if variant_id:
-                                                if variant_id not in variant_media_map:
-                                                    variant_media_map[variant_id] = []
-                                                variant_media_map[variant_id].append(media['id'])
-                                                matched_count += 1
-                                                logging.debug(f"    Matched media {media['id']} -> variant {variant_id}")
-
-                                        if variant_media_map:
-                                            success = append_media_to_variants(
-                                                shopify_product_id, variant_media_map, cfg, status_fn
-                                            )
-                                            if success:
-                                                log_and_status(
-                                                    status_fn,
-                                                    f"  ✅ Associated {matched_count} images with {len(variant_media_map)} variants"
-                                                )
-                                            else:
-                                                log_and_status(
-                                                    status_fn,
-                                                    f"  ⚠️ Variant-media association API call failed",
-                                                    "warning"
-                                                )
-                                        else:
-                                            logging.debug("No image-variant matches found via hashtags")
-                                    else:
-                                        logging.debug("No media items returned from polling")
-
-                            except Exception as e:
-                                logging.warning(f"Non-fatal error in variant-media association: {e}")
-                                if status_fn:
-                                    log_and_status(status_fn, f"  ⚠️ Image-variant association skipped: {e}", "warning")
-
-                            # Set inventory quantities using inventorySetQuantities mutation
-                            # This is more reliable than inventoryQuantities in productVariantsBulkCreate
-                            if inventory_quantity and location_id:
-                                log_and_status(status_fn, f"  Setting inventory quantities...")
-
-                                # Build quantities input for all variants
-                                inventory_quantities_input = []
-                                for variant in created_variants:
-                                    inventory_item = variant.get("inventoryItem", {})
-                                    inventory_item_id = inventory_item.get("id") if inventory_item else None
-
-                                    if inventory_item_id:
-                                        inventory_quantities_input.append({
-                                            "inventoryItemId": inventory_item_id,
-                                            "locationId": location_id,
-                                            "quantity": inventory_quantity
-                                        })
-
-                                if inventory_quantities_input:
-                                    set_inventory_mutation = """
-                                    mutation inventorySetQuantities($input: InventorySetQuantitiesInput!) {
-                                      inventorySetQuantities(input: $input) {
-                                        inventoryAdjustmentGroup {
-                                          id
-                                        }
-                                        userErrors {
-                                          field
-                                          message
-                                        }
-                                      }
-                                    }
-                                    """
-
-                                    inventory_variables = {
-                                        "input": {
-                                            "name": "available",
-                                            "reason": "correction",
-                                            "ignoreCompareQuantity": True,
-                                            "quantities": inventory_quantities_input
-                                        }
-                                    }
-
-                                    try:
-                                        inv_response = requests.post(
-                                            api_url,
-                                            json={"query": set_inventory_mutation, "variables": inventory_variables},
-                                            headers=headers,
-                                            timeout=60
-                                        )
-                                        inv_response.raise_for_status()
-                                        inv_result = inv_response.json()
-
-                                        # Check for errors
-                                        if "errors" in inv_result:
-                                            logging.warning(f"GraphQL errors setting inventory: {inv_result['errors']}")
-                                            log_and_status(status_fn, f"  ⚠️  Warning: Could not set inventory quantities", "warning")
-                                        else:
-                                            inv_user_errors = inv_result.get("data", {}).get("inventorySetQuantities", {}).get("userErrors", [])
-                                            if inv_user_errors:
-                                                error_msgs = "; ".join([f"{e.get('field')}: {e.get('message')}" for e in inv_user_errors])
-                                                logging.warning(f"Inventory user errors: {error_msgs}")
-                                                log_and_status(status_fn, f"  ⚠️  Warning: {error_msgs}", "warning")
-                                            else:
-                                                log_and_status(status_fn, f"  ✅ Set inventory quantity to {inventory_quantity} for {len(inventory_quantities_input)} variants")
-
-                                    except Exception as inv_e:
-                                        logging.warning(f"Error setting inventory quantities: {inv_e}")
-                                        log_and_status(status_fn, f"  ⚠️  Warning: Could not set inventory quantities: {inv_e}", "warning")
-
-                        except requests.exceptions.Timeout:
-                            error_msg = "Request timeout creating variants"
-                            logging.error(error_msg)
-                            log_and_status(status_fn, f"  ❌ {error_msg}", "error")
-                            
-                            # Save restore point with error
-                            result_dict = {
-                                "title": product_title,
-                                "shopify_id": shopify_product_id,
-                                "status": "failed",
-                                "error": error_msg,
-                                "failed_stage": "variant_creation",
-                                "product_created": True,
-                                "variants_created": False
-                            }
-                            add_result(result_dict)
-                            products_restore = update_product_in_restore(products_restore, result_dict)
-                            save_products(products_restore)
-                            
-                            # STOP IMMEDIATELY
-                            log_and_status(status_fn, "\n" + "=" * 80)
-                            log_and_status(status_fn, "❌ VARIANT CREATION FAILED - STOPPING", "error")
-                            log_and_status(status_fn, "=" * 80)
-                            return
-                        
-                        except requests.exceptions.RequestException as e:
-                            error_msg = f"Request failed creating variants: {e}"
-                            logging.error(error_msg)
-                            log_and_status(status_fn, f"  ❌ {error_msg}", "error")
-                            
-                            # Save restore point with error
-                            result_dict = {
-                                "title": product_title,
-                                "shopify_id": shopify_product_id,
-                                "status": "failed",
-                                "error": str(e),
-                                "failed_stage": "variant_creation",
-                                "product_created": True,
-                                "variants_created": False
-                            }
-                            add_result(result_dict)
-                            products_restore = update_product_in_restore(products_restore, result_dict)
-                            save_products(products_restore)
-                            
-                            # STOP IMMEDIATELY
-                            log_and_status(status_fn, "\n" + "=" * 80)
-                            log_and_status(status_fn, "❌ VARIANT CREATION FAILED - STOPPING", "error")
-                            log_and_status(status_fn, "=" * 80)
-                            return
+                        except Exception as inv_e:
+                            logging.warning(f"Error setting inventory quantities: {inv_e}")
+                            log_and_status(status_fn, f"  Warning: Could not set inventory quantities: {inv_e}", "warning")
                 
                 # Mark as completed
                 restore_data["status"] = "completed"
