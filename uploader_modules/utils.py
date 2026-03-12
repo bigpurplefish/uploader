@@ -342,17 +342,23 @@ def match_image_to_variant(hashtag_values, variants):
 
         option_values = [opt.get('value', '') for opt in selected_options]
 
-        # Skip if option count doesn't match hashtag count
-        if len(option_values) != len(hashtag_values):
+        # Skip if image has more hashtags than variant has options (can't match)
+        if len(hashtag_values) > len(option_values):
             continue
 
+        # Subset/prefix matching: compare only the first N options where N = len(hashtag_values).
+        # An image with 2 hashtags matches any variant whose first 2 option values match,
+        # regardless of option3 (e.g. Unit of Sale). Exact match falls through naturally
+        # when hashtag count == option count.
+        first_n_options = option_values[:len(hashtag_values)]
+
         # Try exact match
-        if all(h == v for h, v in zip(hashtag_values, option_values)):
+        if all(h == v for h, v in zip(hashtag_values, first_n_options)):
             return variant.get('id')
 
         # Try normalized match (both sides through format_value_for_filter_tag)
         normalized_hashtags = [format_value_for_filter_tag(h) for h in hashtag_values]
-        normalized_options = [format_value_for_filter_tag(v) for v in option_values]
+        normalized_options = [format_value_for_filter_tag(v) for v in first_n_options]
         if all(h == v for h, v in zip(normalized_hashtags, normalized_options)):
             return variant.get('id')
 

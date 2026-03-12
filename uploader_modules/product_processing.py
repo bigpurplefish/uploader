@@ -1772,7 +1772,9 @@ def process_products(cfg, status_fn, execution_mode="resume", start_record=None,
                     if media_item.get('media_content_type') == 'MODEL_3D':
                         log_and_status(status_fn, f"  Uploading 3D model sources for product...")
 
-                        # Upload ALL sources (GLB for Android/web, USDZ for iOS AR)
+                        # Upload ONE source per model entry: prefer GLB (web/Android), fallback to USDZ
+                        # Shopify auto-generates the alternate format after upload — uploading both
+                        # creates duplicate model thumbnails on the storefront.
                         sources = media_item.get('sources', [])
                         alt_text = media_item.get('alt', '')
                         position = media_item.get('position', 999)
@@ -1780,24 +1782,33 @@ def process_products(cfg, status_fn, execution_mode="resume", start_record=None,
                         # Generate unique ID for this model (8-character hex)
                         unique_id = uuid.uuid4().hex[:8]
 
-                        for source in sources:
-                            source_format = source.get('format', '').lower()
-                            model_url = source.get('url')
+                        # Pick preferred source: GLB first, then USDZ, then first available
+                        preferred_source = None
+                        for fmt_preference in ('glb', 'usdz'):
+                            for s in sources:
+                                if s.get('format', '').lower() == fmt_preference and s.get('url'):
+                                    preferred_source = s
+                                    break
+                            if preferred_source:
+                                break
+                        if preferred_source is None:
+                            preferred_source = next((s for s in sources if s.get('url')), None)
 
-                            if not model_url:
-                                continue
+                        if preferred_source:
+                            source_format = preferred_source.get('format', '').lower()
+                            model_url = preferred_source.get('url')
 
                             # Create filename: vendor_product_name_unique_id.extension
                             filename = f"{vendor}_{product_name}_{unique_id}.{source_format}"
 
-                            # Upload this source file (GLB or USDZ)
+                            # Upload the selected source file (GLB preferred)
                             log_and_status(status_fn, f"    Uploading {source_format.upper()} file as: {filename}")
                             resource_url, _ = upload_model_to_shopify(model_url, filename, cfg, status_fn)
 
                             if resource_url:
-                                # Model uploaded successfully - store resourceUrl from staged upload
+                                # Model uploaded successfully - store resourceUrl for productCreateMedia
                                 uploaded_models.append({
-                                    'cdn_url': resource_url,  # This is the resourceUrl for productCreateMedia
+                                    'cdn_url': resource_url,
                                     'alt': alt_text,
                                     'position': position,
                                     'format': source_format
@@ -1805,6 +1816,8 @@ def process_products(cfg, status_fn, execution_mode="resume", start_record=None,
                                 log_and_status(status_fn, f"    ✅ {source_format.upper()} file uploaded")
                             else:
                                 log_and_status(status_fn, f"    ⚠️ Failed to upload {source_format.upper()} (no resourceUrl returned)", "warning")
+                        else:
+                            log_and_status(status_fn, f"    ⚠️ No valid source URL found for 3D model, skipping", "warning")
 
                 # Upload VIDEO media if present
                 uploaded_videos = []
@@ -1813,11 +1826,23 @@ def process_products(cfg, status_fn, execution_mode="resume", start_record=None,
                         sources = media_item.get('sources', [])
                         alt_text = media_item.get('alt', '')
                         unique_id = uuid.uuid4().hex[:8]
-                        for source in sources:
-                            video_url = source.get('url')
-                            source_format = source.get('format', 'mp4').lower()
-                            if not video_url:
-                                continue
+
+                        # Upload ONE source per video entry: prefer mp4, fallback to first available
+                        # Shopify transcodes video after upload — uploading multiple sources creates duplicates.
+                        preferred_video = None
+                        for fmt_preference in ('mp4', 'mov', 'webm'):
+                            for s in sources:
+                                if s.get('format', '').lower() == fmt_preference and s.get('url'):
+                                    preferred_video = s
+                                    break
+                            if preferred_video:
+                                break
+                        if preferred_video is None:
+                            preferred_video = next((s for s in sources if s.get('url')), None)
+
+                        if preferred_video:
+                            video_url = preferred_video.get('url')
+                            source_format = preferred_video.get('format', 'mp4').lower()
                             filename = f"{vendor}_{product_name}_{unique_id}.{source_format}"
                             log_and_status(status_fn, f"    Uploading {source_format.upper()} video as: {filename}")
                             resource_url, _ = upload_video_to_shopify(video_url, filename, cfg, status_fn)
@@ -1831,6 +1856,8 @@ def process_products(cfg, status_fn, execution_mode="resume", start_record=None,
                                 log_and_status(status_fn, f"    ✅ Video file uploaded")
                             else:
                                 log_and_status(status_fn, f"    ⚠️ Failed to upload video (no resourceUrl returned)", "warning")
+                        else:
+                            log_and_status(status_fn, f"    ⚠️ No valid source URL found for video, skipping", "warning")
 
                 # Add images to media input
                 images = product.get('images', [])
