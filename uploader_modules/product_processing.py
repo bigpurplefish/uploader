@@ -2231,12 +2231,34 @@ def process_products(cfg, status_fn, execution_mode="resume", start_record=None,
                         ui_msg="  ✅ Product created"
                     )
 
-                    # Attach images to product via productCreateMedia
-                    # (productSet does not accept media inline, so images are attached after creation)
-                    if media_input:
-                        log_and_status(status_fn, f"  Attaching {len(media_input)} image(s) to product...")
+                    # Attach all media (images, 3D models, videos) in a single productCreateMedia call.
+                    # A combined call guarantees Shopify processes them in submission order, so images
+                    # always appear before models/videos regardless of CDN processing speed.
+                    all_media_input = list(media_input)  # images first (already built above)
 
-                        attach_images_mutation = """
+                    for model in uploaded_models:
+                        all_media_input.append({
+                            "originalSource": model['cdn_url'],
+                            "alt": model['alt'],
+                            "mediaContentType": "MODEL_3D"
+                        })
+
+                    for video in uploaded_videos:
+                        all_media_input.append({
+                            "originalSource": video['cdn_url'],
+                            "alt": video['alt'],
+                            "mediaContentType": "VIDEO"
+                        })
+
+                    if all_media_input:
+                        log_and_status(
+                            status_fn,
+                            f"  Attaching {len(media_input)} image(s), "
+                            f"{len(uploaded_models)} model(s), "
+                            f"{len(uploaded_videos)} video(s) to product..."
+                        )
+
+                        attach_all_mutation = """
                         mutation productCreateMedia($media: [CreateMediaInput!]!, $productId: ID!) {
                           productCreateMedia(media: $media, productId: $productId) {
                             media {
@@ -2248,142 +2270,10 @@ def process_products(cfg, status_fn, execution_mode="resume", start_record=None,
                                   originalSrc
                                 }
                               }
-                            }
-                            mediaUserErrors {
-                              field
-                              message
-                            }
-                            userErrors {
-                              field
-                              message
-                            }
-                          }
-                        }
-                        """
-
-                        attach_images_variables = {
-                            "productId": shopify_product_id,
-                            "media": media_input
-                        }
-
-                        try:
-                            attach_response = requests.post(
-                                api_url,
-                                json={"query": attach_images_mutation, "variables": attach_images_variables},
-                                headers=headers,
-                                timeout=60
-                            )
-                            attach_response.raise_for_status()
-                            attach_result = attach_response.json()
-
-                            logging.debug(f"productCreateMedia (images) response: {json.dumps(attach_result, indent=2)}")
-
-                            mutation_data = attach_result.get("data", {}).get("productCreateMedia", {})
-                            img_user_errors = mutation_data.get("userErrors", [])
-                            img_media_errors = mutation_data.get("mediaUserErrors", [])
-
-                            if "errors" in attach_result or img_user_errors or img_media_errors:
-                                all_errors = attach_result.get("errors", []) + img_user_errors + img_media_errors
-                                log_and_status(status_fn, f"  Failed to attach images: {all_errors}", "warning")
-                            else:
-                                created_media = mutation_data.get("media", [])
-                                log_and_status(status_fn, f"  Attached {len(created_media)} image(s) to product")
-
-                                # Log media details for debugging
-                                for i, m in enumerate(created_media):
-                                    if m:
-                                        media_id = m.get("id", "N/A")
-                                        media_alt = m.get("alt") or ""
-                                        image_data = m.get("image") or {}
-                                        original_src = image_data.get("originalSrc") or ""
-                                        received_filename = original_src.split('/')[-1].split('?')[0] if original_src else 'N/A'
-                                        logging.debug(f"    [{i+1}]: id={media_id}, file={received_filename}, alt={media_alt[:50] if media_alt else 'N/A'}...")
-                        except Exception as e:
-                            log_and_status(status_fn, f"  Error attaching images: {e}", "warning")
-                            logging.exception("Full traceback:")
-
-                    # Attach 3D models to product if any were uploaded
-                    if uploaded_models:
-                        log_and_status(status_fn, f"  Attaching {len(uploaded_models)} 3D model(s) to product...")
-
-                        # Build media array with resourceUrls from staged uploads
-                        media_inputs = []
-                        for model in uploaded_models:
-                            media_inputs.append({
-                                "originalSource": model['cdn_url'],  # This is the resourceUrl from staged upload
-                                "alt": model['alt'],
-                                "mediaContentType": "MODEL_3D"
-                            })
-
-                        # Use productCreateMedia to attach 3D models
-                        attach_model_mutation = """
-                        mutation productCreateMedia($media: [CreateMediaInput!]!, $productId: ID!) {
-                          productCreateMedia(media: $media, productId: $productId) {
-                            media {
                               ... on Model3d {
                                 id
                                 alt
                               }
-                            }
-                            mediaUserErrors {
-                              field
-                              message
-                            }
-                            userErrors {
-                              field
-                              message
-                            }
-                          }
-                        }
-                        """
-
-                        attach_variables = {
-                            "productId": shopify_product_id,
-                            "media": media_inputs
-                        }
-
-                        try:
-                            attach_response = requests.post(
-                                api_url,
-                                json={"query": attach_model_mutation, "variables": attach_variables},
-                                headers=headers,
-                                timeout=60
-                            )
-                            attach_response.raise_for_status()
-                            attach_result = attach_response.json()
-
-                            logging.debug(f"productCreateMedia response: {json.dumps(attach_result, indent=2)}")
-
-                            # Check for errors
-                            mutation_data = attach_result.get("data", {}).get("productCreateMedia", {})
-                            user_errors = mutation_data.get("userErrors", [])
-                            media_user_errors = mutation_data.get("mediaUserErrors", [])
-
-                            if "errors" in attach_result or user_errors or media_user_errors:
-                                all_errors = attach_result.get("errors", []) + user_errors + media_user_errors
-                                log_and_status(status_fn, f"  ⚠️ Failed to attach models: {all_errors}", "warning")
-                            else:
-                                log_and_status(status_fn, f"  ✅ Attached {len(uploaded_models)} 3D model(s) to product")
-                        except Exception as e:
-                            log_and_status(status_fn, f"  ⚠️ Error attaching models: {e}", "warning")
-                            logging.exception("Full traceback:")
-
-                    # Attach videos to product if any were uploaded
-                    if uploaded_videos:
-                        log_and_status(status_fn, f"  Attaching {len(uploaded_videos)} video(s) to product...")
-
-                        video_media_inputs = []
-                        for video in uploaded_videos:
-                            video_media_inputs.append({
-                                "originalSource": video['cdn_url'],
-                                "alt": video['alt'],
-                                "mediaContentType": "VIDEO"
-                            })
-
-                        attach_video_mutation = """
-                        mutation productCreateMedia($media: [CreateMediaInput!]!, $productId: ID!) {
-                          productCreateMedia(media: $media, productId: $productId) {
-                            media {
                               ... on Video {
                                 id
                                 alt
@@ -2401,22 +2291,22 @@ def process_products(cfg, status_fn, execution_mode="resume", start_record=None,
                         }
                         """
 
-                        attach_video_variables = {
+                        attach_all_variables = {
                             "productId": shopify_product_id,
-                            "media": video_media_inputs
+                            "media": all_media_input
                         }
 
                         try:
                             attach_response = requests.post(
                                 api_url,
-                                json={"query": attach_video_mutation, "variables": attach_video_variables},
+                                json={"query": attach_all_mutation, "variables": attach_all_variables},
                                 headers=headers,
-                                timeout=60
+                                timeout=120
                             )
                             attach_response.raise_for_status()
                             attach_result = attach_response.json()
 
-                            logging.debug(f"productCreateMedia (video) response: {json.dumps(attach_result, indent=2)}")
+                            logging.debug(f"productCreateMedia (combined) response: {json.dumps(attach_result, indent=2)}")
 
                             mutation_data = attach_result.get("data", {}).get("productCreateMedia", {})
                             user_errors = mutation_data.get("userErrors", [])
@@ -2424,11 +2314,22 @@ def process_products(cfg, status_fn, execution_mode="resume", start_record=None,
 
                             if "errors" in attach_result or user_errors or media_user_errors:
                                 all_errors = attach_result.get("errors", []) + user_errors + media_user_errors
-                                log_and_status(status_fn, f"  ⚠️ Failed to attach videos: {all_errors}", "warning")
+                                log_and_status(status_fn, f"  Failed to attach media: {all_errors}", "warning")
                             else:
-                                log_and_status(status_fn, f"  ✅ Attached {len(uploaded_videos)} video(s) to product")
+                                created_media = mutation_data.get("media", [])
+                                log_and_status(status_fn, f"  Attached {len(created_media)} media item(s) to product")
+
+                                # Log created media details for debugging
+                                for i, m in enumerate(created_media):
+                                    if m:
+                                        media_id = m.get("id", "N/A")
+                                        media_alt = m.get("alt") or ""
+                                        image_data = m.get("image") or {}
+                                        original_src = image_data.get("originalSrc") or ""
+                                        received_filename = original_src.split('/')[-1].split('?')[0] if original_src else 'N/A'
+                                        logging.debug(f"    [{i+1}]: id={media_id}, file={received_filename}, alt={media_alt[:50] if media_alt else 'N/A'}...")
                         except Exception as e:
-                            log_and_status(status_fn, f"  ⚠️ Error attaching videos: {e}", "warning")
+                            log_and_status(status_fn, f"  Error attaching media: {e}", "warning")
                             logging.exception("Full traceback:")
 
                     # Extract created variants from productSet response (connection format)
