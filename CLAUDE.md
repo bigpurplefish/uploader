@@ -270,7 +270,7 @@ The `process_products()` function (line 1346) orchestrates:
    - Upload 3D models if present
    - Build product input with all fields including variants
    - Create product + variants via `productSet` mutation (single call)
-   - Attach images via `productCreateMedia`
+   - Attach all media (images + 3D models + videos) via a single `productCreateMedia` call
    - Publish to sales channels if configured
    - Save state after each product
 4. **Generate output**: Write results to output JSON
@@ -295,6 +295,17 @@ The `process_collections()` function (line 815):
 - All variants created in single API call
 - Each variant needs `optionValues` array matching product options
 - Metafields attached directly in variant input
+
+### Media Attachment (productCreateMedia)
+
+All media — images, 3D models, and videos — is attached in a **single** `productCreateMedia` call after the product is created. The order is: images first, then 3D models, then videos.
+
+**Why a single call matters**: Previously there were three separate `productCreateMedia` calls (one per media type). Separate calls race against each other: 3D models typically processed faster than images, resulting in models receiving lower position numbers and appearing before images in Shopify's gallery. Consolidating into one call guarantees images occupy positions 1–N and 3D models follow.
+
+- Timeout is 120s (larger than the per-type timeout used previously)
+- The mutation uses inline fragments to handle `MediaImage`, `Model3d`, and `Video` response types
+
+**Do not split this back into separate calls** — doing so reintroduces the gallery ordering race.
 
 ### URL Validation
 
