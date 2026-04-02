@@ -635,6 +635,34 @@ def build_gui():
 
     inventory_qty_var.trace_add("write", on_inventory_qty_change)
 
+    # "Use quantities from input file" checkbox
+    row += 1
+    use_input_qty_val = cfg.get("USE_INPUT_QUANTITIES", False)
+    use_input_qty_var = tb.BooleanVar(value=use_input_qty_val)
+
+    def on_use_input_qty_toggle(*args):
+        """Toggle between global quantity and per-variant input quantities."""
+        checked = use_input_qty_var.get()
+        cfg["USE_INPUT_QUANTITIES"] = checked
+        save_config(cfg)
+        if checked:
+            inventory_qty_spinbox.configure(state="disabled")
+        else:
+            inventory_qty_spinbox.configure(state="normal")
+
+    use_input_qty_check = tb.Checkbutton(
+        processing_tab,
+        text="Use quantities from input file",
+        variable=use_input_qty_var,
+        command=on_use_input_qty_toggle,
+        bootstyle="info"
+    )
+    use_input_qty_check.grid(row=row, column=1, sticky="w", padx=5, pady=(0, 5))
+
+    # Initialize spinbox state based on checkbox
+    if use_input_qty_val:
+        inventory_qty_spinbox.configure(state="disabled")
+
     # ==================== BUTTONS (outside tabs) ====================
     button_frame = tb.Frame(app)
     button_frame.pack(pady=10)

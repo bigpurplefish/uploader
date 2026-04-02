@@ -909,6 +909,62 @@ def ensure_metafield_definitions(products, cfg, status_fn):
 
 
 
+def build_inventory_quantities(created_variants, input_variants, use_input_quantities, global_quantity, location_id):
+    """
+    Build the inventory quantities input list for the inventorySetQuantities mutation.
+
+    Args:
+        created_variants: List of variant dicts returned from Shopify (with inventoryItem.id and sku)
+        input_variants: List of variant dicts from the input JSON (with sku and inventory_quantity)
+        use_input_quantities: If True, read per-variant inventory_quantity from input_variants
+        global_quantity: The global quantity to apply to all variants (used when use_input_quantities=False)
+        location_id: Shopify location ID string
+
+    Returns:
+        List of dicts with inventoryItemId, locationId, quantity
+    """
+    inventory_quantities_input = []
+
+    if use_input_quantities:
+        # Build SKU -> inventory_quantity lookup from input
+        sku_qty_map = {}
+        for v in input_variants:
+            sku = v.get("sku")
+            qty = v.get("inventory_quantity", 0)
+            if sku and qty:
+                try:
+                    sku_qty_map[sku] = int(qty)
+                except (ValueError, TypeError):
+                    pass
+
+        for variant in created_variants:
+            inventory_item = variant.get("inventoryItem", {})
+            inventory_item_id = inventory_item.get("id") if inventory_item else None
+            if not inventory_item_id:
+                continue
+
+            sku = variant.get("sku", "")
+            qty = sku_qty_map.get(sku)
+            if qty and qty > 0:
+                inventory_quantities_input.append({
+                    "inventoryItemId": inventory_item_id,
+                    "locationId": location_id,
+                    "quantity": qty,
+                })
+    else:
+        for variant in created_variants:
+            inventory_item = variant.get("inventoryItem", {})
+            inventory_item_id = inventory_item.get("id") if inventory_item else None
+            if inventory_item_id:
+                inventory_quantities_input.append({
+                    "inventoryItemId": inventory_item_id,
+                    "locationId": location_id,
+                    "quantity": global_quantity,
+                })
+
+    return inventory_quantities_input
+
+
 def process_products(cfg, status_fn, execution_mode="resume", start_record=None, end_record=None):
     """
     Process products from input file with granular restore points.
@@ -1118,23 +1174,38 @@ def process_products(cfg, status_fn, execution_mode="resume", start_record=None,
         # Get inventory quantity setting and location ID if needed
         inventory_quantity = None
         location_id = None
-        try:
-            inv_qty_str = cfg.get("INVENTORY_QUANTITY", "").strip()
-            if inv_qty_str:
-                inventory_quantity = int(inv_qty_str)
-                if inventory_quantity > 0:
-                    log_and_status(status_fn, f"Inventory quantity configured: {inventory_quantity}")
-                    log_and_status(status_fn, "Retrieving default location ID...")
-                    location_id = get_default_location_id(cfg, status_fn)
-                    if location_id:
-                        log_and_status(status_fn, f"✅ Location ID: {location_id}\n")
+        use_input_quantities = cfg.get("USE_INPUT_QUANTITIES", False)
+
+        if use_input_quantities:
+            # Per-variant quantities from input file
+            log_and_status(status_fn, "Inventory mode: using per-variant quantities from input file")
+            inventory_quantity = "from_input"  # sentinel value
+            log_and_status(status_fn, "Retrieving default location ID...")
+            location_id = get_default_location_id(cfg, status_fn)
+            if location_id:
+                log_and_status(status_fn, f"✅ Location ID: {location_id}\n")
+            else:
+                log_and_status(status_fn, "⚠️  Could not retrieve location ID. Inventory quantities will not be set.", "warning")
+                inventory_quantity = None
+                use_input_quantities = False
+        else:
+            try:
+                inv_qty_str = cfg.get("INVENTORY_QUANTITY", "").strip()
+                if inv_qty_str:
+                    inventory_quantity = int(inv_qty_str)
+                    if inventory_quantity > 0:
+                        log_and_status(status_fn, f"Inventory quantity configured: {inventory_quantity}")
+                        log_and_status(status_fn, "Retrieving default location ID...")
+                        location_id = get_default_location_id(cfg, status_fn)
+                        if location_id:
+                            log_and_status(status_fn, f"✅ Location ID: {location_id}\n")
+                        else:
+                            log_and_status(status_fn, "⚠️  Could not retrieve location ID. Inventory quantities will not be set.", "warning")
+                            inventory_quantity = None
                     else:
-                        log_and_status(status_fn, "⚠️  Could not retrieve location ID. Inventory quantities will not be set.", "warning")
                         inventory_quantity = None
-                else:
-                    inventory_quantity = None
-        except (ValueError, TypeError):
-            inventory_quantity = None
+            except (ValueError, TypeError):
+                inventory_quantity = None
 
         # Process collections first
         success, created, existing, failed = process_collections(products, cfg, status_fn)
@@ -2531,17 +2602,14 @@ def process_products(cfg, status_fn, execution_mode="resume", start_record=None,
                     log_and_status(status_fn, f"  Setting inventory quantities...")
 
                     # Build quantities input for all variants
-                    inventory_quantities_input = []
-                    for variant in created_variants:
-                        inventory_item = variant.get("inventoryItem", {})
-                        inventory_item_id = inventory_item.get("id") if inventory_item else None
-
-                        if inventory_item_id:
-                            inventory_quantities_input.append({
-                                "inventoryItemId": inventory_item_id,
-                                "locationId": location_id,
-                                "quantity": inventory_quantity
-                            })
+                    input_variants = product.get('variants', [])
+                    inventory_quantities_input = build_inventory_quantities(
+                        created_variants=created_variants,
+                        input_variants=input_variants,
+                        use_input_quantities=use_input_quantities,
+                        global_quantity=inventory_quantity if inventory_quantity != "from_input" else None,
+                        location_id=location_id,
+                    )
 
                     if inventory_quantities_input:
                         set_inventory_mutation = """
@@ -2588,7 +2656,10 @@ def process_products(cfg, status_fn, execution_mode="resume", start_record=None,
                                     logging.warning(f"Inventory user errors: {error_msgs}")
                                     log_and_status(status_fn, f"  Warning: {error_msgs}", "warning")
                                 else:
-                                    log_and_status(status_fn, f"  Set inventory quantity to {inventory_quantity} for {len(inventory_quantities_input)} variants")
+                                    if use_input_quantities:
+                                        log_and_status(status_fn, f"  Set per-variant inventory quantities for {len(inventory_quantities_input)} variants (from input file)")
+                                    else:
+                                        log_and_status(status_fn, f"  Set inventory quantity to {inventory_quantity} for {len(inventory_quantities_input)} variants")
 
                         except Exception as inv_e:
                             logging.warning(f"Error setting inventory quantities: {inv_e}")

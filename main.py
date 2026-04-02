@@ -19,6 +19,7 @@ sys.path.insert(0, os.path.dirname(__file__))
 
 from uploader_modules.config import load_config, save_config, SCRIPT_VERSION
 from uploader_modules.product_processing import process_products
+from uploader_modules.cli_utils import apply_cli_overrides
 
 
 def setup_logging(log_file: str, verbose: bool = False) -> None:
@@ -90,6 +91,12 @@ Examples:
         help="Enable verbose output"
     )
     parser.add_argument(
+        "--use-input-quantities",
+        action="store_true",
+        default=False,
+        help="Use per-variant inventory quantities from input JSON instead of global quantity"
+    )
+    parser.add_argument(
         "--version",
         action="version",
         version=f"%(prog)s {SCRIPT_VERSION}"
@@ -119,6 +126,9 @@ Examples:
     if not cfg.get("SHOPIFY_ACCESS_TOKEN", "").strip():
         print("Error: SHOPIFY_ACCESS_TOKEN not configured in config.json", file=sys.stderr)
         return 1
+
+    # Apply CLI overrides (e.g., --use-input-quantities)
+    apply_cli_overrides(cfg, args)
 
     # Update config with CLI arguments
     cfg["INPUT_FILE"] = args.input
