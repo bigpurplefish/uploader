@@ -83,14 +83,14 @@ def match_variants_by_sku(input_variants, shopify_variants):
     # Build lookup by SKU
     shopify_by_sku = {}
     for variant in shopify_variants:
-        sku = variant.get('sku', '').strip()
+        sku = (variant.get('sku') or '').strip()
         if sku:
             shopify_by_sku[sku] = variant
 
     input_skus = set()
 
     for input_variant in input_variants:
-        sku = input_variant.get('sku', '').strip()
+        sku = (input_variant.get('sku') or '').strip()
 
         if not sku:
             # Variant without SKU can't be matched - treat as new
@@ -109,7 +109,7 @@ def match_variants_by_sku(input_variants, shopify_variants):
 
     # Find variants in Shopify that are not in input (by SKU)
     for shopify_variant in shopify_variants:
-        sku = shopify_variant.get('sku', '').strip()
+        sku = (shopify_variant.get('sku') or '').strip()
         if sku and sku not in input_skus:
             result['to_delete'].append(shopify_variant.get('id'))
 
@@ -137,7 +137,7 @@ def match_variants_by_sku(input_variants, shopify_variants):
             input_opts = []
             for i in range(1, 10):
                 key = f'option{i}'
-                val = input_var.get(key, '').strip()
+                val = (input_var.get(key) or '').strip()
                 if val:
                     input_opts.append(val.lower())
                 else:
@@ -165,9 +165,9 @@ def extract_skus_from_product(product):
         List of non-empty, stripped SKU strings
     """
     return [
-        v.get('sku', '').strip()
+        (v.get('sku') or '').strip()
         for v in product.get('variants', [])
-        if v.get('sku', '').strip()
+        if (v.get('sku') or '').strip()
     ]
 
 
