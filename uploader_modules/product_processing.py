@@ -234,6 +234,8 @@ def build_variant_create_input_for_existing_product(variant, input_options):
 
     if option_values:
         variant_input["optionValues"] = option_values
+    else:
+        variant_input["optionValues"] = [{"optionName": "Title", "name": "Default Title"}]
 
     return variant_input
 
@@ -1599,6 +1601,8 @@ def process_products(cfg, status_fn, execution_mode="resume", start_record=None,
 
                                     if option_values:
                                         variant_input["optionValues"] = option_values
+                                    else:
+                                        variant_input["optionValues"] = [{"optionName": "Title", "name": "Default Title"}]
 
                                     new_variants_input.append(variant_input)
 
@@ -1807,9 +1811,12 @@ def process_products(cfg, status_fn, execution_mode="resume", start_record=None,
                             "position": idx + 1,
                             "values": [{"name": value} for value in sorted(value_set)]
                         })
-                    
+
                     product_input["productOptions"] = product_options
                     log_and_status(status_fn, f"  Adding productOptions: {json.dumps(product_options, indent=2)}")
+                else:
+                    # Single-variant no-option products need a default Title option
+                    product_input["productOptions"] = [{"name": "Title", "position": 1, "values": [{"name": "Default Title"}]}]
                 
                 # Add metafields with key mapping
                 # Map input file keys to Shopify metafield definition keys
@@ -2100,6 +2107,9 @@ def process_products(cfg, status_fn, execution_mode="resume", start_record=None,
 
                         if option_values:
                             variant_input['optionValues'] = option_values
+                        else:
+                            # Single-variant no-option products need a default option
+                            variant_input['optionValues'] = [{"optionName": "Title", "name": "Default Title"}]
 
                         # Note: Inventory quantities are now set via inventorySetQuantities mutation
                         # after variant creation for better reliability (see code below)
