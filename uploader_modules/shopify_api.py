@@ -12,6 +12,34 @@ from .state import save_taxonomy_cache
 from .utils import key_to_label
 
 
+# =============================================================================
+# MENU CACHE
+# =============================================================================
+
+_menu_cache = {}  # handle -> menu_data (or None for not-found)
+
+
+def invalidate_menu_cache(handle=None):
+    """
+    Invalidate the menu cache.
+
+    Args:
+        handle: If provided, only invalidate that handle's entry.
+                If None, clear the entire cache.
+    """
+    if handle is not None:
+        _menu_cache.pop(handle, None)
+    else:
+        _menu_cache.clear()
+
+
+def clear_menu_cache():
+    """
+    Clear the entire menu cache. Public API for GUI/CLI use at the start of runs.
+    """
+    invalidate_menu_cache()
+
+
 def get_sales_channel_ids(cfg):
     """
     Retrieve Shopify sales channel IDs for Online Store and Point of Sale.
@@ -2519,6 +2547,9 @@ def get_menu_by_handle(handle, cfg, status_fn=None):
     """
     Get a menu by its handle (e.g., 'main-menu').
 
+    Uses a module-level cache to avoid redundant API calls. The cache is
+    invalidated when update_menu() succeeds or via invalidate_menu_cache().
+
     Args:
         handle: Menu handle to find
         cfg: Configuration dictionary
@@ -2527,6 +2558,13 @@ def get_menu_by_handle(handle, cfg, status_fn=None):
     Returns:
         Menu dictionary with id, handle, title, and items, or None if not found
     """
+    # Check cache first (None is a valid cached value for not-found menus)
+    _SENTINEL = object()
+    cached = _menu_cache.get(handle, _SENTINEL)
+    if cached is not _SENTINEL:
+        logging.debug(f"Menu cache hit for handle '{handle}'")
+        return cached
+
     try:
         store_url = cfg.get("SHOPIFY_STORE_URL", "").strip()
         access_token = cfg.get("SHOPIFY_ACCESS_TOKEN", "").strip()
@@ -2597,9 +2635,11 @@ def get_menu_by_handle(handle, cfg, status_fn=None):
             menu = edge.get("node", {})
             if menu.get("handle") == handle:
                 logging.info(f"Found menu '{handle}' with ID: {menu.get('id')}")
+                _menu_cache[handle] = menu
                 return menu
 
         logging.warning(f"Menu with handle '{handle}' not found")
+        _menu_cache[handle] = None
         return None
 
     except requests.exceptions.RequestException as e:
@@ -2691,6 +2731,10 @@ def update_menu(menu_id, title, items, cfg, status_fn=None):
             if status_fn:
                 log_and_status(status_fn, f"  ❌ Menu update error: {error_msg}", "error")
             return False
+
+        # Invalidate all cached menus since the mutation succeeded
+        # (we don't reliably know the handle from just the menu_id)
+        invalidate_menu_cache()
 
         if status_fn:
             log_and_status(status_fn, f"  ✅ Menu updated successfully")

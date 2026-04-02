@@ -32,6 +32,11 @@ from .utils import (
 )
 
 
+# Tracks taxonomy paths already checked for menu items in this run.
+# Cleared at the start of each processing run to allow re-checks on new runs.
+_checked_taxonomy_paths = set()
+
+
 # =============================================================================
 # HELPER FUNCTIONS FOR PRODUCT UPDATES
 # =============================================================================
@@ -1220,9 +1225,26 @@ def process_products(cfg, status_fn, execution_mode="resume", start_record=None,
         collections_data = load_collections()
         menu_updates_success = 0
         menu_updates_failed = 0
+        menu_updates_skipped = 0
+
+        # Clear taxonomy path dedup set and menu cache for fresh run
+        _checked_taxonomy_paths.clear()
+        from .shopify_api import clear_menu_cache
+        clear_menu_cache()
 
         for product in products:
             product_title = product.get('title', 'Unknown Product').strip()
+
+            # Deduplicate by taxonomy path — skip if already checked
+            department = product.get('product_type', '').strip()
+            category, subcategory = extract_category_subcategory(product)
+            path_key = (department, category or "", subcategory or "")
+
+            if path_key in _checked_taxonomy_paths:
+                menu_updates_skipped += 1
+                continue
+            _checked_taxonomy_paths.add(path_key)
+
             try:
                 menu_success = ensure_menu_items_for_product(product, collections_data, cfg, status_fn)
                 if menu_success:
@@ -1234,10 +1256,11 @@ def process_products(cfg, status_fn, execution_mode="resume", start_record=None,
                 menu_updates_failed += 1
                 log_and_status(status_fn, f"⚠️  Menu update error for {product_title}: {str(e)}", "warning")
 
+        unique_paths = menu_updates_success + menu_updates_failed
         if menu_updates_failed == 0:
-            log_and_status(status_fn, f"✅ Navigation menu updated for all {menu_updates_success} products\n")
+            log_and_status(status_fn, f"✅ Navigation menu updated for {unique_paths} unique taxonomy paths ({menu_updates_skipped} duplicates skipped)\n")
         else:
-            log_and_status(status_fn, f"⚠️  Menu updates: {menu_updates_success} successful, {menu_updates_failed} with issues\n", "warning")
+            log_and_status(status_fn, f"⚠️  Menu updates: {menu_updates_success} successful, {menu_updates_failed} with issues ({menu_updates_skipped} duplicates skipped)\n", "warning")
 
         # Ensure metafield definitions exist (auto-create if missing)
         success = ensure_metafield_definitions(products, cfg, status_fn)
