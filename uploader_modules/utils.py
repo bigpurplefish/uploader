@@ -425,7 +425,7 @@ def load_taxonomy_structure(taxonomy_path: str = None) -> dict:
 
     if not taxonomy_path:
         # Default path
-        taxonomy_path = "/Users/moosemarketer/Code/shared-docs/python/PRODUCT_TAXONOMY.md"
+        taxonomy_path = "/Users/moosemarketer/Code/shared-docs/PRODUCT_TAXONOMY.md"
 
     if not os.path.exists(taxonomy_path):
         logging.error(f"Taxonomy file not found: {taxonomy_path}")
