@@ -504,8 +504,12 @@ def process_collections(products, cfg, status_fn):
             if subcategory and category:
                 subcat_key = f"{category.lower()}_{subcategory.lower()}"
                 if subcat_key not in collections_to_create["subcategory"]:
+                    # Subcategory collections are named "{category} {subcategory}" (e.g., "Horses Feed")
+                    # to avoid title collisions when the same subcategory name appears under multiple
+                    # categories (e.g., "Feed" under Dogs, Horses, Chickens). The menu item title is
+                    # kept as the clean subcategory name; only the underlying collection gets the prefix.
                     collections_to_create["subcategory"][subcat_key] = {
-                        "name": subcategory,
+                        "name": f"{category} {subcategory}",
                         "parent_category": category,  # Track parent category
                         "grandparent_department": product_type,  # Track grandparent department
                         "rules": [

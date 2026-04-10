@@ -3030,10 +3030,14 @@ def ensure_menu_items_for_product(product, collections_data, cfg, status_fn=None
             if subcategory:
                 subcat_items = cat_item.get("items", [])
                 subcat_item = find_menu_item_by_title(subcat_items, subcategory)
-                subcat_handle, subcat_id = get_collection_info(subcategory)
+                # Subcategory collections use a prefixed title ("{category} {subcategory}") to avoid
+                # cross-category title collisions (e.g., "Horses Feed" not "Feed"). Menu item title
+                # stays as the clean subcategory name for display.
+                subcat_collection_name = f"{category} {subcategory}"
+                subcat_handle, subcat_id = get_collection_info(subcat_collection_name)
 
                 if not subcat_item:
-                    # Create subcategory menu item
+                    # Create subcategory menu item — title is clean subcategory name, not the prefixed collection name
                     if status_fn:
                         log_and_status(status_fn, f"    Adding subcategory to menu: {subcategory}")
 
