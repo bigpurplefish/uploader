@@ -1,0 +1,5022 @@
+{
+  "plan": [
+    {
+      "product_id": "gid://shopify/Product/10380227313956",
+      "title": "Aberdeen Slabs",
+      "handle": "aberdeen-slabs",
+      "keep": [
+        {
+          "id": "gid://shopify/ProductVariant/52317671457060",
+          "title": "Azzurro / Klean-Bloc Slate / 30 \u00d7 30 / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52317671555364",
+          "title": "Azzurro / Klean-Bloc Slate / 30 \u00d7 20 / Sq Ft",
+          "unit": "Sq Ft"
+        }
+      ],
+      "delete": [
+        {
+          "id": "gid://shopify/ProductVariant/52317671489828",
+          "title": "Azzurro / Klean-Bloc Slate / 30 \u00d7 30 / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52317671522596",
+          "title": "Azzurro / Klean-Bloc Slate / 30 \u00d7 30 / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52317671588132",
+          "title": "Azzurro / Klean-Bloc Slate / 30 \u00d7 20 / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52317671620900",
+          "title": "Azzurro / Klean-Bloc Slate / 30 \u00d7 20 / Pallet",
+          "unit": "Pallet"
+        }
+      ]
+    },
+    {
+      "product_id": "gid://shopify/Product/10382974091556",
+      "title": "Antika Pavers",
+      "handle": "antika-pavers",
+      "keep": [
+        {
+          "id": "gid://shopify/ProductVariant/52438680797476",
+          "title": "Chestnut Brown / Smooth / Modular Size / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438680895780",
+          "title": "Chocolate Brown / Smooth / Modular Size / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438680994084",
+          "title": "Shale Grey / Smooth / Modular Size / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438681092388",
+          "title": "Onyx Black / Smooth / Modular Size / Sq Ft",
+          "unit": "Sq Ft"
+        }
+      ],
+      "delete": [
+        {
+          "id": "gid://shopify/ProductVariant/52438680830244",
+          "title": "Chestnut Brown / Smooth / Modular Size / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438680863012",
+          "title": "Chestnut Brown / Smooth / Modular Size / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438680928548",
+          "title": "Chocolate Brown / Smooth / Modular Size / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438680961316",
+          "title": "Chocolate Brown / Smooth / Modular Size / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438681026852",
+          "title": "Shale Grey / Smooth / Modular Size / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438681059620",
+          "title": "Shale Grey / Smooth / Modular Size / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438681125156",
+          "title": "Onyx Black / Smooth / Modular Size / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438681157924",
+          "title": "Onyx Black / Smooth / Modular Size / Pallet",
+          "unit": "Pallet"
+        }
+      ]
+    },
+    {
+      "product_id": "gid://shopify/Product/10382974124324",
+      "title": "Aquastorm Pavers",
+      "handle": "aquastorm-pavers",
+      "keep": [
+        {
+          "id": "gid://shopify/ProductVariant/52438681190692",
+          "title": "Grey / Smooth / Single Size / Sq Ft",
+          "unit": "Sq Ft"
+        }
+      ],
+      "delete": [
+        {
+          "id": "gid://shopify/ProductVariant/52438681223460",
+          "title": "Grey / Smooth / Single Size / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438681256228",
+          "title": "Grey / Smooth / Single Size / Pallet",
+          "unit": "Pallet"
+        }
+      ]
+    },
+    {
+      "product_id": "gid://shopify/Product/10382974157092",
+      "title": "Architectural Caps",
+      "handle": "architectural-caps",
+      "keep": [
+        {
+          "id": "gid://shopify/ProductVariant/52438681288996",
+          "title": "Chestnut Brown / Split / Modular Size / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438681387300",
+          "title": "Shale Grey / Split / Modular Size / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438681485604",
+          "title": "Sandlewood / Split / Modular Size / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438681583908",
+          "title": "Onyx Black / Split / Modular Size / Sq Ft",
+          "unit": "Sq Ft"
+        }
+      ],
+      "delete": [
+        {
+          "id": "gid://shopify/ProductVariant/52438681321764",
+          "title": "Chestnut Brown / Split / Modular Size / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438681354532",
+          "title": "Chestnut Brown / Split / Modular Size / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438681420068",
+          "title": "Shale Grey / Split / Modular Size / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438681452836",
+          "title": "Shale Grey / Split / Modular Size / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438681518372",
+          "title": "Sandlewood / Split / Modular Size / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438681551140",
+          "title": "Sandlewood / Split / Modular Size / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438681616676",
+          "title": "Onyx Black / Split / Modular Size / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438681649444",
+          "title": "Onyx Black / Split / Modular Size / Pallet",
+          "unit": "Pallet"
+        }
+      ]
+    },
+    {
+      "product_id": "gid://shopify/Product/10382976745764",
+      "title": "Blu 60 Slate Slabs",
+      "handle": "blu-60-slate-slabs",
+      "keep": [
+        {
+          "id": "gid://shopify/ProductVariant/52438692364580",
+          "title": "Chestnut Brown / Slate / 6 \u00d7 13 / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438692462884",
+          "title": "Chestnut Brown / Slate / Grande / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438692561188",
+          "title": "Chocolate Brown / Slate / 6 \u00d7 13 / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438692659492",
+          "title": "Chestnut Brown / Hd\u00b2 Slate / 6 \u00d7 13 / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438692757796",
+          "title": "Onyx Black / Hd\u00b2 Slate / 6 \u00d7 13 / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438692856100",
+          "title": "Shale Grey / Slate / 6 \u00d7 13 / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438692954404",
+          "title": "Shale Grey / Slate / Grande / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438693052708",
+          "title": "Chestnut Brown / Hd\u00b2 Slate / 60 mm / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438693151012",
+          "title": "Shale Grey / Hd\u00b2 Slate / 60 mm / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438693249316",
+          "title": "Sandlewood / Slate / 60 mm / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438693347620",
+          "title": "Onyx Black / Slate / 6 \u00d7 13 / Sq Ft",
+          "unit": "Sq Ft"
+        }
+      ],
+      "delete": [
+        {
+          "id": "gid://shopify/ProductVariant/52438692397348",
+          "title": "Chestnut Brown / Slate / 6 \u00d7 13 / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438692430116",
+          "title": "Chestnut Brown / Slate / 6 \u00d7 13 / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438692495652",
+          "title": "Chestnut Brown / Slate / Grande / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438692528420",
+          "title": "Chestnut Brown / Slate / Grande / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438692593956",
+          "title": "Chocolate Brown / Slate / 6 \u00d7 13 / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438692626724",
+          "title": "Chocolate Brown / Slate / 6 \u00d7 13 / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438692692260",
+          "title": "Chestnut Brown / Hd\u00b2 Slate / 6 \u00d7 13 / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438692725028",
+          "title": "Chestnut Brown / Hd\u00b2 Slate / 6 \u00d7 13 / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438692790564",
+          "title": "Onyx Black / Hd\u00b2 Slate / 6 \u00d7 13 / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438692823332",
+          "title": "Onyx Black / Hd\u00b2 Slate / 6 \u00d7 13 / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438692888868",
+          "title": "Shale Grey / Slate / 6 \u00d7 13 / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438692921636",
+          "title": "Shale Grey / Slate / 6 \u00d7 13 / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438692987172",
+          "title": "Shale Grey / Slate / Grande / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438693019940",
+          "title": "Shale Grey / Slate / Grande / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438693085476",
+          "title": "Chestnut Brown / Hd\u00b2 Slate / 60 mm / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438693118244",
+          "title": "Chestnut Brown / Hd\u00b2 Slate / 60 mm / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438693183780",
+          "title": "Shale Grey / Hd\u00b2 Slate / 60 mm / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438693216548",
+          "title": "Shale Grey / Hd\u00b2 Slate / 60 mm / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438693282084",
+          "title": "Sandlewood / Slate / 60 mm / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438693314852",
+          "title": "Sandlewood / Slate / 60 mm / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438693380388",
+          "title": "Onyx Black / Slate / 6 \u00d7 13 / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438693413156",
+          "title": "Onyx Black / Slate / 6 \u00d7 13 / Pallet",
+          "unit": "Pallet"
+        }
+      ]
+    },
+    {
+      "product_id": "gid://shopify/Product/10382976844068",
+      "title": "Blu 60 Smooth Slabs",
+      "handle": "blu-60-smooth-slabs",
+      "keep": [
+        {
+          "id": "gid://shopify/ProductVariant/52438693544228",
+          "title": "Beige Cream / Smooth / Grande / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438693642532",
+          "title": "Beige Cream / Smooth / 6 \u00d7 13 / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438693740836",
+          "title": "Greyed Nickel / Smooth / 6 \u00d7 13 / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438693839140",
+          "title": "Caff\u00e8 Crema / Hd\u00b2 Smooth / Grande / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438693937444",
+          "title": "Caff\u00e8 Crema / Hd\u00b2 Smooth / 6 \u00d7 13 / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438694035748",
+          "title": "Chestnut Brown / Smooth / Grande / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438694134052",
+          "title": "Chestnut Brown / Smooth / 6 \u00d7 13 / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438694232356",
+          "title": "Chestnut Brown / Hd\u00b2 Smooth / Grande / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438694330660",
+          "title": "Chestnut Brown / Hd\u00b2 Smooth / 6 \u00d7 13 / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438694428964",
+          "title": "Chocolate Brown / Smooth / 6 \u00d7 13 / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438694527268",
+          "title": "Shale Grey / Smooth / 6 \u00d7 13 / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438694625572",
+          "title": "Shale Grey / Hd\u00b2 Smooth / 6 \u00d7 13 / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438694723876",
+          "title": "Beige Cream / Smooth / 60 mm / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438694822180",
+          "title": "Greyed Nickel / Smooth / 60 mm / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438694920484",
+          "title": "Caff\u00e8 Crema / Hd\u00b2 Smooth / 60 mm / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438695018788",
+          "title": "Chestnut Brown / Smooth / 60 mm / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438695117092",
+          "title": "Beige Cream / Hd\u00b2 Smooth / 60 mm / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438695215396",
+          "title": "Beige Cream / Hd\u00b2 Smooth / Grande / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438695313700",
+          "title": "Beige Cream / Hd\u00b2 Smooth / 6 \u00d7 13 / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438695412004",
+          "title": "Greyed Nickel / Hd\u00b2 Smooth / 6 \u00d7 13 / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438695510308",
+          "title": "Onyx Black / Smooth / Grande / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438695608612",
+          "title": "Onyx Black / Smooth / 6 \u00d7 13 / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438695706916",
+          "title": "Onyx Black / Hd\u00b2 Smooth / 6 \u00d7 13 / Sq Ft",
+          "unit": "Sq Ft"
+        }
+      ],
+      "delete": [
+        {
+          "id": "gid://shopify/ProductVariant/52438693576996",
+          "title": "Beige Cream / Smooth / Grande / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438693609764",
+          "title": "Beige Cream / Smooth / Grande / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438693675300",
+          "title": "Beige Cream / Smooth / 6 \u00d7 13 / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438693708068",
+          "title": "Beige Cream / Smooth / 6 \u00d7 13 / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438693773604",
+          "title": "Greyed Nickel / Smooth / 6 \u00d7 13 / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438693806372",
+          "title": "Greyed Nickel / Smooth / 6 \u00d7 13 / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438693871908",
+          "title": "Caff\u00e8 Crema / Hd\u00b2 Smooth / Grande / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438693904676",
+          "title": "Caff\u00e8 Crema / Hd\u00b2 Smooth / Grande / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438693970212",
+          "title": "Caff\u00e8 Crema / Hd\u00b2 Smooth / 6 \u00d7 13 / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438694002980",
+          "title": "Caff\u00e8 Crema / Hd\u00b2 Smooth / 6 \u00d7 13 / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438694068516",
+          "title": "Chestnut Brown / Smooth / Grande / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438694101284",
+          "title": "Chestnut Brown / Smooth / Grande / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438694166820",
+          "title": "Chestnut Brown / Smooth / 6 \u00d7 13 / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438694199588",
+          "title": "Chestnut Brown / Smooth / 6 \u00d7 13 / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438694265124",
+          "title": "Chestnut Brown / Hd\u00b2 Smooth / Grande / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438694297892",
+          "title": "Chestnut Brown / Hd\u00b2 Smooth / Grande / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438694363428",
+          "title": "Chestnut Brown / Hd\u00b2 Smooth / 6 \u00d7 13 / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438694396196",
+          "title": "Chestnut Brown / Hd\u00b2 Smooth / 6 \u00d7 13 / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438694461732",
+          "title": "Chocolate Brown / Smooth / 6 \u00d7 13 / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438694494500",
+          "title": "Chocolate Brown / Smooth / 6 \u00d7 13 / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438694560036",
+          "title": "Shale Grey / Smooth / 6 \u00d7 13 / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438694592804",
+          "title": "Shale Grey / Smooth / 6 \u00d7 13 / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438694658340",
+          "title": "Shale Grey / Hd\u00b2 Smooth / 6 \u00d7 13 / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438694691108",
+          "title": "Shale Grey / Hd\u00b2 Smooth / 6 \u00d7 13 / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438694756644",
+          "title": "Beige Cream / Smooth / 60 mm / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438694789412",
+          "title": "Beige Cream / Smooth / 60 mm / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438694854948",
+          "title": "Greyed Nickel / Smooth / 60 mm / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438694887716",
+          "title": "Greyed Nickel / Smooth / 60 mm / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438694953252",
+          "title": "Caff\u00e8 Crema / Hd\u00b2 Smooth / 60 mm / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438694986020",
+          "title": "Caff\u00e8 Crema / Hd\u00b2 Smooth / 60 mm / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438695051556",
+          "title": "Chestnut Brown / Smooth / 60 mm / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438695084324",
+          "title": "Chestnut Brown / Smooth / 60 mm / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438695149860",
+          "title": "Beige Cream / Hd\u00b2 Smooth / 60 mm / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438695182628",
+          "title": "Beige Cream / Hd\u00b2 Smooth / 60 mm / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438695248164",
+          "title": "Beige Cream / Hd\u00b2 Smooth / Grande / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438695280932",
+          "title": "Beige Cream / Hd\u00b2 Smooth / Grande / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438695346468",
+          "title": "Beige Cream / Hd\u00b2 Smooth / 6 \u00d7 13 / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438695379236",
+          "title": "Beige Cream / Hd\u00b2 Smooth / 6 \u00d7 13 / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438695444772",
+          "title": "Greyed Nickel / Hd\u00b2 Smooth / 6 \u00d7 13 / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438695477540",
+          "title": "Greyed Nickel / Hd\u00b2 Smooth / 6 \u00d7 13 / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438695543076",
+          "title": "Onyx Black / Smooth / Grande / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438695575844",
+          "title": "Onyx Black / Smooth / Grande / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438695641380",
+          "title": "Onyx Black / Smooth / 6 \u00d7 13 / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438695674148",
+          "title": "Onyx Black / Smooth / 6 \u00d7 13 / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438695739684",
+          "title": "Onyx Black / Hd\u00b2 Smooth / 6 \u00d7 13 / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438695772452",
+          "title": "Onyx Black / Hd\u00b2 Smooth / 6 \u00d7 13 / Pallet",
+          "unit": "Pallet"
+        }
+      ]
+    },
+    {
+      "product_id": "gid://shopify/Product/10382976876836",
+      "title": "Blu 60 Polished Slabs",
+      "handle": "blu-60-polished-slabs",
+      "keep": [
+        {
+          "id": "gid://shopify/ProductVariant/52438696067364",
+          "title": "Beige Cream / Polished / 60 mm / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438696165668",
+          "title": "Onyx Black / Polished / 60 mm / Sq Ft",
+          "unit": "Sq Ft"
+        }
+      ],
+      "delete": [
+        {
+          "id": "gid://shopify/ProductVariant/52438696100132",
+          "title": "Beige Cream / Polished / 60 mm / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438696132900",
+          "title": "Beige Cream / Polished / 60 mm / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438696198436",
+          "title": "Onyx Black / Polished / 60 mm / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438696231204",
+          "title": "Onyx Black / Polished / 60 mm / Pallet",
+          "unit": "Pallet"
+        }
+      ]
+    },
+    {
+      "product_id": "gid://shopify/Product/10382976975140",
+      "title": "Blu 80 Slate Pavers",
+      "handle": "blu-80-slate-pavers",
+      "keep": [
+        {
+          "id": "gid://shopify/ProductVariant/52438696722724",
+          "title": "Chestnut Brown / Slate / 6 \u00d7 13 / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438696821028",
+          "title": "Chestnut Brown / Slate / 80 mm / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438696919332",
+          "title": "Chocolate Brown / Slate / 6 \u00d7 13 / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438697017636",
+          "title": "Chestnut Brown / Hd\u00b2 Slate / 6 \u00d7 13 / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438697115940",
+          "title": "Chestnut Brown / Hd\u00b2 Slate / 80 mm / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438697214244",
+          "title": "Onyx Black / Hd\u00b2 Slate / 6 \u00d7 13 / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438697312548",
+          "title": "Shale Grey / Hd\u00b2 Slate / 6 \u00d7 13 / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438697410852",
+          "title": "Shale Grey / Hd\u00b2 Slate / 80 mm / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438697509156",
+          "title": "Shale Grey / Slate / 6 \u00d7 13 / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438697607460",
+          "title": "Shale Grey / Slate / 80 mm / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438697705764",
+          "title": "Onyx Black / Slate / 6 \u00d7 13 / Sq Ft",
+          "unit": "Sq Ft"
+        }
+      ],
+      "delete": [
+        {
+          "id": "gid://shopify/ProductVariant/52438696755492",
+          "title": "Chestnut Brown / Slate / 6 \u00d7 13 / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438696788260",
+          "title": "Chestnut Brown / Slate / 6 \u00d7 13 / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438696853796",
+          "title": "Chestnut Brown / Slate / 80 mm / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438696886564",
+          "title": "Chestnut Brown / Slate / 80 mm / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438696952100",
+          "title": "Chocolate Brown / Slate / 6 \u00d7 13 / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438696984868",
+          "title": "Chocolate Brown / Slate / 6 \u00d7 13 / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438697050404",
+          "title": "Chestnut Brown / Hd\u00b2 Slate / 6 \u00d7 13 / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438697083172",
+          "title": "Chestnut Brown / Hd\u00b2 Slate / 6 \u00d7 13 / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438697148708",
+          "title": "Chestnut Brown / Hd\u00b2 Slate / 80 mm / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438697181476",
+          "title": "Chestnut Brown / Hd\u00b2 Slate / 80 mm / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438697247012",
+          "title": "Onyx Black / Hd\u00b2 Slate / 6 \u00d7 13 / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438697279780",
+          "title": "Onyx Black / Hd\u00b2 Slate / 6 \u00d7 13 / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438697345316",
+          "title": "Shale Grey / Hd\u00b2 Slate / 6 \u00d7 13 / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438697378084",
+          "title": "Shale Grey / Hd\u00b2 Slate / 6 \u00d7 13 / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438697443620",
+          "title": "Shale Grey / Hd\u00b2 Slate / 80 mm / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438697476388",
+          "title": "Shale Grey / Hd\u00b2 Slate / 80 mm / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438697541924",
+          "title": "Shale Grey / Slate / 6 \u00d7 13 / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438697574692",
+          "title": "Shale Grey / Slate / 6 \u00d7 13 / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438697640228",
+          "title": "Shale Grey / Slate / 80 mm / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438697672996",
+          "title": "Shale Grey / Slate / 80 mm / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438697738532",
+          "title": "Onyx Black / Slate / 6 \u00d7 13 / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438697771300",
+          "title": "Onyx Black / Slate / 6 \u00d7 13 / Pallet",
+          "unit": "Pallet"
+        }
+      ]
+    },
+    {
+      "product_id": "gid://shopify/Product/10382979924260",
+      "title": "Blu 80 Smooth Pavers",
+      "handle": "blu-80-smooth-pavers",
+      "keep": [
+        {
+          "id": "gid://shopify/ProductVariant/52438724149540",
+          "title": "Beige Cream / Smooth / 6 \u00d7 13 / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438724247844",
+          "title": "Greyed Nickel / Smooth / 6 \u00d7 13 / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438724346148",
+          "title": "Caff\u00e8 Crema / Hd\u00b2 Smooth / 6 \u00d7 13 / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438724444452",
+          "title": "Chestnut Brown / Smooth / 6 \u00d7 13 / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438724542756",
+          "title": "Chestnut Brown / Hd\u00b2 Smooth / 6 \u00d7 13 / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438724641060",
+          "title": "Chocolate Brown / Smooth / 6 \u00d7 13 / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438724739364",
+          "title": "Shale Grey / Smooth / 6 \u00d7 13 / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438724837668",
+          "title": "Shale Grey / Hd\u00b2 Smooth / 6 \u00d7 13 / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438724935972",
+          "title": "Shale Grey / Smooth / 80 mm / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438725034276",
+          "title": "Shale Grey / Hd\u00b2 Smooth / 80 mm / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438725132580",
+          "title": "Caff\u00e8 Crema / Smooth / 80 mm / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438725230884",
+          "title": "Beige Cream / Smooth / 80 mm / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438725329188",
+          "title": "Greyed Nickel / Smooth / 80 mm / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438725427492",
+          "title": "Chestnut Brown / Smooth / 80 mm / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438725525796",
+          "title": "Chestnut Brown / Hd\u00b2 Smooth / 80 mm / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438725624100",
+          "title": "Greyed Nickel / Hd\u00b2 Smooth / 80 mm / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438725722404",
+          "title": "Onyx Black / Smooth / 80 mm / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438725820708",
+          "title": "Onyx Black / Hd\u00b2 Smooth / 80 mm / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438725919012",
+          "title": "Greyed Nickel / Hd\u00b2 Smooth / 6 \u00d7 13 / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438726017316",
+          "title": "Onyx Black / Smooth / 6 \u00d7 13 / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438726115620",
+          "title": "Onyx Black / Hd\u00b2 Smooth / 6 \u00d7 13 / Sq Ft",
+          "unit": "Sq Ft"
+        }
+      ],
+      "delete": [
+        {
+          "id": "gid://shopify/ProductVariant/52438724182308",
+          "title": "Beige Cream / Smooth / 6 \u00d7 13 / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438724215076",
+          "title": "Beige Cream / Smooth / 6 \u00d7 13 / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438724280612",
+          "title": "Greyed Nickel / Smooth / 6 \u00d7 13 / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438724313380",
+          "title": "Greyed Nickel / Smooth / 6 \u00d7 13 / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438724378916",
+          "title": "Caff\u00e8 Crema / Hd\u00b2 Smooth / 6 \u00d7 13 / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438724411684",
+          "title": "Caff\u00e8 Crema / Hd\u00b2 Smooth / 6 \u00d7 13 / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438724477220",
+          "title": "Chestnut Brown / Smooth / 6 \u00d7 13 / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438724509988",
+          "title": "Chestnut Brown / Smooth / 6 \u00d7 13 / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438724575524",
+          "title": "Chestnut Brown / Hd\u00b2 Smooth / 6 \u00d7 13 / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438724608292",
+          "title": "Chestnut Brown / Hd\u00b2 Smooth / 6 \u00d7 13 / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438724673828",
+          "title": "Chocolate Brown / Smooth / 6 \u00d7 13 / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438724706596",
+          "title": "Chocolate Brown / Smooth / 6 \u00d7 13 / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438724772132",
+          "title": "Shale Grey / Smooth / 6 \u00d7 13 / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438724804900",
+          "title": "Shale Grey / Smooth / 6 \u00d7 13 / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438724870436",
+          "title": "Shale Grey / Hd\u00b2 Smooth / 6 \u00d7 13 / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438724903204",
+          "title": "Shale Grey / Hd\u00b2 Smooth / 6 \u00d7 13 / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438724968740",
+          "title": "Shale Grey / Smooth / 80 mm / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438725001508",
+          "title": "Shale Grey / Smooth / 80 mm / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438725067044",
+          "title": "Shale Grey / Hd\u00b2 Smooth / 80 mm / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438725099812",
+          "title": "Shale Grey / Hd\u00b2 Smooth / 80 mm / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438725165348",
+          "title": "Caff\u00e8 Crema / Smooth / 80 mm / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438725198116",
+          "title": "Caff\u00e8 Crema / Smooth / 80 mm / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438725263652",
+          "title": "Beige Cream / Smooth / 80 mm / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438725296420",
+          "title": "Beige Cream / Smooth / 80 mm / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438725361956",
+          "title": "Greyed Nickel / Smooth / 80 mm / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438725394724",
+          "title": "Greyed Nickel / Smooth / 80 mm / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438725460260",
+          "title": "Chestnut Brown / Smooth / 80 mm / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438725493028",
+          "title": "Chestnut Brown / Smooth / 80 mm / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438725558564",
+          "title": "Chestnut Brown / Hd\u00b2 Smooth / 80 mm / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438725591332",
+          "title": "Chestnut Brown / Hd\u00b2 Smooth / 80 mm / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438725656868",
+          "title": "Greyed Nickel / Hd\u00b2 Smooth / 80 mm / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438725689636",
+          "title": "Greyed Nickel / Hd\u00b2 Smooth / 80 mm / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438725755172",
+          "title": "Onyx Black / Smooth / 80 mm / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438725787940",
+          "title": "Onyx Black / Smooth / 80 mm / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438725853476",
+          "title": "Onyx Black / Hd\u00b2 Smooth / 80 mm / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438725886244",
+          "title": "Onyx Black / Hd\u00b2 Smooth / 80 mm / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438725951780",
+          "title": "Greyed Nickel / Hd\u00b2 Smooth / 6 \u00d7 13 / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438725984548",
+          "title": "Greyed Nickel / Hd\u00b2 Smooth / 6 \u00d7 13 / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438726050084",
+          "title": "Onyx Black / Smooth / 6 \u00d7 13 / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438726082852",
+          "title": "Onyx Black / Smooth / 6 \u00d7 13 / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438726148388",
+          "title": "Onyx Black / Hd\u00b2 Smooth / 6 \u00d7 13 / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438726181156",
+          "title": "Onyx Black / Hd\u00b2 Smooth / 6 \u00d7 13 / Pallet",
+          "unit": "Pallet"
+        }
+      ]
+    },
+    {
+      "product_id": "gid://shopify/Product/10382980055332",
+      "title": "Blu 80 Slate Sandlewood \u2013 Discontinued",
+      "handle": "blu-80-slate-sandlewood-discontinued",
+      "keep": [
+        {
+          "id": "gid://shopify/ProductVariant/52438726705444",
+          "title": "Sandlewood / Slate / 80 mm / Sq Ft",
+          "unit": "Sq Ft"
+        }
+      ],
+      "delete": [
+        {
+          "id": "gid://shopify/ProductVariant/52438726738212",
+          "title": "Sandlewood / Slate / 80 mm / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438726770980",
+          "title": "Sandlewood / Slate / 80 mm / Pallet",
+          "unit": "Pallet"
+        }
+      ]
+    },
+    {
+      "product_id": "gid://shopify/Product/10382980186404",
+      "title": "Borealis Slabs",
+      "handle": "borealis-slabs",
+      "keep": [
+        {
+          "id": "gid://shopify/ProductVariant/52438727786788",
+          "title": "Smoked Pine / Klean-Bloc Wood / 5 \u00d7 30 / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438727885092",
+          "title": "Hazelnut Brandy / Klean-Bloc Wood / 5 \u00d7 30 / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438727983396",
+          "title": "Hazelnut Brandy / Klean-Bloc Wood / 10 \u00d7 30 / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438728081700",
+          "title": "Riviera / Klean-Bloc Wood / 5 \u00d7 30 / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438728180004",
+          "title": "Riviera / Klean-Bloc Wood / 10 \u00d7 30 / Sq Ft",
+          "unit": "Sq Ft"
+        }
+      ],
+      "delete": [
+        {
+          "id": "gid://shopify/ProductVariant/52438727819556",
+          "title": "Smoked Pine / Klean-Bloc Wood / 5 \u00d7 30 / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438727852324",
+          "title": "Smoked Pine / Klean-Bloc Wood / 5 \u00d7 30 / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438727917860",
+          "title": "Hazelnut Brandy / Klean-Bloc Wood / 5 \u00d7 30 / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438727950628",
+          "title": "Hazelnut Brandy / Klean-Bloc Wood / 5 \u00d7 30 / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438728016164",
+          "title": "Hazelnut Brandy / Klean-Bloc Wood / 10 \u00d7 30 / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438728048932",
+          "title": "Hazelnut Brandy / Klean-Bloc Wood / 10 \u00d7 30 / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438728114468",
+          "title": "Riviera / Klean-Bloc Wood / 5 \u00d7 30 / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438728147236",
+          "title": "Riviera / Klean-Bloc Wood / 5 \u00d7 30 / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438728212772",
+          "title": "Riviera / Klean-Bloc Wood / 10 \u00d7 30 / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438728245540",
+          "title": "Riviera / Klean-Bloc Wood / 10 \u00d7 30 / Pallet",
+          "unit": "Pallet"
+        }
+      ]
+    },
+    {
+      "product_id": "gid://shopify/Product/10382980317476",
+      "title": "Borealis Steps",
+      "handle": "borealis-steps",
+      "keep": [
+        {
+          "id": "gid://shopify/ProductVariant/52438728671524",
+          "title": "Smoked Pine / Wood / Single Size / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438728769828",
+          "title": "Hazelnut Brandy / Wood / Single Size / Sq Ft",
+          "unit": "Sq Ft"
+        }
+      ],
+      "delete": [
+        {
+          "id": "gid://shopify/ProductVariant/52438728704292",
+          "title": "Smoked Pine / Wood / Single Size / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438728737060",
+          "title": "Smoked Pine / Wood / Single Size / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438728802596",
+          "title": "Hazelnut Brandy / Wood / Single Size / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438728835364",
+          "title": "Hazelnut Brandy / Wood / Single Size / Pallet",
+          "unit": "Pallet"
+        }
+      ]
+    },
+    {
+      "product_id": "gid://shopify/Product/10382980350244",
+      "title": "Brandon Walls",
+      "handle": "brandon-walls",
+      "keep": [
+        {
+          "id": "gid://shopify/ProductVariant/52438729097508",
+          "title": "Chestnut Brown / Slate / 180 Mm Wall / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438729195812",
+          "title": "Chestnut Brown / Slate / Pillar 180 Mm / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438729294116",
+          "title": "Chestnut Brown / Slate / Pillar 90 Mm / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438729392420",
+          "title": "Chestnut Brown / Slate / 90 Mm Wall / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438729490724",
+          "title": "Shale Grey / Slate / 180 Mm Wall / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438729589028",
+          "title": "Shale Grey / Slate / Pillar 180 Mm / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438729687332",
+          "title": "Shale Grey / Slate / Pillar 90 Mm / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438729785636",
+          "title": "Shale Grey / Slate / 90 Mm Wall / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438729883940",
+          "title": "Caff\u00e8 Crema / Slate / 180 Mm Wall / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438729982244",
+          "title": "Caff\u00e8 Crema / Slate / Pillar 180 Mm / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438730080548",
+          "title": "Caff\u00e8 Crema / Slate / Pillar 90 Mm / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438730178852",
+          "title": "Caff\u00e8 Crema / Slate / 90 Mm Wall / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438730277156",
+          "title": "Onyx Black / Slate / 180 Mm Wall / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438730375460",
+          "title": "Onyx Black / Slate / Pillar 180 Mm / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438730473764",
+          "title": "Onyx Black / Slate / Pillar 90 Mm / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438730572068",
+          "title": "Onyx Black / Slate / 90 Mm Wall / Sq Ft",
+          "unit": "Sq Ft"
+        }
+      ],
+      "delete": [
+        {
+          "id": "gid://shopify/ProductVariant/52438729130276",
+          "title": "Chestnut Brown / Slate / 180 Mm Wall / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438729163044",
+          "title": "Chestnut Brown / Slate / 180 Mm Wall / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438729228580",
+          "title": "Chestnut Brown / Slate / Pillar 180 Mm / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438729261348",
+          "title": "Chestnut Brown / Slate / Pillar 180 Mm / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438729326884",
+          "title": "Chestnut Brown / Slate / Pillar 90 Mm / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438729359652",
+          "title": "Chestnut Brown / Slate / Pillar 90 Mm / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438729425188",
+          "title": "Chestnut Brown / Slate / 90 Mm Wall / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438729457956",
+          "title": "Chestnut Brown / Slate / 90 Mm Wall / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438729523492",
+          "title": "Shale Grey / Slate / 180 Mm Wall / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438729556260",
+          "title": "Shale Grey / Slate / 180 Mm Wall / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438729621796",
+          "title": "Shale Grey / Slate / Pillar 180 Mm / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438729654564",
+          "title": "Shale Grey / Slate / Pillar 180 Mm / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438729720100",
+          "title": "Shale Grey / Slate / Pillar 90 Mm / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438729752868",
+          "title": "Shale Grey / Slate / Pillar 90 Mm / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438729818404",
+          "title": "Shale Grey / Slate / 90 Mm Wall / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438729851172",
+          "title": "Shale Grey / Slate / 90 Mm Wall / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438729916708",
+          "title": "Caff\u00e8 Crema / Slate / 180 Mm Wall / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438729949476",
+          "title": "Caff\u00e8 Crema / Slate / 180 Mm Wall / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438730015012",
+          "title": "Caff\u00e8 Crema / Slate / Pillar 180 Mm / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438730047780",
+          "title": "Caff\u00e8 Crema / Slate / Pillar 180 Mm / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438730113316",
+          "title": "Caff\u00e8 Crema / Slate / Pillar 90 Mm / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438730146084",
+          "title": "Caff\u00e8 Crema / Slate / Pillar 90 Mm / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438730211620",
+          "title": "Caff\u00e8 Crema / Slate / 90 Mm Wall / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438730244388",
+          "title": "Caff\u00e8 Crema / Slate / 90 Mm Wall / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438730309924",
+          "title": "Onyx Black / Slate / 180 Mm Wall / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438730342692",
+          "title": "Onyx Black / Slate / 180 Mm Wall / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438730408228",
+          "title": "Onyx Black / Slate / Pillar 180 Mm / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438730440996",
+          "title": "Onyx Black / Slate / Pillar 180 Mm / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438730506532",
+          "title": "Onyx Black / Slate / Pillar 90 Mm / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438730539300",
+          "title": "Onyx Black / Slate / Pillar 90 Mm / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438730604836",
+          "title": "Onyx Black / Slate / 90 Mm Wall / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438730637604",
+          "title": "Onyx Black / Slate / 90 Mm Wall / Pallet",
+          "unit": "Pallet"
+        }
+      ]
+    },
+    {
+      "product_id": "gid://shopify/Product/10382980415780",
+      "title": "Brandon Caps",
+      "handle": "brandon-caps",
+      "keep": [
+        {
+          "id": "gid://shopify/ProductVariant/52438731227428",
+          "title": "Chestnut Brown / Slate / Single Size / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438731325732",
+          "title": "Shale Grey / Slate / Single Size / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438731424036",
+          "title": "Caff\u00e8 Crema / Slate / Single Size / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438731522340",
+          "title": "Onyx Black / Slate / Single Size / Sq Ft",
+          "unit": "Sq Ft"
+        }
+      ],
+      "delete": [
+        {
+          "id": "gid://shopify/ProductVariant/52438731260196",
+          "title": "Chestnut Brown / Slate / Single Size / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438731292964",
+          "title": "Chestnut Brown / Slate / Single Size / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438731358500",
+          "title": "Shale Grey / Slate / Single Size / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438731391268",
+          "title": "Shale Grey / Slate / Single Size / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438731456804",
+          "title": "Caff\u00e8 Crema / Slate / Single Size / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438731489572",
+          "title": "Caff\u00e8 Crema / Slate / Single Size / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438731555108",
+          "title": "Onyx Black / Slate / Single Size / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438731587876",
+          "title": "Onyx Black / Slate / Single Size / Pallet",
+          "unit": "Pallet"
+        }
+      ]
+    },
+    {
+      "product_id": "gid://shopify/Product/10382980481316",
+      "title": "Brandon Edging Stones",
+      "handle": "brandon-edging-stones",
+      "keep": [
+        {
+          "id": "gid://shopify/ProductVariant/52438731653412",
+          "title": "Caff\u00e8 Crema / Slate / Modular Size / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438731751716",
+          "title": "Shale Grey / Slate / Modular Size / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438731850020",
+          "title": "Chestnut Brown / Slate / Modular Size / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438731948324",
+          "title": "Onyx Black / Slate / Modular Size / Sq Ft",
+          "unit": "Sq Ft"
+        }
+      ],
+      "delete": [
+        {
+          "id": "gid://shopify/ProductVariant/52438731686180",
+          "title": "Caff\u00e8 Crema / Slate / Modular Size / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438731718948",
+          "title": "Caff\u00e8 Crema / Slate / Modular Size / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438731784484",
+          "title": "Shale Grey / Slate / Modular Size / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438731817252",
+          "title": "Shale Grey / Slate / Modular Size / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438731882788",
+          "title": "Chestnut Brown / Slate / Modular Size / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438731915556",
+          "title": "Chestnut Brown / Slate / Modular Size / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438731981092",
+          "title": "Onyx Black / Slate / Modular Size / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438732013860",
+          "title": "Onyx Black / Slate / Modular Size / Pallet",
+          "unit": "Pallet"
+        }
+      ]
+    },
+    {
+      "product_id": "gid://shopify/Product/10382980579620",
+      "title": "Bullnose Grande Caps",
+      "handle": "bullnose-grande-caps",
+      "keep": [
+        {
+          "id": "gid://shopify/ProductVariant/52438732407076",
+          "title": "Beige Cream / Polished / Single Size / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438732505380",
+          "title": "Greyed Nickel / Polished / Single Size / Sq Ft",
+          "unit": "Sq Ft"
+        }
+      ],
+      "delete": [
+        {
+          "id": "gid://shopify/ProductVariant/52438732439844",
+          "title": "Beige Cream / Polished / Single Size / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438732472612",
+          "title": "Beige Cream / Polished / Single Size / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438732538148",
+          "title": "Greyed Nickel / Polished / Single Size / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438732570916",
+          "title": "Greyed Nickel / Polished / Single Size / Pallet",
+          "unit": "Pallet"
+        }
+      ]
+    },
+    {
+      "product_id": "gid://shopify/Product/10382980710692",
+      "title": "Bullnose Caps",
+      "handle": "bullnose-caps",
+      "keep": [
+        {
+          "id": "gid://shopify/ProductVariant/52438733455652",
+          "title": "Chestnut Brown / Smooth / Single Size / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438733553956",
+          "title": "Chocolate Brown / Smooth / Single Size / Sq Ft",
+          "unit": "Sq Ft"
+        }
+      ],
+      "delete": [
+        {
+          "id": "gid://shopify/ProductVariant/52438733488420",
+          "title": "Chestnut Brown / Smooth / Single Size / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438733521188",
+          "title": "Chestnut Brown / Smooth / Single Size / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438733586724",
+          "title": "Chocolate Brown / Smooth / Single Size / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438733619492",
+          "title": "Chocolate Brown / Smooth / Single Size / Pallet",
+          "unit": "Pallet"
+        }
+      ]
+    },
+    {
+      "product_id": "gid://shopify/Product/10383004205348",
+      "title": "Eva Slate Pavers",
+      "handle": "eva-slate-pavers",
+      "keep": [
+        {
+          "id": "gid://shopify/ProductVariant/52438914859300",
+          "title": "Chestnut Brown / Slate / Modular Size / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438914957604",
+          "title": "Shale Grey / Slate / Modular Size / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438915055908",
+          "title": "Sandlewood / Slate / Modular Size / Sq Ft",
+          "unit": "Sq Ft"
+        }
+      ],
+      "delete": [
+        {
+          "id": "gid://shopify/ProductVariant/52438914892068",
+          "title": "Chestnut Brown / Slate / Modular Size / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438914924836",
+          "title": "Chestnut Brown / Slate / Modular Size / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438914990372",
+          "title": "Shale Grey / Slate / Modular Size / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438915023140",
+          "title": "Shale Grey / Slate / Modular Size / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438915088676",
+          "title": "Sandlewood / Slate / Modular Size / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438915121444",
+          "title": "Sandlewood / Slate / Modular Size / Pallet",
+          "unit": "Pallet"
+        }
+      ]
+    },
+    {
+      "product_id": "gid://shopify/Product/10383004369188",
+      "title": "Eva Smooth Pavers",
+      "handle": "eva-smooth-pavers",
+      "keep": [
+        {
+          "id": "gid://shopify/ProductVariant/52438916432164",
+          "title": "Chestnut Brown / Smooth / Modular Size / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438916530468",
+          "title": "Shale Grey / Smooth / Modular Size / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438916628772",
+          "title": "Onyx Black / Smooth / Modular Size / Sq Ft",
+          "unit": "Sq Ft"
+        }
+      ],
+      "delete": [
+        {
+          "id": "gid://shopify/ProductVariant/52438916464932",
+          "title": "Chestnut Brown / Smooth / Modular Size / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438916497700",
+          "title": "Chestnut Brown / Smooth / Modular Size / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438916563236",
+          "title": "Shale Grey / Smooth / Modular Size / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438916596004",
+          "title": "Shale Grey / Smooth / Modular Size / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438916661540",
+          "title": "Onyx Black / Smooth / Modular Size / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438916694308",
+          "title": "Onyx Black / Smooth / Modular Size / Pallet",
+          "unit": "Pallet"
+        }
+      ]
+    },
+    {
+      "product_id": "gid://shopify/Product/10383004401956",
+      "title": "G-Force Walls",
+      "handle": "g-force-walls",
+      "keep": [
+        {
+          "id": "gid://shopify/ProductVariant/52438916727076",
+          "title": "Chestnut Brown / Smooth / Corner Unit / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438916825380",
+          "title": "Chestnut Brown / Smooth / Wall / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438916923684",
+          "title": "Shale Grey / Smooth / Corner Unit / Sq Ft",
+          "unit": "Sq Ft"
+        }
+      ],
+      "delete": [
+        {
+          "id": "gid://shopify/ProductVariant/52438916759844",
+          "title": "Chestnut Brown / Smooth / Corner Unit / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438916792612",
+          "title": "Chestnut Brown / Smooth / Corner Unit / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438916858148",
+          "title": "Chestnut Brown / Smooth / Wall / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438916890916",
+          "title": "Chestnut Brown / Smooth / Wall / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438916956452",
+          "title": "Shale Grey / Smooth / Corner Unit / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438916989220",
+          "title": "Shale Grey / Smooth / Corner Unit / Pallet",
+          "unit": "Pallet"
+        }
+      ]
+    },
+    {
+      "product_id": "gid://shopify/Product/10383004565796",
+      "title": "Graphix Caps",
+      "handle": "graphix-caps",
+      "keep": [
+        {
+          "id": "gid://shopify/ProductVariant/52438918168868",
+          "title": "Beige Cream / Smooth / Single Size / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438918267172",
+          "title": "Greyed Nickel / Smooth / Single Size / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438918365476",
+          "title": "Onyx Black / Smooth / Single Size / Sq Ft",
+          "unit": "Sq Ft"
+        }
+      ],
+      "delete": [
+        {
+          "id": "gid://shopify/ProductVariant/52438918201636",
+          "title": "Beige Cream / Smooth / Single Size / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438918234404",
+          "title": "Beige Cream / Smooth / Single Size / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438918299940",
+          "title": "Greyed Nickel / Smooth / Single Size / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438918332708",
+          "title": "Greyed Nickel / Smooth / Single Size / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438918398244",
+          "title": "Onyx Black / Smooth / Single Size / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438918431012",
+          "title": "Onyx Black / Smooth / Single Size / Pallet",
+          "unit": "Pallet"
+        }
+      ]
+    },
+    {
+      "product_id": "gid://shopify/Product/10383004926244",
+      "title": "Graphix Walls",
+      "handle": "graphix-walls",
+      "keep": [
+        {
+          "id": "gid://shopify/ProductVariant/52438919741732",
+          "title": "Beige Cream / Splitface & Smooth / Modular Size / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438919840036",
+          "title": "Greyed Nickel / Splitface & Smooth / Modular Size / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438919938340",
+          "title": "Onyx Black / Splitface & Smooth / Modular Size / Sq Ft",
+          "unit": "Sq Ft"
+        }
+      ],
+      "delete": [
+        {
+          "id": "gid://shopify/ProductVariant/52438919774500",
+          "title": "Beige Cream / Splitface & Smooth / Modular Size / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438919807268",
+          "title": "Beige Cream / Splitface & Smooth / Modular Size / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438919872804",
+          "title": "Greyed Nickel / Splitface & Smooth / Modular Size / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438919905572",
+          "title": "Greyed Nickel / Splitface & Smooth / Modular Size / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438919971108",
+          "title": "Onyx Black / Splitface & Smooth / Modular Size / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438920003876",
+          "title": "Onyx Black / Splitface & Smooth / Modular Size / Pallet",
+          "unit": "Pallet"
+        }
+      ]
+    },
+    {
+      "product_id": "gid://shopify/Product/10383005122852",
+      "title": "Hexa 60 Slabs",
+      "handle": "hexa-60-slabs",
+      "keep": [
+        {
+          "id": "gid://shopify/ProductVariant/52438920757540",
+          "title": "Caff\u00e8 Crema / Hd\u00b2 Smooth / Single Size / Sq Ft",
+          "unit": "Sq Ft"
+        }
+      ],
+      "delete": [
+        {
+          "id": "gid://shopify/ProductVariant/52438920790308",
+          "title": "Caff\u00e8 Crema / Hd\u00b2 Smooth / Single Size / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438920823076",
+          "title": "Caff\u00e8 Crema / Hd\u00b2 Smooth / Single Size / Pallet",
+          "unit": "Pallet"
+        }
+      ]
+    },
+    {
+      "product_id": "gid://shopify/Product/10383005450532",
+      "title": "Mika Pavers",
+      "handle": "mika-pavers",
+      "keep": [
+        {
+          "id": "gid://shopify/ProductVariant/52438922133796",
+          "title": "Ivory / Klean-Bloc Slate / Single Size / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438922232100",
+          "title": "Rock Garden Brown / Klean-Bloc Slate / Single Size / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438922330404",
+          "title": "Onyx Black / Klean-Bloc Slate / Single Size / Sq Ft",
+          "unit": "Sq Ft"
+        }
+      ],
+      "delete": [
+        {
+          "id": "gid://shopify/ProductVariant/52438922166564",
+          "title": "Ivory / Klean-Bloc Slate / Single Size / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438922199332",
+          "title": "Ivory / Klean-Bloc Slate / Single Size / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438922264868",
+          "title": "Rock Garden Brown / Klean-Bloc Slate / Single Size / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438922297636",
+          "title": "Rock Garden Brown / Klean-Bloc Slate / Single Size / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438922363172",
+          "title": "Onyx Black / Klean-Bloc Slate / Single Size / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438922395940",
+          "title": "Onyx Black / Klean-Bloc Slate / Single Size / Pallet",
+          "unit": "Pallet"
+        }
+      ]
+    },
+    {
+      "product_id": "gid://shopify/Product/10383005745444",
+      "title": "Mini-Creta Architectural Walls",
+      "handle": "mini-creta-architectural-walls",
+      "keep": [
+        {
+          "id": "gid://shopify/ProductVariant/52438923542820",
+          "title": "Chestnut Brown / Split / Pillar / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438923641124",
+          "title": "Shale Grey / Split / Pillar / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438923739428",
+          "title": "Sandlewood / Split / Pillar / Sq Ft",
+          "unit": "Sq Ft"
+        }
+      ],
+      "delete": [
+        {
+          "id": "gid://shopify/ProductVariant/52438923575588",
+          "title": "Chestnut Brown / Split / Pillar / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438923608356",
+          "title": "Chestnut Brown / Split / Pillar / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438923673892",
+          "title": "Shale Grey / Split / Pillar / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438923706660",
+          "title": "Shale Grey / Split / Pillar / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438923772196",
+          "title": "Sandlewood / Split / Pillar / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438923804964",
+          "title": "Sandlewood / Split / Pillar / Pallet",
+          "unit": "Pallet"
+        }
+      ]
+    },
+    {
+      "product_id": "gid://shopify/Product/10383005909284",
+      "title": "Ocean Grande Slabs - Legacy Collection",
+      "handle": "ocean-grande-slabs-legacy-collection",
+      "keep": [
+        {
+          "id": "gid://shopify/ProductVariant/52438924525860",
+          "title": "Beige Cream / Hd\u00b2 Ocean Wave / Single Size / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438924624164",
+          "title": "Greyed Nickel / Hd\u00b2 Ocean Wave / Single Size / Sq Ft",
+          "unit": "Sq Ft"
+        }
+      ],
+      "delete": [
+        {
+          "id": "gid://shopify/ProductVariant/52438924558628",
+          "title": "Beige Cream / Hd\u00b2 Ocean Wave / Single Size / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438924591396",
+          "title": "Beige Cream / Hd\u00b2 Ocean Wave / Single Size / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438924656932",
+          "title": "Greyed Nickel / Hd\u00b2 Ocean Wave / Single Size / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438924689700",
+          "title": "Greyed Nickel / Hd\u00b2 Ocean Wave / Single Size / Pallet",
+          "unit": "Pallet"
+        }
+      ]
+    },
+    {
+      "product_id": "gid://shopify/Product/10383006269732",
+      "title": "Piedimonte Caps",
+      "handle": "piedimonte-caps",
+      "keep": [
+        {
+          "id": "gid://shopify/ProductVariant/52438925639972",
+          "title": "Rock Garden Brown / Klean-Bloc Thermal / Wall & Step / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438925738276",
+          "title": "Rock Garden Brown / Klean-Bloc Thermal / Pillar / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438925836580",
+          "title": "Riviera / Klean-Bloc Thermal / Wall & Step / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438925934884",
+          "title": "Riviera / Klean-Bloc Thermal / Pillar / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438926033188",
+          "title": "Onyx Black / Klean-Bloc Thermal / Wall & Step / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438926131492",
+          "title": "Onyx Black / Klean-Bloc Thermal / Pillar / Sq Ft",
+          "unit": "Sq Ft"
+        }
+      ],
+      "delete": [
+        {
+          "id": "gid://shopify/ProductVariant/52438925672740",
+          "title": "Rock Garden Brown / Klean-Bloc Thermal / Wall & Step / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438925705508",
+          "title": "Rock Garden Brown / Klean-Bloc Thermal / Wall & Step / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438925771044",
+          "title": "Rock Garden Brown / Klean-Bloc Thermal / Pillar / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438925803812",
+          "title": "Rock Garden Brown / Klean-Bloc Thermal / Pillar / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438925869348",
+          "title": "Riviera / Klean-Bloc Thermal / Wall & Step / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438925902116",
+          "title": "Riviera / Klean-Bloc Thermal / Wall & Step / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438925967652",
+          "title": "Riviera / Klean-Bloc Thermal / Pillar / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438926000420",
+          "title": "Riviera / Klean-Bloc Thermal / Pillar / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438926065956",
+          "title": "Onyx Black / Klean-Bloc Thermal / Wall & Step / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438926098724",
+          "title": "Onyx Black / Klean-Bloc Thermal / Wall & Step / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438926164260",
+          "title": "Onyx Black / Klean-Bloc Thermal / Pillar / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438926197028",
+          "title": "Onyx Black / Klean-Bloc Thermal / Pillar / Pallet",
+          "unit": "Pallet"
+        }
+      ]
+    },
+    {
+      "product_id": "gid://shopify/Product/10383006466340",
+      "title": "Pietra Edging Stones",
+      "handle": "pietra-edging-stones",
+      "keep": [
+        {
+          "id": "gid://shopify/ProductVariant/52438927474980",
+          "title": "Chestnut Brown / Split/Aged / Modular Size / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438927573284",
+          "title": "Shale Grey / Split/Aged / Modular Size / Sq Ft",
+          "unit": "Sq Ft"
+        }
+      ],
+      "delete": [
+        {
+          "id": "gid://shopify/ProductVariant/52438927507748",
+          "title": "Chestnut Brown / Split/Aged / Modular Size / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438927540516",
+          "title": "Chestnut Brown / Split/Aged / Modular Size / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438927606052",
+          "title": "Shale Grey / Split/Aged / Modular Size / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438927638820",
+          "title": "Shale Grey / Split/Aged / Modular Size / Pallet",
+          "unit": "Pallet"
+        }
+      ]
+    },
+    {
+      "product_id": "gid://shopify/Product/10383006564644",
+      "title": "Portofino Caps",
+      "handle": "portofino-caps",
+      "keep": [
+        {
+          "id": "gid://shopify/ProductVariant/52438928130340",
+          "title": "Rock Garden Brown / Slate / Modular Size / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438928228644",
+          "title": "Azzurro / Slate / Modular Size / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438928326948",
+          "title": "Riviera / Slate / Modular Size / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438928425252",
+          "title": "Onyx Black / Slate / Modular Size / Sq Ft",
+          "unit": "Sq Ft"
+        }
+      ],
+      "delete": [
+        {
+          "id": "gid://shopify/ProductVariant/52438928163108",
+          "title": "Rock Garden Brown / Slate / Modular Size / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438928195876",
+          "title": "Rock Garden Brown / Slate / Modular Size / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438928261412",
+          "title": "Azzurro / Slate / Modular Size / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438928294180",
+          "title": "Azzurro / Slate / Modular Size / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438928359716",
+          "title": "Riviera / Slate / Modular Size / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438928392484",
+          "title": "Riviera / Slate / Modular Size / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438928458020",
+          "title": "Onyx Black / Slate / Modular Size / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438928490788",
+          "title": "Onyx Black / Slate / Modular Size / Pallet",
+          "unit": "Pallet"
+        }
+      ]
+    },
+    {
+      "product_id": "gid://shopify/Product/10383006761252",
+      "title": "Raffinato Polished Walls",
+      "handle": "raffinato-polished-walls",
+      "keep": [
+        {
+          "id": "gid://shopify/ProductVariant/52438929899812",
+          "title": "Beige Cream / Polished / 180 Mm Wall / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438929998116",
+          "title": "Beige Cream / Polished / 180 Mm Pilr/Crnr/Edge / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438930096420",
+          "title": "Beige Cream / Polished / 90 Mm Pilr/Crnr/Edge / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438930194724",
+          "title": "Beige Cream / Polished / 90 Mm Wall / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438930293028",
+          "title": "Greyed Nickel / Polished / 180 Mm Wall / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438930391332",
+          "title": "Greyed Nickel / Polished / 180 Mm Pilr/Crnr/Edge / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438930489636",
+          "title": "Greyed Nickel / Polished / 90 Mm Pilr/Crnr/Edge / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438930587940",
+          "title": "Greyed Nickel / Polished / 90 Mm Wall / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438930686244",
+          "title": "Onyx Black / Polished / 180 Mm Wall / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438930784548",
+          "title": "Onyx Black / Polished / 180 Mm Pilr/Crnr/Edge / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438930882852",
+          "title": "Onyx Black / Polished / 90 Mm Pilr/Crnr/Edge / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438930981156",
+          "title": "Onyx Black / Polished / 90 Mm Wall / Sq Ft",
+          "unit": "Sq Ft"
+        }
+      ],
+      "delete": [
+        {
+          "id": "gid://shopify/ProductVariant/52438929932580",
+          "title": "Beige Cream / Polished / 180 Mm Wall / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438929965348",
+          "title": "Beige Cream / Polished / 180 Mm Wall / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438930030884",
+          "title": "Beige Cream / Polished / 180 Mm Pilr/Crnr/Edge / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438930063652",
+          "title": "Beige Cream / Polished / 180 Mm Pilr/Crnr/Edge / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438930129188",
+          "title": "Beige Cream / Polished / 90 Mm Pilr/Crnr/Edge / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438930161956",
+          "title": "Beige Cream / Polished / 90 Mm Pilr/Crnr/Edge / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438930227492",
+          "title": "Beige Cream / Polished / 90 Mm Wall / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438930260260",
+          "title": "Beige Cream / Polished / 90 Mm Wall / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438930325796",
+          "title": "Greyed Nickel / Polished / 180 Mm Wall / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438930358564",
+          "title": "Greyed Nickel / Polished / 180 Mm Wall / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438930424100",
+          "title": "Greyed Nickel / Polished / 180 Mm Pilr/Crnr/Edge / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438930456868",
+          "title": "Greyed Nickel / Polished / 180 Mm Pilr/Crnr/Edge / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438930522404",
+          "title": "Greyed Nickel / Polished / 90 Mm Pilr/Crnr/Edge / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438930555172",
+          "title": "Greyed Nickel / Polished / 90 Mm Pilr/Crnr/Edge / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438930620708",
+          "title": "Greyed Nickel / Polished / 90 Mm Wall / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438930653476",
+          "title": "Greyed Nickel / Polished / 90 Mm Wall / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438930719012",
+          "title": "Onyx Black / Polished / 180 Mm Wall / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438930751780",
+          "title": "Onyx Black / Polished / 180 Mm Wall / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438930817316",
+          "title": "Onyx Black / Polished / 180 Mm Pilr/Crnr/Edge / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438930850084",
+          "title": "Onyx Black / Polished / 180 Mm Pilr/Crnr/Edge / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438930915620",
+          "title": "Onyx Black / Polished / 90 Mm Pilr/Crnr/Edge / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438930948388",
+          "title": "Onyx Black / Polished / 90 Mm Pilr/Crnr/Edge / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438931013924",
+          "title": "Onyx Black / Polished / 90 Mm Wall / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438931046692",
+          "title": "Onyx Black / Polished / 90 Mm Wall / Pallet",
+          "unit": "Pallet"
+        }
+      ]
+    },
+    {
+      "product_id": "gid://shopify/Product/10383007645988",
+      "title": "Raffinato Smooth Walls",
+      "handle": "raffinato-smooth-walls",
+      "keep": [
+        {
+          "id": "gid://shopify/ProductVariant/52438935535908",
+          "title": "Caff\u00e8 Crema / Smooth / 180 Mm Wall / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438935634212",
+          "title": "Caff\u00e8 Crema / Smooth / 180 Mm Pilr/Crnr/Edge / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438935732516",
+          "title": "Caff\u00e8 Crema / Smooth / 90 Mm Pilr/Crnr/Edge / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438935830820",
+          "title": "Beige Cream / Smooth / 180 Mm Wall / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438935929124",
+          "title": "Beige Cream / Smooth / 180 Mm Pilr/Crnr/Edge / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438936027428",
+          "title": "Beige Cream / Smooth / 90 Mm Pilr/Crnr/Edge / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438936125732",
+          "title": "Beige Cream / Smooth / 90 Mm Wall / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438936224036",
+          "title": "Greyed Nickel / Smooth / 180 Mm Wall / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438936322340",
+          "title": "Greyed Nickel / Smooth / 180 Mm Pilr/Crnr/Edge / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438936420644",
+          "title": "Greyed Nickel / Smooth / 90 Mm Pilr/Crnr/Edge / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438936518948",
+          "title": "Greyed Nickel / Smooth / 90 Mm Wall / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438936617252",
+          "title": "Caff\u00e8 Crema / Smooth / 90 Mm Wall / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438936715556",
+          "title": "Shale Grey / Smooth / 180 Mm Wall / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438936813860",
+          "title": "Shale Grey / Smooth / 180 Mm Pilr/Crnr/Edge / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438936912164",
+          "title": "Shale Grey / Smooth / 90 Mm Pilr/Crnr/Edge / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438937010468",
+          "title": "Shale Grey / Smooth / 90 Mm Wall / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438937108772",
+          "title": "Onyx Black / Smooth / 180 Mm Wall / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438937207076",
+          "title": "Onyx Black / Smooth / 180 Mm Pilr/Crnr/Edge / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438937305380",
+          "title": "Onyx Black / Smooth / 90 Mm Pilr/Crnr/Edge / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438937403684",
+          "title": "Onyx Black / Smooth / 90 Mm Wall / Sq Ft",
+          "unit": "Sq Ft"
+        }
+      ],
+      "delete": [
+        {
+          "id": "gid://shopify/ProductVariant/52438935568676",
+          "title": "Caff\u00e8 Crema / Smooth / 180 Mm Wall / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438935601444",
+          "title": "Caff\u00e8 Crema / Smooth / 180 Mm Wall / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438935666980",
+          "title": "Caff\u00e8 Crema / Smooth / 180 Mm Pilr/Crnr/Edge / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438935699748",
+          "title": "Caff\u00e8 Crema / Smooth / 180 Mm Pilr/Crnr/Edge / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438935765284",
+          "title": "Caff\u00e8 Crema / Smooth / 90 Mm Pilr/Crnr/Edge / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438935798052",
+          "title": "Caff\u00e8 Crema / Smooth / 90 Mm Pilr/Crnr/Edge / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438935863588",
+          "title": "Beige Cream / Smooth / 180 Mm Wall / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438935896356",
+          "title": "Beige Cream / Smooth / 180 Mm Wall / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438935961892",
+          "title": "Beige Cream / Smooth / 180 Mm Pilr/Crnr/Edge / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438935994660",
+          "title": "Beige Cream / Smooth / 180 Mm Pilr/Crnr/Edge / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438936060196",
+          "title": "Beige Cream / Smooth / 90 Mm Pilr/Crnr/Edge / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438936092964",
+          "title": "Beige Cream / Smooth / 90 Mm Pilr/Crnr/Edge / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438936158500",
+          "title": "Beige Cream / Smooth / 90 Mm Wall / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438936191268",
+          "title": "Beige Cream / Smooth / 90 Mm Wall / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438936256804",
+          "title": "Greyed Nickel / Smooth / 180 Mm Wall / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438936289572",
+          "title": "Greyed Nickel / Smooth / 180 Mm Wall / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438936355108",
+          "title": "Greyed Nickel / Smooth / 180 Mm Pilr/Crnr/Edge / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438936387876",
+          "title": "Greyed Nickel / Smooth / 180 Mm Pilr/Crnr/Edge / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438936453412",
+          "title": "Greyed Nickel / Smooth / 90 Mm Pilr/Crnr/Edge / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438936486180",
+          "title": "Greyed Nickel / Smooth / 90 Mm Pilr/Crnr/Edge / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438936551716",
+          "title": "Greyed Nickel / Smooth / 90 Mm Wall / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438936584484",
+          "title": "Greyed Nickel / Smooth / 90 Mm Wall / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438936650020",
+          "title": "Caff\u00e8 Crema / Smooth / 90 Mm Wall / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438936682788",
+          "title": "Caff\u00e8 Crema / Smooth / 90 Mm Wall / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438936748324",
+          "title": "Shale Grey / Smooth / 180 Mm Wall / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438936781092",
+          "title": "Shale Grey / Smooth / 180 Mm Wall / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438936846628",
+          "title": "Shale Grey / Smooth / 180 Mm Pilr/Crnr/Edge / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438936879396",
+          "title": "Shale Grey / Smooth / 180 Mm Pilr/Crnr/Edge / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438936944932",
+          "title": "Shale Grey / Smooth / 90 Mm Pilr/Crnr/Edge / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438936977700",
+          "title": "Shale Grey / Smooth / 90 Mm Pilr/Crnr/Edge / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438937043236",
+          "title": "Shale Grey / Smooth / 90 Mm Wall / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438937076004",
+          "title": "Shale Grey / Smooth / 90 Mm Wall / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438937141540",
+          "title": "Onyx Black / Smooth / 180 Mm Wall / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438937174308",
+          "title": "Onyx Black / Smooth / 180 Mm Wall / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438937239844",
+          "title": "Onyx Black / Smooth / 180 Mm Pilr/Crnr/Edge / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438937272612",
+          "title": "Onyx Black / Smooth / 180 Mm Pilr/Crnr/Edge / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438937338148",
+          "title": "Onyx Black / Smooth / 90 Mm Pilr/Crnr/Edge / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438937370916",
+          "title": "Onyx Black / Smooth / 90 Mm Pilr/Crnr/Edge / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438937436452",
+          "title": "Onyx Black / Smooth / 90 Mm Wall / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438937469220",
+          "title": "Onyx Black / Smooth / 90 Mm Wall / Pallet",
+          "unit": "Pallet"
+        }
+      ]
+    },
+    {
+      "product_id": "gid://shopify/Product/10383007940900",
+      "title": "Raffinato Smooth Caps",
+      "handle": "raffinato-smooth-caps",
+      "keep": [
+        {
+          "id": "gid://shopify/ProductVariant/52438938517796",
+          "title": "Beige Cream / Smooth / 90 Mm Wall / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438938616100",
+          "title": "Greyed Nickel / Smooth / 90 Mm Wall / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438938714404",
+          "title": "Silver Granite / Hd\u00b2 Smooth / 60 Mm Hd\u00b2 / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438938812708",
+          "title": "Chestnut Brown / Smooth / 90 Mm Wall / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438938911012",
+          "title": "Shale Grey / Smooth / 90 Mm Wall / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438939009316",
+          "title": "Beige Cream / Smooth / 60 mm / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438939107620",
+          "title": "Greyed Nickel / Smooth / 60 mm / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438939205924",
+          "title": "Chestnut Brown / Smooth / 60 mm / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438939304228",
+          "title": "Shale Grey / Smooth / 60 mm / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438939402532",
+          "title": "Onyx Black / Smooth / 60 mm / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438939500836",
+          "title": "Onyx Black / Smooth / 90 Mm Wall / Sq Ft",
+          "unit": "Sq Ft"
+        }
+      ],
+      "delete": [
+        {
+          "id": "gid://shopify/ProductVariant/52438938550564",
+          "title": "Beige Cream / Smooth / 90 Mm Wall / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438938583332",
+          "title": "Beige Cream / Smooth / 90 Mm Wall / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438938648868",
+          "title": "Greyed Nickel / Smooth / 90 Mm Wall / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438938681636",
+          "title": "Greyed Nickel / Smooth / 90 Mm Wall / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438938747172",
+          "title": "Silver Granite / Hd\u00b2 Smooth / 60 Mm Hd\u00b2 / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438938779940",
+          "title": "Silver Granite / Hd\u00b2 Smooth / 60 Mm Hd\u00b2 / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438938845476",
+          "title": "Chestnut Brown / Smooth / 90 Mm Wall / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438938878244",
+          "title": "Chestnut Brown / Smooth / 90 Mm Wall / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438938943780",
+          "title": "Shale Grey / Smooth / 90 Mm Wall / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438938976548",
+          "title": "Shale Grey / Smooth / 90 Mm Wall / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438939042084",
+          "title": "Beige Cream / Smooth / 60 mm / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438939074852",
+          "title": "Beige Cream / Smooth / 60 mm / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438939140388",
+          "title": "Greyed Nickel / Smooth / 60 mm / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438939173156",
+          "title": "Greyed Nickel / Smooth / 60 mm / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438939238692",
+          "title": "Chestnut Brown / Smooth / 60 mm / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438939271460",
+          "title": "Chestnut Brown / Smooth / 60 mm / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438939336996",
+          "title": "Shale Grey / Smooth / 60 mm / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438939369764",
+          "title": "Shale Grey / Smooth / 60 mm / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438939435300",
+          "title": "Onyx Black / Smooth / 60 mm / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438939468068",
+          "title": "Onyx Black / Smooth / 60 mm / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438939533604",
+          "title": "Onyx Black / Smooth / 90 Mm Wall / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438939566372",
+          "title": "Onyx Black / Smooth / 90 Mm Wall / Pallet",
+          "unit": "Pallet"
+        }
+      ]
+    },
+    {
+      "product_id": "gid://shopify/Product/10383008334116",
+      "title": "Raffinato Steps",
+      "handle": "raffinato-steps",
+      "keep": [
+        {
+          "id": "gid://shopify/ProductVariant/52438940516644",
+          "title": "Caff\u00e8 Crema / Smooth / Single Size / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438940614948",
+          "title": "Beige Cream / Smooth / Single Size / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438940713252",
+          "title": "Greyed Nickel / Smooth / Single Size / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438940811556",
+          "title": "Shale Grey / Smooth / Single Size / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438940909860",
+          "title": "Onyx Black / Smooth / Single Size / Sq Ft",
+          "unit": "Sq Ft"
+        }
+      ],
+      "delete": [
+        {
+          "id": "gid://shopify/ProductVariant/52438940549412",
+          "title": "Caff\u00e8 Crema / Smooth / Single Size / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438940582180",
+          "title": "Caff\u00e8 Crema / Smooth / Single Size / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438940647716",
+          "title": "Beige Cream / Smooth / Single Size / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438940680484",
+          "title": "Beige Cream / Smooth / Single Size / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438940746020",
+          "title": "Greyed Nickel / Smooth / Single Size / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438940778788",
+          "title": "Greyed Nickel / Smooth / Single Size / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438940844324",
+          "title": "Shale Grey / Smooth / Single Size / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438940877092",
+          "title": "Shale Grey / Smooth / Single Size / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438940942628",
+          "title": "Onyx Black / Smooth / Single Size / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438940975396",
+          "title": "Onyx Black / Smooth / Single Size / Pallet",
+          "unit": "Pallet"
+        }
+      ]
+    },
+    {
+      "product_id": "gid://shopify/Product/10383008497956",
+      "title": "Sculptura Circle Firepit",
+      "handle": "sculptura-circle-firepit",
+      "keep": [
+        {
+          "id": "gid://shopify/ProductVariant/52438943269156",
+          "title": "Cool Grey / Smooth / Single Size / Sq Ft",
+          "unit": "Sq Ft"
+        }
+      ],
+      "delete": [
+        {
+          "id": "gid://shopify/ProductVariant/52438943301924",
+          "title": "Cool Grey / Smooth / Single Size / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438943334692",
+          "title": "Cool Grey / Smooth / Single Size / Pallet",
+          "unit": "Pallet"
+        }
+      ]
+    },
+    {
+      "product_id": "gid://shopify/Product/10383008760100",
+      "title": "Sculptura Rectangle Firepit",
+      "handle": "sculptura-rectangle-firepit",
+      "keep": [
+        {
+          "id": "gid://shopify/ProductVariant/52438944317732",
+          "title": "Cool Grey / Smooth / Single Size / Sq Ft",
+          "unit": "Sq Ft"
+        }
+      ],
+      "delete": [
+        {
+          "id": "gid://shopify/ProductVariant/52438944350500",
+          "title": "Cool Grey / Smooth / Single Size / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438944383268",
+          "title": "Cool Grey / Smooth / Single Size / Pallet",
+          "unit": "Pallet"
+        }
+      ]
+    },
+    {
+      "product_id": "gid://shopify/Product/10383008956708",
+      "title": "Sculptura Scalloped Firepit",
+      "handle": "sculptura-scalloped-firepit",
+      "keep": [
+        {
+          "id": "gid://shopify/ProductVariant/52438945628452",
+          "title": "Cool Grey / Smooth / Single Size / Sq Ft",
+          "unit": "Sq Ft"
+        }
+      ],
+      "delete": [
+        {
+          "id": "gid://shopify/ProductVariant/52438945661220",
+          "title": "Cool Grey / Smooth / Single Size / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438945693988",
+          "title": "Cool Grey / Smooth / Single Size / Pallet",
+          "unit": "Pallet"
+        }
+      ]
+    },
+    {
+      "product_id": "gid://shopify/Product/10383009251620",
+      "title": "Sculptura Square Firepit",
+      "handle": "sculptura-square-firepit",
+      "keep": [
+        {
+          "id": "gid://shopify/ProductVariant/52438948872484",
+          "title": "Cool Grey / Smooth / Single Size / Sq Ft",
+          "unit": "Sq Ft"
+        }
+      ],
+      "delete": [
+        {
+          "id": "gid://shopify/ProductVariant/52438948905252",
+          "title": "Cool Grey / Smooth / Single Size / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438948938020",
+          "title": "Cool Grey / Smooth / Single Size / Pallet",
+          "unit": "Pallet"
+        }
+      ]
+    },
+    {
+      "product_id": "gid://shopify/Product/10383009939748",
+      "title": "Semma Walls",
+      "handle": "semma-walls",
+      "keep": [
+        {
+          "id": "gid://shopify/ProductVariant/52438951592228",
+          "title": "Chestnut Brown / Split / Wall / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438951690532",
+          "title": "Sandlewood / Split / Wall / Sq Ft",
+          "unit": "Sq Ft"
+        }
+      ],
+      "delete": [
+        {
+          "id": "gid://shopify/ProductVariant/52438951624996",
+          "title": "Chestnut Brown / Split / Wall / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438951657764",
+          "title": "Chestnut Brown / Split / Wall / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438951723300",
+          "title": "Sandlewood / Split / Wall / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438951756068",
+          "title": "Sandlewood / Split / Wall / Pallet",
+          "unit": "Pallet"
+        }
+      ]
+    },
+    {
+      "product_id": "gid://shopify/Product/10383010398500",
+      "title": "Sleek Pavers",
+      "handle": "sleek-pavers",
+      "keep": [
+        {
+          "id": "gid://shopify/ProductVariant/52438954017060",
+          "title": "Caff\u00e8 Crema / Hd\u00b2 Smooth / Single Size / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438954115364",
+          "title": "Silver Granite / Hd\u00b2 Smooth / Single Size / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438954213668",
+          "title": "Onyx Black / Hd\u00b2 Smooth / Single Size / Sq Ft",
+          "unit": "Sq Ft"
+        }
+      ],
+      "delete": [
+        {
+          "id": "gid://shopify/ProductVariant/52438954049828",
+          "title": "Caff\u00e8 Crema / Hd\u00b2 Smooth / Single Size / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438954082596",
+          "title": "Caff\u00e8 Crema / Hd\u00b2 Smooth / Single Size / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438954148132",
+          "title": "Silver Granite / Hd\u00b2 Smooth / Single Size / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438954180900",
+          "title": "Silver Granite / Hd\u00b2 Smooth / Single Size / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438954246436",
+          "title": "Onyx Black / Hd\u00b2 Smooth / Single Size / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438954279204",
+          "title": "Onyx Black / Hd\u00b2 Smooth / Single Size / Pallet",
+          "unit": "Pallet"
+        }
+      ]
+    },
+    {
+      "product_id": "gid://shopify/Product/10383010857252",
+      "title": "Squadra Pavers",
+      "handle": "squadra-pavers",
+      "keep": [
+        {
+          "id": "gid://shopify/ProductVariant/52438956310820",
+          "title": "Shale Grey / Slate / Single Size / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438956409124",
+          "title": "Merlot / Slate / Single Size / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438956507428",
+          "title": "Onyx Black / Slate / Single Size / Sq Ft",
+          "unit": "Sq Ft"
+        }
+      ],
+      "delete": [
+        {
+          "id": "gid://shopify/ProductVariant/52438956343588",
+          "title": "Shale Grey / Slate / Single Size / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438956376356",
+          "title": "Shale Grey / Slate / Single Size / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438956441892",
+          "title": "Merlot / Slate / Single Size / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438956474660",
+          "title": "Merlot / Slate / Single Size / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438956540196",
+          "title": "Onyx Black / Slate / Single Size / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438956572964",
+          "title": "Onyx Black / Slate / Single Size / Pallet",
+          "unit": "Pallet"
+        }
+      ]
+    },
+    {
+      "product_id": "gid://shopify/Product/10383011807524",
+      "title": "Travertina Raw Caps",
+      "handle": "travertina-raw-caps",
+      "keep": [
+        {
+          "id": "gid://shopify/ProductVariant/52438958932260",
+          "title": "Ivory / Klean-Bloc Raw Travertine / Single Size / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438959030564",
+          "title": "Rock Garden Brown / Klean-Bloc Raw Travertine / Single Size / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438959128868",
+          "title": "Riviera / Klean-Bloc Raw Travertine / Single Size / Sq Ft",
+          "unit": "Sq Ft"
+        }
+      ],
+      "delete": [
+        {
+          "id": "gid://shopify/ProductVariant/52438958965028",
+          "title": "Ivory / Klean-Bloc Raw Travertine / Single Size / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438958997796",
+          "title": "Ivory / Klean-Bloc Raw Travertine / Single Size / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438959063332",
+          "title": "Rock Garden Brown / Klean-Bloc Raw Travertine / Single Size / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438959096100",
+          "title": "Rock Garden Brown / Klean-Bloc Raw Travertine / Single Size / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438959161636",
+          "title": "Riviera / Klean-Bloc Raw Travertine / Single Size / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438959194404",
+          "title": "Riviera / Klean-Bloc Raw Travertine / Single Size / Pallet",
+          "unit": "Pallet"
+        }
+      ]
+    },
+    {
+      "product_id": "gid://shopify/Product/10383012659492",
+      "title": "Travertina Raw Walls",
+      "handle": "travertina-raw-walls",
+      "keep": [
+        {
+          "id": "gid://shopify/ProductVariant/52438961783076",
+          "title": "Ivory / Brushed Travertine / Corner & Pillar / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438961881380",
+          "title": "Ivory / Brushed Travertine / Wall / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438961979684",
+          "title": "Rock Garden Brown / Brushed Travertine / Corner & Pillar / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438962077988",
+          "title": "Rock Garden Brown / Brushed Travertine / Wall / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438962176292",
+          "title": "Riviera / Brushed Travertine / Corner & Pillar / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438962274596",
+          "title": "Riviera / Brushed Travertine / Wall / Sq Ft",
+          "unit": "Sq Ft"
+        }
+      ],
+      "delete": [
+        {
+          "id": "gid://shopify/ProductVariant/52438961815844",
+          "title": "Ivory / Brushed Travertine / Corner & Pillar / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438961848612",
+          "title": "Ivory / Brushed Travertine / Corner & Pillar / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438961914148",
+          "title": "Ivory / Brushed Travertine / Wall / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438961946916",
+          "title": "Ivory / Brushed Travertine / Wall / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438962012452",
+          "title": "Rock Garden Brown / Brushed Travertine / Corner & Pillar / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438962045220",
+          "title": "Rock Garden Brown / Brushed Travertine / Corner & Pillar / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438962110756",
+          "title": "Rock Garden Brown / Brushed Travertine / Wall / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438962143524",
+          "title": "Rock Garden Brown / Brushed Travertine / Wall / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438962209060",
+          "title": "Riviera / Brushed Travertine / Corner & Pillar / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438962241828",
+          "title": "Riviera / Brushed Travertine / Corner & Pillar / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438962307364",
+          "title": "Riviera / Brushed Travertine / Wall / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438962340132",
+          "title": "Riviera / Brushed Travertine / Wall / Pallet",
+          "unit": "Pallet"
+        }
+      ]
+    },
+    {
+      "product_id": "gid://shopify/Product/10383013085476",
+      "title": "Valencia Firepits",
+      "handle": "valencia-firepits",
+      "keep": [
+        {
+          "id": "gid://shopify/ProductVariant/52438964568356",
+          "title": "Chestnut Brown / Split/Aged / Single Size / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438964666660",
+          "title": "Shale Grey / Split/Aged / Single Size / Sq Ft",
+          "unit": "Sq Ft"
+        }
+      ],
+      "delete": [
+        {
+          "id": "gid://shopify/ProductVariant/52438964601124",
+          "title": "Chestnut Brown / Split/Aged / Single Size / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438964633892",
+          "title": "Chestnut Brown / Split/Aged / Single Size / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438964699428",
+          "title": "Shale Grey / Split/Aged / Single Size / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438964732196",
+          "title": "Shale Grey / Split/Aged / Single Size / Pallet",
+          "unit": "Pallet"
+        }
+      ]
+    },
+    {
+      "product_id": "gid://shopify/Product/10383013183780",
+      "title": "Valet Pavers",
+      "handle": "valet-pavers",
+      "keep": [
+        {
+          "id": "gid://shopify/ProductVariant/52438964994340",
+          "title": "Chestnut Brown / Basalt / Single Size / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438965092644",
+          "title": "Shale Grey / Basalt / Single Size / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438965190948",
+          "title": "Onyx Black / Basalt / Single Size / Sq Ft",
+          "unit": "Sq Ft"
+        }
+      ],
+      "delete": [
+        {
+          "id": "gid://shopify/ProductVariant/52438965027108",
+          "title": "Chestnut Brown / Basalt / Single Size / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438965059876",
+          "title": "Chestnut Brown / Basalt / Single Size / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438965125412",
+          "title": "Shale Grey / Basalt / Single Size / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438965158180",
+          "title": "Shale Grey / Basalt / Single Size / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438965223716",
+          "title": "Onyx Black / Basalt / Single Size / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438965256484",
+          "title": "Onyx Black / Basalt / Single Size / Pallet",
+          "unit": "Pallet"
+        }
+      ]
+    },
+    {
+      "product_id": "gid://shopify/Product/10383013413156",
+      "title": "Venetian Smooth Step Overlay Systems",
+      "handle": "venetian-smooth-step-overlay-systems",
+      "keep": [
+        {
+          "id": "gid://shopify/ProductVariant/52438965813540",
+          "title": "Beige Cream / Smooth / Riser / Sq Ft",
+          "unit": "Sq Ft"
+        }
+      ],
+      "delete": [
+        {
+          "id": "gid://shopify/ProductVariant/52438965846308",
+          "title": "Beige Cream / Smooth / Riser / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438965879076",
+          "title": "Beige Cream / Smooth / Riser / Pallet",
+          "unit": "Pallet"
+        }
+      ]
+    },
+    {
+      "product_id": "gid://shopify/Product/10383013675300",
+      "title": "Victorien Pavers",
+      "handle": "victorien-pavers",
+      "keep": [
+        {
+          "id": "gid://shopify/ProductVariant/52438967157028",
+          "title": "Shale Grey / Smooth / Single Size / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438967255332",
+          "title": "Onyx Black / Smooth / Single Size / Sq Ft",
+          "unit": "Sq Ft"
+        }
+      ],
+      "delete": [
+        {
+          "id": "gid://shopify/ProductVariant/52438967189796",
+          "title": "Shale Grey / Smooth / Single Size / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438967222564",
+          "title": "Shale Grey / Smooth / Single Size / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438967288100",
+          "title": "Onyx Black / Smooth / Single Size / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438967320868",
+          "title": "Onyx Black / Smooth / Single Size / Pallet",
+          "unit": "Pallet"
+        }
+      ]
+    },
+    {
+      "product_id": "gid://shopify/Product/10383014297892",
+      "title": "Villagio Pavers",
+      "handle": "villagio-pavers",
+      "keep": [
+        {
+          "id": "gid://shopify/ProductVariant/52438968828196",
+          "title": "Merlot / Beveled/Permeable / Modular Size / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438968926500",
+          "title": "Chestnut Brown / Beveled/Permeable / Modular Size / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438969024804",
+          "title": "Chocolate Brown / Beveled/Permeable / Modular Size / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438969123108",
+          "title": "Shale Grey / Beveled/Permeable / Modular Size / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438969221412",
+          "title": "Sandlewood / Beveled/Permeable / Modular Size / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438969319716",
+          "title": "Onyx Black / Beveled/Permeable / Modular Size / Sq Ft",
+          "unit": "Sq Ft"
+        }
+      ],
+      "delete": [
+        {
+          "id": "gid://shopify/ProductVariant/52438968860964",
+          "title": "Merlot / Beveled/Permeable / Modular Size / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438968893732",
+          "title": "Merlot / Beveled/Permeable / Modular Size / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438968959268",
+          "title": "Chestnut Brown / Beveled/Permeable / Modular Size / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438968992036",
+          "title": "Chestnut Brown / Beveled/Permeable / Modular Size / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438969057572",
+          "title": "Chocolate Brown / Beveled/Permeable / Modular Size / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438969090340",
+          "title": "Chocolate Brown / Beveled/Permeable / Modular Size / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438969155876",
+          "title": "Shale Grey / Beveled/Permeable / Modular Size / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438969188644",
+          "title": "Shale Grey / Beveled/Permeable / Modular Size / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438969254180",
+          "title": "Sandlewood / Beveled/Permeable / Modular Size / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438969286948",
+          "title": "Sandlewood / Beveled/Permeable / Modular Size / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438969352484",
+          "title": "Onyx Black / Beveled/Permeable / Modular Size / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438969385252",
+          "title": "Onyx Black / Beveled/Permeable / Modular Size / Pallet",
+          "unit": "Pallet"
+        }
+      ]
+    },
+    {
+      "product_id": "gid://shopify/Product/10383014691108",
+      "title": "Westmount Pavers",
+      "handle": "westmount-pavers",
+      "keep": [
+        {
+          "id": "gid://shopify/ProductVariant/52438970269988",
+          "title": "Chestnut Brown / Hd\u00b2 Smooth / Single Size / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438970368292",
+          "title": "Caff\u00e8 Crema / Hd\u00b2 Smooth / Single Size / Sq Ft",
+          "unit": "Sq Ft"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438970466596",
+          "title": "Onyx Black / Hd\u00b2 Smooth / Single Size / Sq Ft",
+          "unit": "Sq Ft"
+        }
+      ],
+      "delete": [
+        {
+          "id": "gid://shopify/ProductVariant/52438970302756",
+          "title": "Chestnut Brown / Hd\u00b2 Smooth / Single Size / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438970335524",
+          "title": "Chestnut Brown / Hd\u00b2 Smooth / Single Size / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438970401060",
+          "title": "Caff\u00e8 Crema / Hd\u00b2 Smooth / Single Size / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438970433828",
+          "title": "Caff\u00e8 Crema / Hd\u00b2 Smooth / Single Size / Pallet",
+          "unit": "Pallet"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438970499364",
+          "title": "Onyx Black / Hd\u00b2 Smooth / Single Size / Row",
+          "unit": "Row"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/52438970532132",
+          "title": "Onyx Black / Hd\u00b2 Smooth / Single Size / Pallet",
+          "unit": "Pallet"
+        }
+      ]
+    }
+  ],
+  "skipped": [
+    {
+      "id": "gid://shopify/Product/10360047403300",
+      "title": "SMOOTH Cap 3\" x 13\" x 12\"",
+      "reason": "no Sq Ft variants exist (found units: ['Piece'])"
+    },
+    {
+      "id": "gid://shopify/Product/10389838496036",
+      "title": "Alliance Gator G2 Intelligent Polymeric Super Sand",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409246032164",
+      "title": "Normandy Products Downspout Adapter DSXI Corrugated SDR35 Fitting",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409294790948",
+      "title": "Zep Driveway Concrete & Masonry Cleaner",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409317040420",
+      "title": "DeWitt NB324 Landscape Fabric",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409378742564",
+      "title": "Sure-Klean 600/ Masonry Cleane",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409378775332",
+      "title": "Srw Paver Seal Low Gloss 5-Gl",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409378840868",
+      "title": "Srw Efflorescence Remover 1-Gl",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409378939172",
+      "title": "Srw Paver Seal High Gloss 5-Gl",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409379004708",
+      "title": "Srw Slip-Resist Sealer Additiv",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409379070244",
+      "title": "Srw Sealer Stripper 1-Gl.",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409379103012",
+      "title": "Srw Efflorescence Remover 5-Gl",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409379135780",
+      "title": "Swr Paver Clean Xylene 1-Gl.",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409379561764",
+      "title": "SRW- CDX Cleaner-Degreaser Ext",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409379791140",
+      "title": "3'X50' Srw Weed Fabric",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409379823908",
+      "title": "3'X100' Srw Weed Fabric",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409379856676",
+      "title": "4'X300' Srw Weed Fabric",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409384640804",
+      "title": "Pro-fitl Poly Black Polyethylene Film",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409385918756",
+      "title": "Permatex Non-Chlorinated Brake and Parts Cleaner",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409405284644",
+      "title": "Techniseal Cln Oil/Grease Remo",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409405350180",
+      "title": "Techniseal Pro Cln Rust Remove",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409405382948",
+      "title": "Techniseal Pro Paver Restore",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409405415716",
+      "title": "Techniseal Pro Efflo Remover",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409413574948",
+      "title": "Family Is Forever Step Stone",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409415246116",
+      "title": "Techniseal Organic Stain Remover for Pavers & Slabs",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409532784932",
+      "title": "Srw Paver Seal Low Gloss 1-Gl.",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409541927204",
+      "title": "4'X100' Srw Weed Fabric",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409546711332",
+      "title": "Windex Outdoor Concentrated Cleaner",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409547858212",
+      "title": "Simple Green All Purpose Cleaner Concentrate",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409550446884",
+      "title": "Srw Paver Seal Penetrating 1-G",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409550676260",
+      "title": "Srw Paver Seal High Gloss 1-Gl",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409550840100",
+      "title": "Srw Paver Seal X-Treme Hg /1-G",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409550872868",
+      "title": "Srw Paver Seal Penerating 5-Gl",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409550905636",
+      "title": "Srw Paver Seal X-Treme Hg /5-G",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409550971172",
+      "title": "Srw Paver Clean Paver Wash 1-G",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409551102244",
+      "title": "6X6 Old Towne Cobble Dakota Bl",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409551167780",
+      "title": "6X6 Old Towne Cobble Pewter Bl",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409551266084",
+      "title": "6X9 Old Towne Cobble Midnight",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409551364388",
+      "title": "6X9 Old Towne Cobble Harvest B",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409551429924",
+      "title": "6X9 Old Towne Cobble N.Brown",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409551462692",
+      "title": "6X9 Old Towne Cobble Dakota Bl",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409551528228",
+      "title": "6\" Bullnose Paver Brown",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409552019748",
+      "title": "S/F Cast S.W. Cut R/F Adiron",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409552085284",
+      "title": "S/F Cast S. Wall Rf Corner Adk",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409552118052",
+      "title": "S/F Cast S. Wall Rf Corner Asp",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409552183588",
+      "title": "D/F Cast Stone Wall R/F Adiron",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409552281892",
+      "title": "Bev.English Garden Wall Grey",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409552314660",
+      "title": "Bev.English Garden Wall Harves",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409552347428",
+      "title": "Rect.English Garden Wall Grey",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409552412964",
+      "title": "Rect.English Garden Wall Harve",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409552445732",
+      "title": "6\" D/F Coventry Wall III Dako",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409552511268",
+      "title": "6\" D/S Coventry Wall III Pewt",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409552642340",
+      "title": "3\" Rectangular CAP DAKOTA B.",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409552675108",
+      "title": "3\" Rectangular CAP PEWTER B.",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409553002788",
+      "title": "4\" Straight Cap 4X18X12 Dakot",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409553068324",
+      "title": "4\" Straight Cap 4X18X12 Pewte",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409553264932",
+      "title": "8\"Universal Corner DP/VW P,D,",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409553330468",
+      "title": "Diamond Pro Stretcher Dakota B",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409553363236",
+      "title": "Diamond Pro Stretcher Pewter B",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409553396004",
+      "title": "Ep Henry Fire Pit Kit Dakota B",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409553428772",
+      "title": "Ep Henry Fire Pit Kit Pewter B",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409560211748",
+      "title": "Alum.Edge 8'X4\"X1/8\"Mill Fin",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409562571044",
+      "title": "52\"Cast Stair Tread/Cap Brown",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409562702116",
+      "title": "Ep-8X8X16 Hollow Blk.",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409562898724",
+      "title": "Paver Edge (Beast) 8'",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409562964260",
+      "title": "PL-6x9 OTC Style",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409563291940",
+      "title": "14\"D/S Cast Stone Cap CT BL.3",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409563324708",
+      "title": "14\"D/S Cast Stone Cap CT BS.3",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409563357476",
+      "title": "16\"D/S Cast Stone Cap W/CT BL",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409563423012",
+      "title": "16\"D/S Cast Stone Cap W/CT BS",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409563455780",
+      "title": "Cast Stone Garden W. Cap CT BL",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409563554084",
+      "title": "Chilton Step 1-Chisel. Edge BL",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409563586852",
+      "title": "28x28\"Cast Stone Pier Cap CT/",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409563652388",
+      "title": "28x28\"Cast Stone Pier Cap PAB",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409563980068",
+      "title": "Srw 5 Geotextile 12.5'X 108'",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409564176676",
+      "title": "Belgian Block 5x5x9 Grey",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409564209444",
+      "title": "Belgian Block Jumbo 7x4x10 Gre",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409566961956",
+      "title": "S/F Cast S.Wall Ledg.Alleghany",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409566994724",
+      "title": "S/F Cast S. Wall Ledg. Aztec",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409567027492",
+      "title": "S/F Cast S.W. Corners Ledg.All",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409567060260",
+      "title": "D/S Cast S.Wall Ledg. Aztec",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409570828580",
+      "title": "D/S Cst S. Wall Ledg. Alleghen",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409570959652",
+      "title": "Oly-Ola's Corner Black Jack/K.",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409574007076",
+      "title": "Nitro Joint Sand Black 40Lb.",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409575088420",
+      "title": "Colonial Grey Regular",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409575121188",
+      "title": "Tumble Bluestone Wallstone",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409575153956",
+      "title": "Flagstone Irregular Lilac 1-1/",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409575678244",
+      "title": "Wallstone Pocono Blend Thin",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409575711012",
+      "title": "Slabs Laurel Moutain (4-6\")",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409579217188",
+      "title": "RWX Retaining Wall X-Treme",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409579282724",
+      "title": "RWX Retaining wall X-Treme 5 G",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409581707556",
+      "title": "3\" D/F Coventry Wall III Dako",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409581773092",
+      "title": "3\" D/F Coventry Wall III Pewt",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409581838628",
+      "title": "3\" D/F Cov.3 Wall Corner Dako",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409581904164",
+      "title": "Diamond Pro Stretcher Harvest",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409583214884",
+      "title": "Walls. Col.Blue Guillotine 4-8",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409585148196",
+      "title": "PL-600W Multi Tap LowV. Transf",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409586065700",
+      "title": "Flagstone Irregular Retail P.",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409586229540",
+      "title": "Trurock Mini Flat Cover Grey",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409588719908",
+      "title": "Colonial Lilac Thin Wallstone",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409588818212",
+      "title": "Flagstone Irreg. 1\"",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409590292772",
+      "title": "Flagstone Irregular Lilac Reta",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409592553764",
+      "title": "Belgian Block Jumbo Pink",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409592684836",
+      "title": "6\" D/F Coventry WallIII Harve",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409592750372",
+      "title": "3\"D/F Coventry Wall III Harve",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409593831716",
+      "title": "Flagstone FC 18x36x1.5 Thermal",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409593864484",
+      "title": "Blue Stone 12x24x1.5 Therma",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409593897252",
+      "title": "Flagstone Blue 24x36x1.5 Therm",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409593962788",
+      "title": "FC Super Treads 12x5x2 Thermal",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409594028324",
+      "title": "Blue Super Treads 12x4x2 RF",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409597796644",
+      "title": "Blue Super Treads 12X72X2 Ther",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409609888036",
+      "title": "18\" Pilling Pedestal",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409613230372",
+      "title": "BG-Origins 12 Sonoran DF/CT",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409613263140",
+      "title": "BG-Origins 12 Sonoran DF",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409613361444",
+      "title": "BG-Origins 6x9 Acc. Midnight C",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409613426980",
+      "title": "BG-Marina Coping Sable Blend",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409613492516",
+      "title": "BG-Marina Coping Silex Blend",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409614049572",
+      "title": "Accel Lifetime 30LBS",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409614541092",
+      "title": "BG-Mega Arbel Patio Slab Silex",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409614704932",
+      "title": "PL-Traditional DOTLight 1.5\"B",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409614737700",
+      "title": "PL-Traditional Pillar Light BR",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409622831396",
+      "title": "BG-Origins 12 Pewter B. W/D-CT",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409623388452",
+      "title": "Winter Lights 2 LED 6X6",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409626927396",
+      "title": "PL-Hardscape Changing Led Blac",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409626960164",
+      "title": "PL-Modern DOT Light 1.5\"SS400",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409626992932",
+      "title": "PL-Modern DOT Light 2.5\"SS400",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409627091236",
+      "title": "PL-Traditional DOTLight 2.5\"B",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409627124004",
+      "title": "PL-Color Changing DOT 2.5\" SS",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409627648292",
+      "title": "G2 Supersand Rapid Ult. S.Blac",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409628860708",
+      "title": "G2 Supersand Ult.Rapid Set Gre",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409637740836",
+      "title": "Pt-Quick-E Vent 11 X 3.5",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409637806372",
+      "title": "Quick-E-Fire-Vent 11 X 3.5",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409637871908",
+      "title": "Quick-E-Adjustable Drain Plast",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409639117092",
+      "title": "Cb-4X8 Holland Color Plus",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409640722724",
+      "title": "Cb-Ledgstone XL Txt-Color Plus",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409640821028",
+      "title": "Cb-Edgstone Plus-Color Plus",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409643999524",
+      "title": "Pl-Ts-Pier Light Color Changin",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409644228900",
+      "title": "Cb-Ledgestone 6X9-Color Plus",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409644261668",
+      "title": "Cb- Ledgest Tx 4.5X9 Color Plu",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409644294436",
+      "title": "Cb-Ledgest Sm 4.5X9 Color Plus",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409644327204",
+      "title": "Cb-Brick Alley Color Plus",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409644491044",
+      "title": "Cb-Roundtable 6X6 Color Plus",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409644523812",
+      "title": "Cb-Roundtable 6X9 Color Plus",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409644556580",
+      "title": "Cb-Kingscourt 6X9 Color Plus",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409644589348",
+      "title": "Cb-Bullnose Color Plus",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409644622116",
+      "title": "Cb-Ledgestone Cap Color Plus",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409644654884",
+      "title": "Cb-12 X 24 Cap Color Plus",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409644687652",
+      "title": "Cb-Sigma Plus Wall 6\" Color P",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409644884260",
+      "title": "Cb-Caps Plus Dbl Sided Color P",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409644949796",
+      "title": "Cb-Caps Plus Single S. Color P",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409644982564",
+      "title": "Cb-Curbstone Standard",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409653109028",
+      "title": "Pt-Quick-E-Class Vent 9.75X2.9",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409653141796",
+      "title": "Pt-Quick-E-Class Vent 7.9X3.9",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409669263652",
+      "title": "Blue Stone 24 X 24 X 1.5",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409676734756",
+      "title": "Techniseal Poly Noco Iron Grey",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409676767524",
+      "title": "Techniseal Poly Noco Desert Ta",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409676800292",
+      "title": "Techniseal Pro Poly Sand Tan",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409676865828",
+      "title": "Techniseal Color Boost Seal 1",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409676898596",
+      "title": "Techniseal Pro Wt Look Seal 5",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409676931364",
+      "title": "Techniseal Wt Look Seal 5 G Oi",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409676996900",
+      "title": "Techniseal Oil Seal Wt Look 1",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409677095204",
+      "title": "Techniseal Wtr Seal Penetrate",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    },
+    {
+      "id": "gid://shopify/Product/10409677160740",
+      "title": "BG-Dimensions 12 Iron Bay DF",
+      "reason": "no variants have custom.unit_of_sale metafield"
+    }
+  ],
+  "nothing_to_do": [
+    {
+      "id": "gid://shopify/Product/10360045207844",
+      "title": "Crusader Ledgestone Permeable 6\" x 9\" Smooth"
+    },
+    {
+      "id": "gid://shopify/Product/10360045240612",
+      "title": "KingsCourt 4\" x 8\" Holland"
+    },
+    {
+      "id": "gid://shopify/Product/10360045273380",
+      "title": "KingsCourt 6\" x 9\""
+    },
+    {
+      "id": "gid://shopify/Product/10360045306148",
+      "title": "KingsCourt 8\" x 8\""
+    },
+    {
+      "id": "gid://shopify/Product/10360045371684",
+      "title": "Excalibur Cobble I"
+    },
+    {
+      "id": "gid://shopify/Product/10360045633828",
+      "title": "Sherwood Ledgestone 3-Pc. Design Kit"
+    },
+    {
+      "id": "gid://shopify/Product/10360045666596",
+      "title": "Sherwood Ledgestone 3-Pc. Design Kit Smooth"
+    },
+    {
+      "id": "gid://shopify/Product/10360045699364",
+      "title": "Sherwood Ledgestone XL 3-Pc. Design Kit Smooth"
+    },
+    {
+      "id": "gid://shopify/Product/10360045732132",
+      "title": "Sherwood Ledgestone 6\" x 9\""
+    },
+    {
+      "id": "gid://shopify/Product/10360045764900",
+      "title": "Sherwood Ledgestone 4 1/2\" x 9\""
+    },
+    {
+      "id": "gid://shopify/Product/10360045830436",
+      "title": "Sherwood Ledgestone 4 1/2\" x 9\" Smooth"
+    },
+    {
+      "id": "gid://shopify/Product/10360045863204",
+      "title": "Sherwood Ledgestone XL 24\" x 36\" Smooth"
+    },
+    {
+      "id": "gid://shopify/Product/10360045895972",
+      "title": "Sherwood Smooth 24\" x 24\" 2\""
+    },
+    {
+      "id": "gid://shopify/Product/10360045928740",
+      "title": "Sherwood Ledgestone 18\" x 18\""
+    },
+    {
+      "id": "gid://shopify/Product/10360045994276",
+      "title": "Sherwood Ledgestone 18\" x 18\" Smooth"
+    },
+    {
+      "id": "gid://shopify/Product/10360046027044",
+      "title": "Sherwood Ledgestone XL 15 3/4\" x 23 5/8\" Smooth"
+    },
+    {
+      "id": "gid://shopify/Product/10360046059812",
+      "title": "Sherwood Brick Alley"
+    },
+    {
+      "id": "gid://shopify/Product/10360046092580",
+      "title": "Sherwood Belgium 5-Pc. Design Kit"
+    },
+    {
+      "id": "gid://shopify/Product/10360046125348",
+      "title": "Sherwood River Rock"
+    },
+    {
+      "id": "gid://shopify/Product/10360046158116",
+      "title": "Sherwood Timber Stone 4-Pc. Design Kit"
+    },
+    {
+      "id": "gid://shopify/Product/10360046190884",
+      "title": "RoundTable 6\" x 6\""
+    },
+    {
+      "id": "gid://shopify/Product/10360046256420",
+      "title": "RoundTable 6\" x 9\""
+    },
+    {
+      "id": "gid://shopify/Product/10360046289188",
+      "title": "RoundTable Circle Design Kit"
+    },
+    {
+      "id": "gid://shopify/Product/10360046321956",
+      "title": "Crusader Ledgestone Permeable 3-Pc. Design Kit"
+    },
+    {
+      "id": "gid://shopify/Product/10360046354724",
+      "title": "Crusader Ledgestone Permeable Smooth 3-Pc. Design Kit"
+    },
+    {
+      "id": "gid://shopify/Product/10360046518564",
+      "title": "Excalibur Diamond"
+    },
+    {
+      "id": "gid://shopify/Product/10360046551332",
+      "title": "Crusader Bullnose 6\" x 12\" - 2 3/8\" Thick"
+    },
+    {
+      "id": "gid://shopify/Product/10360046584100",
+      "title": "Crusader Ledgestone Cap with Armortec"
+    },
+    {
+      "id": "gid://shopify/Product/10360046616868",
+      "title": "Crusader 12\" x 24\" Cap with Armortec"
+    },
+    {
+      "id": "gid://shopify/Product/10360046649636",
+      "title": "Crusader 13\" x 27\" Cap with Armortec"
+    },
+    {
+      "id": "gid://shopify/Product/10360046682404",
+      "title": "Olde English Wall"
+    },
+    {
+      "id": "gid://shopify/Product/10360046715172",
+      "title": "Olde English NT Wall 4\" x 8\" x 12\""
+    },
+    {
+      "id": "gid://shopify/Product/10360046747940",
+      "title": "Olde English NT 4\" x 8\" x 20\" Wall"
+    },
+    {
+      "id": "gid://shopify/Product/10360046780708",
+      "title": "Sigma Plus 6\" Wall Split Face (C)"
+    },
+    {
+      "id": "gid://shopify/Product/10360046846244",
+      "title": "Sigma Plus 8\" Wall Split Face (C)"
+    },
+    {
+      "id": "gid://shopify/Product/10360046879012",
+      "title": "Sigma Plus 8\" Smooth Wall (C)"
+    },
+    {
+      "id": "gid://shopify/Product/10360046911780",
+      "title": "Sigma Plus 8\" Corners 8\" x 18\" x 8\" Split Face (C)"
+    },
+    {
+      "id": "gid://shopify/Product/10360046944548",
+      "title": "Sigma Plus 8\" Corners Smooth 8\" x 18\" x 8\" (C)"
+    },
+    {
+      "id": "gid://shopify/Product/10360046977316",
+      "title": "Maytrx Plus Wall 6\" Split Face (C)"
+    },
+    {
+      "id": "gid://shopify/Product/10360047010084",
+      "title": "Cambridge 6\" Plus Split Face Stretcher Stone (C)"
+    },
+    {
+      "id": "gid://shopify/Product/10360047042852",
+      "title": "Garden Wall Split Face (C)"
+    },
+    {
+      "id": "gid://shopify/Product/10360047108388",
+      "title": "Cambridge Plus Single-Sided 13\" x 18\" Caps Split Face (C)"
+    },
+    {
+      "id": "gid://shopify/Product/10360047173924",
+      "title": "Cambridge Plus Caps 13\" x 12\" Split Face (C)"
+    },
+    {
+      "id": "gid://shopify/Product/10360047206692",
+      "title": "Cambridge Plus Split Face Column Kit (C)"
+    },
+    {
+      "id": "gid://shopify/Product/10360047239460",
+      "title": "Omega Natural Stone 7\" Wall"
+    },
+    {
+      "id": "gid://shopify/Product/10360047272228",
+      "title": "Omega Natural Stone Column Kit"
+    },
+    {
+      "id": "gid://shopify/Product/10360047304996",
+      "title": "Omega Natural Stone 3.5\" Wall"
+    },
+    {
+      "id": "gid://shopify/Product/10360047337764",
+      "title": "Omega SMOOTH 6\" Wall"
+    },
+    {
+      "id": "gid://shopify/Product/10360047436068",
+      "title": "Omega SMOOTH Column Kit"
+    },
+    {
+      "id": "gid://shopify/Product/10360047534372",
+      "title": "Pyzique Split Face Wall"
+    },
+    {
+      "id": "gid://shopify/Product/10360047632676",
+      "title": "Belgium Curbstone"
+    },
+    {
+      "id": "gid://shopify/Product/10360047665444",
+      "title": "Edgestone Plus"
+    },
+    {
+      "id": "gid://shopify/Product/10360047698212",
+      "title": "Sherwood Ledgestone XL 3-Pc. Design Kit"
+    }
+  ]
+}
